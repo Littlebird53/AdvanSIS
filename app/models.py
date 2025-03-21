@@ -105,6 +105,7 @@ class Course(models.Model):
     language = models.CharField(max_length=50, null=True)
     country = models.CharField(max_length=50, null=True)
     accepting_enrollments = models.BooleanField(default=True)
+    multi_center = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.template} {self.semester}{self.year}'

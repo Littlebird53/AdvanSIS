@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from app import models
 from app import forms
 import itertools
@@ -121,4 +122,5 @@ def course_search(request):
             'center', flat=True)
     return render(request, 'app/course_search.html',
                   {'courses': models.Course.objects.filter(
-                      center__in=centers, accepting_enrollments=True)})
+                      Q(center__in=centers) | Q(multi_center=True),
+                      accepting_enrollments=True)})

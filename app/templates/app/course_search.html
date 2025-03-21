@@ -1,0 +1,26 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Course Search{% endblock %}
+
+{% block content %}
+<h2>Courses</h2>
+{% for course in courses %}
+<div>
+  <h3>{{course}}</h3>
+  <p><b>Center:</b> {{course.center.name}}</p>
+  <details>
+    <summary>Description</summary>
+    <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
+    <p><b>Learing Objectives:</b></p>
+    {% for lo in course.template.learning_objectives.all %}
+    <li>{{lo.name}}
+      <details>
+	<summary>Description</summary>
+	<p>{{lo.description|linebreaks}}</p>
+      </details>
+    </li>
+    {% endfor %}
+  </details>
+</div>
+{% endfor %}
+{% endblock %}
