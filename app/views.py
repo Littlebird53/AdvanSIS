@@ -35,24 +35,25 @@ def dashboard(request):
                           person=request.user.person),
                   })
 
-# TODO: this should probably be multiple views,
-# since these conditions are not mutually exclusive
 @login_required
-def course(request, courseid):
+def course_details(request, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    grade = models.Grade.objects.filter(
+        course=course, person=request.user.person).first()
+    files = []
+    if grade is not None:
+        files = models.CourseFile.objects.filter(
+            course=course).order_by('order')
+    return render(request, 'app/course_details.html',
+                  {'course': course, 'grade': grade, 'files': files})
+
+@login_required
+def manage_course(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     if request.user.person == course.instructor:
         pass # editable roster
-    elif models.Grade.objects.filter(course=course, person=request.user.person).exists():
-        grade = models.Grade.objects.filter(
-            course=course, person=request.user.person).get()
-        files = models.CourseFile.objects.filter(
-            course=course).order_by('order')
-        return render(request, 'app/course_enrolled.html',
-                      {'course': course, 'grade': grade, 'files': files})
     elif request.user.person == course.center.director:
         pass # view roster + add student
-    elif models.StudentRecord.objects.filter(center=course.center, person=request.user.person).exists():
-        pass # student view non-entrolled course
     else:
         pass # permission error
 
@@ -120,7 +121,24 @@ def course_search(request):
     centers = models.StudentRecord.objects.filter(
         person=request.user.person, status='C').values_list(
             'center', flat=True)
+    # TODO: exclude already-enrolled courses
     return render(request, 'app/course_search.html',
                   {'courses': models.Course.objects.filter(
                       Q(center__in=centers) | Q(multi_center=True),
                       accepting_enrollments=True)})
+
+@login_required
+def enroll(request, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    qr = models.StudentRecord.objects.filter(
+        person=request.user.person, status='C')
+    if not course.multi_center:
+        qr = qr.filter(center=course.center)
+    if qr.exists():
+        grade = models.Grade.objects.get_or_create(
+            course=course, person=request.user.person,
+            defaults={'value': 'IP'})[0]
+        return render(request, 'app/confirm_enrollment.html',
+                      {'grade': grade})
+    else:
+        pass # TODO: permission error

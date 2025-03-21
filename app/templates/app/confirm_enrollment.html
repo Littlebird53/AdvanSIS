@@ -1,0 +1,9 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Enrollment Confirmation{% endblock %}
+
+{% block content %}
+<h2>Enrollment Successful</h2>
+<p>You are now enrolled in <a href="{% url 'app:course' grade.course.id %}">{{grade.course}}</a>.</p>
+<p><a href="{% url 'app:course_search' %}">Return to course search</a></p>
+{% endblock %}

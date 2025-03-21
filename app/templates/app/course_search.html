@@ -10,17 +10,10 @@
   <p><b>Center:</b> {{course.center.name}}</p>
   <details>
     <summary>Description</summary>
-    <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
-    <p><b>Learing Objectives:</b></p>
-    {% for lo in course.template.learning_objectives.all %}
-    <li>{{lo.name}}
-      <details>
-	<summary>Description</summary>
-	<p>{{lo.description|linebreaks}}</p>
-      </details>
-    </li>
-    {% endfor %}
+    <p>{{course.template.description|linebreaksbr}}</p>
   </details>
+  <p><a href="{% url 'app:course' course.id %}">Details</a></p>
+  <p><a href="{% url 'app:enroll' course.id %}">Enroll</a></p>
 </div>
 {% endfor %}
 {% endblock %}

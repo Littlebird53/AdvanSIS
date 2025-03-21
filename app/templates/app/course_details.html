@@ -16,10 +16,15 @@
   </li>
   {% endfor %}
 </ul>
+{% if files %}
 <h3>Files</h3>
 <ul>
   {% for fl in files %}
   <li><a href="{{fl.shared_file.content.url}}">{{fl.shared_file.title}}</a></li>
   {% endfor %}
 </ul>
+{% endif %}
+{% if not grade %}
+<p><a href="{% url 'app:enroll' course.id %}">Enroll</a></p>
+{% endif %}
 {% endblock %}
