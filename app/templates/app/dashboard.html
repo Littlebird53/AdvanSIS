@@ -1,0 +1,31 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% if message %}
+<h3>{{message}}</h3>
+{% endif %}
+<details>
+  <summary>Update personal information</summary>
+  <form method="POST">
+    {{form}}
+    <button type="submit">Submit</button>
+  </form>
+</details>
+{% for center in centers %}
+<h2>{{center.name}} Administration</h2>
+<p><a href="{% url 'app:new_course' center.id %}">Add Course</a></p>
+{% endfor %}
+<h2>Courses</h2>
+<ul>
+  {% for course in teaching %}
+  <li>{{course}} <a href="{% url 'app:course' course.id %}">Administer course</a></li>
+  {% endfor %}
+  {% for grade in enrolled %}
+  <li>{{grade.course}} <a href="{% url 'app:course' grade.course.id %}">View course</a></li>
+  {% endfor %}
+</ul>
+<p><a href="{% url 'app:course_search' %}">Add course</a></p>
+<p><a href="{% url 'app:center_search' %}">Add center</a></p>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{course}}{% endblock %}
+
+{% block content %}
+<h2>{{course}}</h2>
+<p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
+<h3>Learning Objectives</h3>
+<ul>
+  {% for lo in course.template.learning_objectives.all %}
+  <li>{{lo.name}}
+    <details>
+      <summary>Description</summary>
+      <p>{{lo.description|linebreaks}}</p>
+    </details>
+  </li>
+  {% endfor %}
+</ul>
+<h3>Files</h3>
+<ul>
+  {% for fl in files %}
+  <li><a href="{{fl.shared_file.content.url}}">{{fl.shared_file.title}}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}

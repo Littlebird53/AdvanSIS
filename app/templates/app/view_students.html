@@ -1,0 +1,30 @@
+{% extends 'app/base.html' %}
+
+{% block title %}View Students{% endblock %}
+
+{% block content %}
+<h2>Applications</h2>
+{% for sr in students.A %}
+<p>{{sr.student}}</p>
+{% empty %}
+<p>There are no pending applications.</p>
+{% endfor %}
+<h2>Current Students</h2>
+{% for sr in students.C %}
+<p>{{sr.student}}</p>
+{% empty %}
+<p>There are no current students.</p>
+{% endfor %}
+<h2>Former Students</h2>
+{% for sr in students.F %}
+<p>{{sr.student}}</p>
+{% empty %}
+<p>There are no former students.</p>
+{% endfor %}
+<h2>Rejected Students</h2>
+{% for sr in students.R %}
+<p>{{sr.student}}</p>
+{% empty %}
+<p>There are no rejected applications.</p>
+{% endfor %}
+{% endblock %}
