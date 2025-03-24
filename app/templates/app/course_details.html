@@ -6,16 +6,7 @@
 <h2>{{course}}</h2>
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
 <h3>Learning Objectives</h3>
-<ul>
-  {% for lo in course.template.learning_objectives.all %}
-  <li>{{lo.name}}
-    <details>
-      <summary>Description</summary>
-      <p>{{lo.description|linebreaks}}</p>
-    </details>
-  </li>
-  {% endfor %}
-</ul>
+{{course.template.learning_objectives_block}}
 {% if files %}
 <h3>Files</h3>
 <ul>
@@ -26,5 +17,13 @@
 {% endif %}
 {% if not grade %}
 <p><a href="{% url 'app:enroll' course.id %}">Enroll</a></p>
+{% elif grade.value == 'IP' %}
+<p>You are enrolled in this class.</p>
+{% elif grade.value == 'Au' %}
+<p>You are auditting this class.</p>
+{% elif grade.value == 'W' %}
+<p>You have withdrawn from this class.</p>
+{% else %}
+<p>Your grade in this class is {{grade.value}}.</p>
 {% endif %}
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Course Catalog{% endblock %}
+
+{% block content %}
+{% for course in courses %}
+<div>
+  <h3>{{course}}</h3>
+  <details>
+    <summary>Description</summary>
+    <p>{{course.description|linebreaksbr}}</p>
+    <h4>Learning Objectives</h4>
+    {{course.learning_objectives_block}}
+  </details>
+</div>
+{% endfor %}
+{% endblock %}

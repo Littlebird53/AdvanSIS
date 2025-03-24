@@ -9,6 +9,7 @@
 <details>
   <summary>Update personal information</summary>
   <form method="POST">
+    {% csrf_token %}
     {{form}}
     <button type="submit">Submit</button>
   </form>
@@ -20,7 +21,7 @@
 <h2>Courses</h2>
 <ul>
   {% for course in teaching %}
-  <li>{{course}} <a href="{% url 'app:course' course.id %}">Administer course</a></li>
+  <li>{{course}} <a href="{% url 'app:manage_course' course.id %}">Administer course</a></li>
   {% endfor %}
   {% for grade in enrolled %}
   <li>{{grade.course}} <a href="{% url 'app:course' grade.course.id %}">View course</a></li>

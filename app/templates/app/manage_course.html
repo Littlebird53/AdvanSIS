@@ -1,0 +1,64 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Manage {{course}}{% endblock %}
+
+{% block content %}
+<h2>Manage <i>{{course}}</i></h2>
+<details>
+  <summary>Description</summary>
+  <p>{{course.template.description|linebreaksbr}}</p>
+  <h3>Learning Objectives</h3>
+  {{course.template.learning_objectives_block}}
+</details>
+<h3>Grades</h3>
+<form method="POST">
+  {% csrf_token %}
+  {{grades.management_form}}
+  <table id="grade_rows">
+    <tr>
+      <th>Person</th>
+      <th>Grade</th>
+    </tr>
+    {% for form in grades %}
+    <tr>
+      {% for field in form %}
+      <td>
+	{{field}}
+      </td>
+      {% endfor %}
+      <td>
+	{{form.person.errors}}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <button type="button" onclick="addForm();">Add Student</button>
+  <button type="submit">Save</button>
+  <p>{{message}}</p>
+</form>
+<template id="empty_row">
+  <tr>
+    {% for field in grades.empty_form %}
+    <td>
+      {{field}}
+    </td>
+    {% endfor %}
+  </tr>
+</template>
+
+<script type="text/javascript">
+  function addForm() {
+      let template = document.getElementById('empty_row');
+      let fragment = template.content.cloneNode(true);
+      let totalinput = document.getElementById('id_form-TOTAL_FORMS');
+      let total = Number(totalinput.value);
+      for (let element of fragment.children) {
+          element.innerHTML = element.innerHTML.replace(
+              /(?<=\w+-)(__prefix__|\d+)(?=-\w+)/g,
+              total.toString());
+      }
+      document.getElementById('grade_rows').appendChild(fragment);
+      totalinput.value = (total+1).toString();
+  }
+</script>
+{% endblock %}

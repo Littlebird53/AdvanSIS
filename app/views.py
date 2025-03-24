@@ -50,16 +50,38 @@ def course_details(request, courseid):
 @login_required
 def manage_course(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
-    if request.user.person == course.instructor:
-        pass # editable roster
-    elif request.user.person == course.center.director:
-        pass # view roster + add student
+    if request.user.person not in [course.instructor, course.center.director]:
+        return redirect('app:course', courseid)
+
+    message = ''
+    if request.method == 'POST':
+        form = forms.GradeFormset(course, request.POST)
+        if form.is_valid():
+            form.save()
+            if form.new_objects:
+                message = 'students added'
+            elif form.changed_objects:
+                message = 'grades updated'
+        else:
+            print(form.errors, form.non_form_errors)
     else:
-        pass # permission error
+        form = forms.GradeFormset(course)
+    return render(request, 'app/manage_course.html',
+                  {
+                      'course': course,
+                      'grades': form,
+                      'message': message,
+                  })
 
 @login_required
 def list_centers(request):
-    pass
+    return render(request, 'app/center_catalog.html',
+                  {'centers': models.Center.objects.order_by('name')})
+
+@login_required
+def course_catalog(request):
+    return render(request, 'app/course_catalog.html',
+                  {'courses': models.CourseTemplate.objects.order_by('title')})
 
 ####################
 ### CENTERS

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.template import Context, Template
 
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -87,6 +88,21 @@ class CourseTemplate(models.Model):
     def __str__(self):
         return f'{self.title} ({self.code})'
 
+    LO_TEMPLATE = Template('''
+    <ul>
+      {% for lo in course.learning_objectives.all %}
+      <li>{{lo.name}}
+        <details>
+          <summary>Description</summary>
+          <p>{{lo.description|linebreaks}}</p>
+        </details>
+      </li>
+      {% endfor %}
+    </ul>
+    ''')
+    def learning_objectives_block(self):
+        return self.LO_TEMPLATE.render(Context({'course': self}))
+
 class Course(models.Model):
     template = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
     center = models.ForeignKey(Center, on_delete=models.SET_NULL,
@@ -121,6 +137,9 @@ class Grade(models.Model):
                  ],
         max_length=2, default='IP')
 
+    def __str__(self):
+        return f'{self.person} {self.course}'
+
 class StudentRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
@@ -128,6 +147,9 @@ class StudentRecord(models.Model):
         choices=[('C', 'Current'), ('F', 'Former'), ('A', 'Applied'),
                  ('R', 'Rejected')],
         max_length=1, default='A')
+
+    def __str__(self):
+        return f'{self.person} {self.center}'
 
 class SharedFile(models.Model):
     owner = models.ForeignKey(Person, on_delete=models.SET_NULL,
@@ -140,6 +162,5 @@ class SharedFile(models.Model):
 
 class CourseFile(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    shared_file = models.ForeignKey(SharedFile, on_delete=models.CASCADE,
-                                    null=True, blank=True)
+    shared_file = models.ForeignKey(SharedFile, on_delete=models.CASCADE)
     order = models.IntegerField(blank=True, null=True)

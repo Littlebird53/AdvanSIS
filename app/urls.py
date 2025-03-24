@@ -7,7 +7,7 @@ urlpatterns = [
     path('', views.landing_page, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('course/<int:courseid>/', views.course_details, name='course'),
-    path('course/<int:courseid>/manage', views.course_details,
+    path('course/<int:courseid>/manage', views.manage_course,
          name='manage_course'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
     path('center/<int:centerid>/add_course/', views.new_course,
@@ -20,6 +20,7 @@ urlpatterns = [
          name='instructor_apply'),
     path('center/<int:centerid>/apply/', views.student_apply,
          name='student_apply'),
-    path('course/search/', views.course_search, name='course_search'),
+    path('course/', views.course_search, name='course_search'),
+    path('course/catalog/', views.course_catalog, name='course_catalog'),
     path('center/', views.list_centers, name='center_search'),
 ]
