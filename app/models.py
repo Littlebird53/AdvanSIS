@@ -164,3 +164,14 @@ class CourseFile(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     shared_file = models.ForeignKey(SharedFile, on_delete=models.CASCADE)
     order = models.IntegerField(blank=True, null=True)
+
+class InstructorRecord(models.Model):
+    center = models.ForeignKey(Center, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    status = models.CharField(
+        choices=[('C', 'Current'), ('F', 'Former'), ('A', 'Applied'),
+                 ('R', 'Rejected')],
+        max_length=1, default='A')
+
+    def __str__(self):
+        return f'{self.person} {self.center}'

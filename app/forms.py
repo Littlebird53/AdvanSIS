@@ -13,6 +13,19 @@ class ContactUpdateForm(forms.ModelForm):
                   'sex', 'marital_status', 'denomination']
         widgets = {'date_of_birth': DateWidget}
 
+class NewCourseForm(forms.ModelForm):
+    def __init__(self, center, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.center = center
+        self.fields['instructor'].queryset = models.Person.objects.filter(
+            instructorrecord__center=self.center,
+            instructorrecord__status='C')
+    class Meta:
+        model = models.Course
+        fields = ['template', 'year', 'semester', 'instructor',
+                  'delivery_format', 'language', 'country',
+                  'multi_center']
+
 class GradeForm(forms.ModelForm):
     def __init__(self, *args, course=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,3 +74,24 @@ class GradeFormset(forms.BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.course = course
         self.form_kwargs['course'] = self.course
+
+class StudentRecordForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['person'].disabled = True
+    class Meta:
+        model = models.StudentRecord
+        fields = ['person', 'status']
+StudentRecordFormset = forms.modelformset_factory(
+    models.StudentRecord, form=StudentRecordForm, extra=0, edit_only=True)
+
+class InstructorRecordForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['person'].disabled = True
+    class Meta:
+        model = models.InstructorRecord
+        fields = ['person', 'status']
+InstructorRecordFormset = forms.modelformset_factory(
+    models.InstructorRecord, form=InstructorRecordForm,
+    extra=0, edit_only=True)

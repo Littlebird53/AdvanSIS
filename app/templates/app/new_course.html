@@ -1,0 +1,14 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Add Course{% endblock %}
+
+{% block content %}
+{% if message %}
+<h3>{{message}}</h3>
+{% endif %}
+<form method="POST">
+  {% csrf_token %}
+  {{form}}
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}

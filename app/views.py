@@ -93,31 +93,51 @@ def new_course(request, centerid):
     if request.user.person != center.director:
         pass # TODO: permission error
     if request.method == 'POST':
-        form = forms.NewCourseForm(request.POST)
+        form = forms.NewCourseForm(center, request.POST)
         if form.is_valid():
             course = form.save(commit=False)
             course.center = center
             course.save()
             return redirect('app:course', course.id)
     else:
-        form = forms.NewCourseForm()
+        form = forms.NewCourseForm(center)
     return render(request, 'app/new_course.html', {'form': form})
 
 @login_required
-def view_instructors(request, centerid):
-    pass # TODO
-
-@login_required
-def view_students(request, centerid):
+def view_instructors(request, centerid, status):
     center = get_object_or_404(models.Center, pk=centerid)
     if request.user.person != center.director:
         pass # TODO: permission error
-    # TODO: grouping
+    qs = models.InstructorRecord.objects.filter(center=center)
+    if status is not None:
+        qs = qs.filter(status=status)
+    if request.method == 'POST':
+        form = forms.InstructorRecordFormset(request.POST, queryset=qs)
+        if form.is_valid():
+            form.save()
+    else:
+        form = forms.StudentRecordFormset(queryset=qs)
+    return render(request, 'app/view_instructors.html',
+                  {'instructors': form, 'count': len(qs), 'status': status,
+                   'center': center})
+
+@login_required
+def view_students(request, centerid, status):
+    center = get_object_or_404(models.Center, pk=centerid)
+    if request.user.person != center.director:
+        pass # TODO: permission error
+    qs = models.StudentRecord.objects.filter(center=center)
+    if status is not None:
+        qs = qs.filter(status=status)
+    if request.method == 'POST':
+        form = forms.StudentRecordFormset(request.POST, queryset=qs)
+        if form.is_valid():
+            form.save()
+    else:
+        form = forms.StudentRecordFormset(queryset=qs)
     return render(request, 'app/view_students.html',
-                  {'students': itertools.groupby(
-                      models.StudentRecord.objects.filter(
-                          center=center).order_by('status'),
-                      key=lambda x: x.status)})
+                  {'students': form, 'count': len(qs), 'status': status,
+                   'center': center})
 
 ####################
 ### Instructors
@@ -125,7 +145,7 @@ def view_students(request, centerid):
 
 @login_required
 def instructor_apply(request, centerid):
-    pass
+    pass # TODO
 
 ####################
 ### Students
@@ -143,11 +163,12 @@ def course_search(request):
     centers = models.StudentRecord.objects.filter(
         person=request.user.person, status='C').values_list(
             'center', flat=True)
-    # TODO: exclude already-enrolled courses
+    courses = models.Course.objects.filter(
+        Q(center__in=centers) | Q(multi_center=True),
+        accepting_enrollments=True).exclude(
+            grade__person=request.user.person)
     return render(request, 'app/course_search.html',
-                  {'courses': models.Course.objects.filter(
-                      Q(center__in=centers) | Q(multi_center=True),
-                      accepting_enrollments=True)})
+                  {'courses': courses})
 
 @login_required
 def enroll(request, courseid):

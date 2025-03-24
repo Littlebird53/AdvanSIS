@@ -89,6 +89,10 @@ class PersonAdmin(admin.ModelAdmin):
 class StudentRecordAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(models.InstructorRecord)
+class InstructorRecordAdmin(admin.ModelAdmin):
+    pass
+
 class PersonInline(admin.StackedInline):
     model = models.Person
     can_delete = False

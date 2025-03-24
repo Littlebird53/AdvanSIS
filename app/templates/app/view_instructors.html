@@ -1,51 +1,51 @@
 {% extends 'app/base.html' %}
 
-{% block title %}View Students{% endblock %}
+{% block title %}View Instructors{% endblock %}
 
 {% block content %}
 
 <p>
   {% if status == None %}
-  <span>All Students</span>
+  <span>All Instructors</span>
   {% else %}
-  <a href="{% url 'app:center_students' center.id %}">All Students</a>
+  <a href="{% url 'app:center_instructors' center.id %}">All Instructors</a>
   {% endif %}
   -
   {% if status == 'C' %}
-  <span>Current Students</span>
+  <span>Current Instructors</span>
   {% else %}
-  <a href="{% url 'app:center_students_current' center.id %}">Current Students</a>
+  <a href="{% url 'app:center_instructors_current' center.id %}">Current Instructors</a>
   {% endif %}
   -
   {% if status == 'F' %}
-  <span>Former Students</span>
+  <span>Former Instructors</span>
   {% else %}
-  <a href="{% url 'app:center_students_former' center.id %}">Former Students</a>
+  <a href="{% url 'app:center_instructors_former' center.id %}">Former Instructors</a>
   {% endif %}
   -
   {% if status == 'A' %}
   <span>Pending Applications</span>
   {% else %}
-  <a href="{% url 'app:center_students_applied' center.id %}">Pending Applications</a>
+  <a href="{% url 'app:center_instructors_applied' center.id %}">Pending Applications</a>
   {% endif %}
   -
   {% if status == 'R' %}
   <span>Rejected Applications</span>
   {% else %}
-  <a href="{% url 'app:center_students_rejected' center.id %}">Rejected Applications</a>
+  <a href="{% url 'app:center_instructors_rejected' center.id %}">Rejected Applications</a>
   {% endif %}
 </p>
 
 {% if count > 0 %}
 <form method="POST">
   {% csrf_token %}
-  {{students.management_form}}
+  {{instructors.management_form}}
   <table>
     <tr>
       <th>Person</th>
       <th>Status</th>
     </tr>
-    {% for form in students %}
+    {% for form in instructors %}
     <tr>
       {% for field in form %}
       <td>
@@ -62,6 +62,6 @@
   <p>{{message}}</p>
 </form>
 {% else %}
-<p>No student records found.</p>
+<p>No instructor records found.</p>
 {% endif %}
 {% endblock %}
