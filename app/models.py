@@ -67,7 +67,7 @@ class Center(models.Model):
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -92,10 +92,12 @@ class CourseTemplate(models.Model):
     <ul>
       {% for lo in course.learning_objectives.all %}
       <li>{{lo.name}}
+        {% if lo.description %}
         <details>
           <summary>Description</summary>
           <p>{{lo.description|linebreaks}}</p>
         </details>
+        {% endif %}
       </li>
       {% endfor %}
     </ul>
@@ -175,3 +177,71 @@ class InstructorRecord(models.Model):
 
     def __str__(self):
         return f'{self.person} {self.center}'
+
+class DegreeRequirement(models.Model):
+    courses = models.ManyToManyField(CourseTemplate)
+    count = models.IntegerField(default=1)
+
+class Degree(models.Model):
+    name = models.CharField(max_length=100)
+    abbreviation = models.CharField(max_length=10)
+    description = models.TextField()
+    requirements = models.ManyToManyField(DegreeRequirement)
+    credits = models.IntegerField()
+    category = models.CharField(
+        choices=[('C', 'Certificate'), ('D', 'Diploma'),
+                 ('L', 'Leadership Diploma')],
+        max_length=1)
+
+    def __str__(self):
+        return self.name
+
+    def check_requirements(self, student, completed_only):
+        courses = []
+        credits = 0
+        ok = set(['A', 'B', 'C', 'D'])
+        if not completed_only:
+            ok.add('IP')
+        for grade in student.grade_set.all():
+            if grade.value in ok:
+                courses.append(grade.course.template)
+                credits += grade.course.template.credits
+        if credits < self.credits:
+            return False
+        for req in self.requirements.all():
+            cls = [c for c in courses if c in req.courses.all()]
+            if len(cls) < req.count:
+                return False
+        return True
+
+class DegreeAward(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    degree = models.ForeignKey(Degree, on_delete=models.CASCADE)
+    status = models.CharField(
+        choices=[('S', 'Submitted'), ('A', 'Approved'), ('R', 'Rejected')],
+        default='S', max_length=1)
+    applied = models.DateField(blank=True, null=True)
+    awarded = models.DateField(blank=True, null=True)
+    display_name = models.CharField(max_length=100)
+    walking = models.BooleanField(default=False)
+    campus = models.CharField(
+        choices=[('ONT', 'Ontario'), ('RMC', 'Rocky Mountain'),
+                 ('BAC', 'Bay Area'), ('AZC', 'Arizona'),
+                 ('PNWC', 'Pacific Northwest')],
+        max_length=5, blank=True, null=True)
+    year = models.IntegerField(default=2025)
+    semester = models.CharField(
+        choices=[('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
+                 ('Wi', 'Winter')],
+        max_length=2, blank=True, null=True)
+    shirt_size = models.CharField(
+        choices=[('S', 'Small'), ('M', 'Medium'), ('L', 'Large'),
+                 ('XL', 'X-Large'), ('XXL', 'XX-Large'),
+                 ('XXXL', 'XXX-Large')],
+        max_length=4, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            import datetime
+            self.applied = datetime.date.today()
+        return super().save(*args, **kwargs)
