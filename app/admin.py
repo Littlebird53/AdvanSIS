@@ -74,6 +74,8 @@ class DegreeRequirementInline(M2MInline):
 class DegreeAdmin(admin.ModelAdmin):
     exclude = ['requirements']
     inlines = [DegreeRequirementInline]
+    list_display = ['name', 'abbreviation', 'credits', 'category']
+    list_filter = ['credits', 'category']
 
 @admin.register(models.SharedFile)
 class FileAdmin(admin.ModelAdmin):
@@ -159,5 +161,14 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['username', 'person__given_name', 'person__family_name']
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
+    readonly_fields = ['credits_earned', 'credits_in_progress']
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('Grade Summary',
+         {'fields': ['credits_earned', 'credits_in_progress']}),
+    )
+    def credits_earned(self, instance):
+        return instance.person.credits_earned
+    def credits_in_progress(self, instance):
+        return instance.person.credits_in_progress
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)

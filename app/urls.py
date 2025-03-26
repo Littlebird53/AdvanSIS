@@ -44,9 +44,12 @@ urlpatterns = [
     path('center/<int:centerid>/apply/', views.student_apply,
          name='student_apply'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
+    path('degree/<int:degreeid>/', views.degree_apply, name='degree_apply'),
 
     # Catalogs
     path('course/', views.course_search, name='course_search'),
     path('course/catalog/', views.course_catalog, name='course_catalog'),
     path('center/', views.list_centers, name='center_search'),
+    path('degree/', views.degree_search, name='degree_search'),
+    path('degree/catalog/', views.degree_catalog, name='degree_catalog'),
 ]

@@ -95,3 +95,19 @@ class InstructorRecordForm(forms.ModelForm):
 InstructorRecordFormset = forms.modelformset_factory(
     models.InstructorRecord, form=InstructorRecordForm,
     extra=0, edit_only=True)
+
+class CertificateForm(forms.ModelForm):
+    class Meta:
+        model = models.DegreeAward
+        fields = ['display_name']
+class DiplomaForm(forms.ModelForm):
+    def clean(self):
+        super().clean()
+        if self.cleaned_data.get('walking'):
+            for key in ['campus', 'year', 'semester', 'shirt_size']:
+                if not self.cleaned_data[key]:
+                    self.add_error(key, _('This field is required if you are walking for graduation.'))
+    class Meta:
+        model = models.DegreeAward
+        fields = ['display_name', 'walking', 'campus', 'year', 'semester',
+                  'shirt_size']

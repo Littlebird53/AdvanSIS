@@ -1,0 +1,32 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Degree Search{% endblock %}
+
+{% block content %}
+{% if degrees|length > 0 %}
+<p>The following are all of the diplomas and certificates that you will be eligible for at the end of the current semester.</p>
+{% else %}
+<p>You are not currently eligible for any diplomas or certificates.</p>
+{% endif %}
+<p>For a list of all diplomas and certificates offered by ADVANCE, see <a href="{% url 'app:degree_catalog' %}">the degree catalog</a>.</p>
+
+{% for degree in degrees %}
+<div class="search-item">
+  <h3>{{degree.name}} ({{degree.abbreviation}})</h3>
+  <p>{{degree.description|linebreaksbr}}</p>
+  <details>
+    <summary>Requirements</summary>
+    <p>Total Credits: {{degree.credits}}</p>
+    <ul>
+      {% for req in degree.requirements.all %}
+      {{req.display}}
+      {% endfor %}
+      {% for req in degree.prerequisites.all %}
+      <li>Must have already completed {{req}}</li>
+      {% endfor %}
+    </ul>
+  </details>
+  <p><a href="{% url 'app:degree_apply' degree.id %}">Apply for this degree</a></p>
+</div>
+{% endfor %}
+{% endblock %}

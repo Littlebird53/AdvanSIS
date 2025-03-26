@@ -1,0 +1,24 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Degree Catalog{% endblock %}
+
+{% block content %}
+{% for degree in degrees %}
+<div class="search-item">
+  <h3>{{degree.name}} ({{degree.abbreviation}})</h3>
+  <p>{{degree.description|linebreaksbr}}</p>
+  <details>
+    <summary>Requirements</summary>
+    <p>Total Credits: {{degree.credits}}</p>
+    <ul>
+      {% for req in degree.requirements.all %}
+      {{req.display}}
+      {% endfor %}
+      {% for req in degree.prerequisites.all %}
+      <li>Must have already completed {{req}}</li>
+      {% endfor %}
+    </ul>
+  </details>
+</div>
+{% endfor %}
+{% endblock %}

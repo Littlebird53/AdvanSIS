@@ -83,6 +83,11 @@ def course_catalog(request):
     return render(request, 'app/course_catalog.html',
                   {'courses': models.CourseTemplate.objects.order_by('title')})
 
+@login_required
+def degree_catalog(request):
+    return render(request, 'app/degree_catalog.html',
+                  {'degrees': models.Degree.objects.order_by('name')})
+
 ####################
 ### CENTERS
 ####################
@@ -185,3 +190,54 @@ def enroll(request, courseid):
                       {'grade': grade})
     else:
         pass # TODO: permission error
+
+@login_required
+def degree_search(request):
+    person = request.user.person
+    has_already = person.degreeaward_set.filter(
+        status__in=['S', 'A']).values_list('degree', 'degree__category')
+    qr = models.Degree.objects.order_by('name').exclude(
+        Q(category='C', credits__gt=(person.credits_earned
+                                     + person.credits_in_progress
+                                     - person.certificate_credits))
+    ).exclude(id__in=[h[0] for h in has_already])
+    if any(h[1] == 'D' for h in has_already):
+        qr = qr.exclude(category='D')
+    if any(h[1] == 'L' for h in has_already):
+        qr = qr.exclude(category='L')
+    return render(request, 'app/degree_search.html',
+                  {'degrees': [d for d in qr
+                               if d.check_requirements(person, False)]})
+
+def check_degree(degree, person):
+    cond = Q(degree=degree)
+    credits = person.credits_earned + person.credits_in_progress
+    if degree.category in ['D', 'L']:
+        cond = cond | Q(degree__category=degree.category)
+    else:
+        credits -= person.certificate_credits
+    if credits < degree.credits:
+        return False
+    return not models.DegreeAward.objects.filter(cond).exclude(status='R').exists()
+@login_required
+def degree_apply(request, degreeid):
+    degree = get_object_or_404(models.Degree, pk=degreeid)
+    person = request.user.person
+    if check_degree(degree, person):
+        cls = forms.CertificateForm if degree.category == 'C' else forms.DiplomaForm
+        if request.method == 'POST':
+            form = cls(request.POST)
+            if form.is_valid():
+                app = form.save(commit=False)
+                app.person = person
+                app.degree = degree
+                app.save()
+                return render(request, 'app/degree_apply_success.html',
+                              {'degree': degree})
+        else:
+            form = cls()
+        return render(request, 'app/degree_apply_form.html',
+                      {'form': form, 'degree': degree})
+    else:
+        return render(request, 'app/degree_apply_reject.html',
+                      {'degree': degree})

@@ -1,3 +1,7 @@
 div.search-item p {
     margin-left: 3em;
 }
+
+div.search-item details {
+    margin-left: 3em;
+}

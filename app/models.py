@@ -47,6 +47,23 @@ class Person(models.Model):
     def __str__(self):
         return f'{self.given_name} {self.family_name} ({self.user.username})'
 
+    @property
+    def credits_earned(self):
+        return self.grade_set.filter(
+            value__in=['A', 'B', 'C', 'D']).aggregate(
+                v=models.Sum('course__template__credits'))['v'] or 0
+
+    @property
+    def credits_in_progress(self):
+        return self.grade_set.filter(value='IP').aggregate(
+            v=models.Sum('course__template__credits'))['v'] or 0
+
+    @property
+    def certificate_credits(self):
+        return self.degreeaward_set.filter(
+            status__in=['S', 'A'], degree__category='C',
+        ).aggregate(v=models.Sum('degree__credits'))['v'] or 0
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5)
@@ -182,11 +199,32 @@ class DegreeRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)
     count = models.IntegerField(default=1)
 
+    REQ_TEMPLATE = Template('''
+    <li>
+      {% if count == 1 %}
+        {{courses.0}}
+      {% else %}
+        {{req.count}} of the following:
+        <ul>
+          {% for course in req.courses.all %}
+          <li>{{course}}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </li>
+    ''')
+    def display(self):
+        crs = list(self.courses.all())
+        return self.REQ_TEMPLATE.render(
+            Context({'req': self, 'courses': crs, 'count': len(crs)}))
+
 class Degree(models.Model):
     name = models.CharField(max_length=100)
     abbreviation = models.CharField(max_length=10)
     description = models.TextField()
     requirements = models.ManyToManyField(DegreeRequirement)
+    prerequisites = models.ManyToManyField('self', blank=True,
+                                           symmetrical=False)
     credits = models.IntegerField()
     category = models.CharField(
         choices=[('C', 'Certificate'), ('D', 'Diploma'),
@@ -211,6 +249,9 @@ class Degree(models.Model):
         for req in self.requirements.all():
             cls = [c for c in courses if c in req.courses.all()]
             if len(cls) < req.count:
+                return False
+        for req in self.prerequisites.all():
+            if not DegreeAward.objects.filter(person=student, degree=req).exists():
                 return False
         return True
 
