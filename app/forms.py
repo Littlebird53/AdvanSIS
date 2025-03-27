@@ -84,3 +84,25 @@ class DiplomaForm(forms.ModelForm):
         model = models.DegreeAward
         fields = ['display_name', 'walking', 'campus', 'year', 'semester',
                   'shirt_size']
+
+class CourseFileForm(forms.ModelForm):
+    def __init__(self, *args, files, course, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['shared_file'].queryset = files
+        self.course = course
+    def save(self, *args, **kwargs):
+        ret = super().save(commit=False)
+        ret.course = self.course
+        if kwargs.get('commit'):
+            ret.save()
+        return ret
+    class Meta:
+        model = models.CourseFile
+        fields = ['shared_file', 'order']
+CourseFileFormset = forms.modelformset_factory(
+    models.CourseFile, form=CourseFileForm, extra=0, can_delete=True)
+
+class AddFileForm(forms.ModelForm):
+    class Meta:
+        model = models.SharedFile
+        fields = ['title', 'content']

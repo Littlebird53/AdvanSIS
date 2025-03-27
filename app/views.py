@@ -53,24 +53,60 @@ def manage_course(request, courseid):
     if request.user.person not in [course.instructor, course.center.director]:
         return redirect('app:course', courseid)
 
+    mode = None
+    if request.method == 'POST':
+        mode = request.POST.get('mode')
+
     message = ''
     qr = models.Grade.objects.filter(course=course).order_by(
         'person__family_name', 'person__given_name')
-    if request.method == 'POST':
-        form = forms.GradeFormset(request.POST, queryset=qr)
-        if form.is_valid():
-            form.save()
-            if form.changed_objects:
+    if mode == 'grades':
+        students = forms.GradeFormset(request.POST, queryset=qr)
+        if students.is_valid():
+            students.save()
+            if students.changed_objects:
                 message = 'grades updated'
         else:
-            print(form.errors, form.non_form_errors)
+            print(students.errors, students.non_form_errors)
     else:
-        form = forms.GradeFormset(queryset=qr)
+        students = forms.GradeFormset(queryset=qr)
+
+    file_query = models.SharedFile.objects.filter(
+        course=course.template).filter(
+            Q(owner__isnull=True) | Q(owner=request.user.person))
+    file_kwargs = {
+        'prefix': 'files',
+        'queryset': models.CourseFile.objects.filter(
+            course=course).order_by('order'),
+        'form_kwargs': {'files': file_query, 'course': course},
+    }
+    if mode == 'files':
+        files = forms.CourseFileFormset(request.POST, **file_kwargs)
+        if files.is_valid():
+            files.save()
+            # deleting doesn't work if we don't refresh the queryset
+            return redirect('app:manage_course', course.id)
+    else:
+        files = forms.CourseFileFormset(**file_kwargs)
+
+    if mode == 'add':
+        add = forms.AddFileForm(request.POST, request.FILES)
+        if add.is_valid():
+            obj = add.save(commit=False)
+            obj.course = course.template
+            obj.owner = request.user.person
+            obj.save()
+    else:
+        add = forms.AddFileForm()
+
     return render(request, 'app/manage_course.html',
                   {
                       'course': course,
-                      'grades': form,
+                      'grades': students,
                       'message': message,
+                      'files': files,
+                      'all_files': file_query,
+                      'add_file': add,
                   })
 @login_required
 def add_student(request, courseid, studentid):

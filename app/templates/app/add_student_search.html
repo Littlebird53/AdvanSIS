@@ -10,6 +10,8 @@
   <button type="submit">Search</button>
 </form>
 
+<p><a href="{% url 'app:manage_course' course.id %}">Cancel</a></p>
+
 <ul>
   {% for student in students %}
   <li>

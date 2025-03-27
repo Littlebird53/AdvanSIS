@@ -13,6 +13,7 @@
 <h3>Grades</h3>
 <form method="POST">
   {% csrf_token %}
+  <input type="hidden" name="mode" value="grades"></input>
   {{grades.management_form}}
   <table id="grade_rows">
     <tr>
@@ -23,11 +24,11 @@
     <tr>
       {% for field in form %}
       <td>
-	      {{field}}
+        {{field}}
       </td>
       {% endfor %}
       <td>
-	      {{form.person.errors}}
+        {{form.person.errors}}
       </td>
     </tr>
     {% endfor %}
@@ -36,4 +37,76 @@
   <p>{{message}}</p>
   <p><a href="{% url 'app:add_student' course.id %}">Add student</a></p>
 </form>
+<form method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="mode" value="files"></input>
+  {{files.management_form}}
+  <table id="file_rows">
+    <tr>
+      <th>File</th>
+      <th>Order</th>
+      <th></th>{# id field #}
+      <th>Delete</th>
+    </tr>
+    {% for form in files %}
+    <tr>
+      {% for field in form %}
+      <td>
+        {{field}}
+      </td>
+      {% endfor %}
+      <td>
+        {{form.person.errors}}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <button type="submit">Save</button>
+  <button type="button" onclick="addForm();">Add Row</button>
+</form>
+<details>
+  <summary>All available files</summary>
+  <ul>
+    {% for file in all_files %}
+    <li>
+      <a href="{{file.content.url}}">{{file.title}}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</details>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="hidden" name="mode" value="add"></input>
+  <h3>Add file</h3>
+  {{add_file}}
+  <button type="submit">Submit file</button>
+</form>
+
+<template id="empty_row">
+  <tr>
+    {% for field in files.empty_form %}
+    <td>
+      {{field}}
+    </td>
+    {% endfor %}
+  </tr>
+</template>
+
+<script type="text/javascript">
+  function addForm() {
+      let template = document.getElementById('empty_row');
+      let fragment = template.content.cloneNode(true);
+      let totalinput = document.getElementById('id_files-TOTAL_FORMS');
+      let total = Number(totalinput.value);
+      for (let element of fragment.children) {
+          element.innerHTML = element.innerHTML.replace(
+              /(?<=\w+-)(__prefix__|\d+)(?=-\w+)/g,
+              total.toString()).replace(
+                  /(?<=order\")(?=>)/g,
+                  ' value="'+(total+1).toString()+'"');
+      }
+      document.getElementById('file_rows').appendChild(fragment);
+      totalinput.value = (total+1).toString();
+  }
+</script>
 {% endblock %}
