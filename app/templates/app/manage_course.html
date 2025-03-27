@@ -23,42 +23,17 @@
     <tr>
       {% for field in form %}
       <td>
-	{{field}}
+	      {{field}}
       </td>
       {% endfor %}
       <td>
-	{{form.person.errors}}
+	      {{form.person.errors}}
       </td>
     </tr>
     {% endfor %}
   </table>
-  <button type="button" onclick="addForm();">Add Student</button>
   <button type="submit">Save</button>
   <p>{{message}}</p>
+  <p><a href="{% url 'app:add_student' course.id %}">Add student</a></p>
 </form>
-<template id="empty_row">
-  <tr>
-    {% for field in grades.empty_form %}
-    <td>
-      {{field}}
-    </td>
-    {% endfor %}
-  </tr>
-</template>
-
-<script type="text/javascript">
-  function addForm() {
-      let template = document.getElementById('empty_row');
-      let fragment = template.content.cloneNode(true);
-      let totalinput = document.getElementById('id_form-TOTAL_FORMS');
-      let total = Number(totalinput.value);
-      for (let element of fragment.children) {
-          element.innerHTML = element.innerHTML.replace(
-              /(?<=\w+-)(__prefix__|\d+)(?=-\w+)/g,
-              total.toString());
-      }
-      document.getElementById('grade_rows').appendChild(fragment);
-      totalinput.value = (total+1).toString();
-  }
-</script>
 {% endblock %}

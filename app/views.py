@@ -54,24 +54,55 @@ def manage_course(request, courseid):
         return redirect('app:course', courseid)
 
     message = ''
+    qr = models.Grade.objects.filter(course=course).order_by(
+        'person__family_name', 'person__given_name')
     if request.method == 'POST':
-        form = forms.GradeFormset(course, request.POST)
+        form = forms.GradeFormset(request.POST, queryset=qr)
         if form.is_valid():
             form.save()
-            if form.new_objects:
-                message = 'students added'
-            elif form.changed_objects:
+            if form.changed_objects:
                 message = 'grades updated'
         else:
             print(form.errors, form.non_form_errors)
     else:
-        form = forms.GradeFormset(course)
+        form = forms.GradeFormset(queryset=qr)
     return render(request, 'app/manage_course.html',
                   {
                       'course': course,
                       'grades': form,
                       'message': message,
                   })
+@login_required
+def add_student(request, courseid, studentid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    student = get_object_or_404(models.Person, pk=studentid)
+    if request.user.person not in [course.instructor, course.center.director]:
+        return redirect('app:course', courseid)
+
+    models.Grade.objects.get_or_create(course=course, person=student)
+    return redirect('app:manage_course', courseid)
+@login_required
+def add_student_search(request, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    if request.user.person not in [course.instructor, course.center.director]:
+        return redirect('app:course', courseid)
+
+    qr = models.Person.objects.exclude(grade__course=course).filter(
+        studentrecord__status='C').order_by('family_name', 'given_name')
+    form = forms.StudentSearchForm(request.GET,
+                                   initial={'include': course.multi_center})
+    form.is_valid()
+    if not form.cleaned_data.get('include'):
+        qr = qr.filter(studentrecord__center=course.center,
+                       studentrecord__status='C')
+    if form.cleaned_data.get('query'):
+        for w in form.cleaned_data['query'].split():
+            qr = qr.filter(Q(given_name__icontains=w) | \
+                           Q(family_name__icontains=w) | \
+                           Q(user__username=w))
+    print(qr.query)
+    return render(request, 'app/add_student_search.html',
+                  {'form': form, 'students': qr, 'course': course})
 
 @login_required
 def list_centers(request):

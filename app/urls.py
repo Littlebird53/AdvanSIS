@@ -7,8 +7,12 @@ urlpatterns = [
     path('', views.landing_page, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('course/<int:courseid>/', views.course_details, name='course'),
-    path('course/<int:courseid>/manage', views.manage_course,
+    path('course/<int:courseid>/manage/', views.manage_course,
          name='manage_course'),
+    path('course/<int:courseid>/add/', views.add_student_search,
+         name='add_student'),
+    path('course/<int:courseid>/add/<int:studentid>/', views.add_student,
+         name='add_student_confirm'),
     path('center/<int:centerid>/add_course/', views.new_course,
          name='new_course'),
 
