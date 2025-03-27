@@ -217,7 +217,10 @@ def view_students(request, centerid, status):
 
 @login_required
 def instructor_apply(request, centerid):
-    pass # TODO
+    center = get_object_or_404(models.Center, pk=centerid)
+    models.InstructorRecord.objects.get_or_create(
+        center=center, person=request.user.person)
+    return redirect('app:dashboard')
 
 ####################
 ### Students
