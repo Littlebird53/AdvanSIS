@@ -14,12 +14,12 @@
     <button type="submit">Submit</button>
   </form>
 </details>
-{% for center in centers %}
+{% for record in centers %}
 <div class="search-item">
-  <h2>{{center.name}} Administration</h2>
-  <p><a href="{% url 'app:new_course' center.id %}">Add Course</a></p>
-  <p><a href="{% url 'app:center_students' center.id %}">Manage Students</a></p>
-  <p><a href="{% url 'app:center_instructors' center.id %}">Manage Instructors</a></p>
+  <h2>{{record.center.name}} Administration</h2>
+  <p><a href="{% url 'app:new_course' record.center.id %}">Add Course</a></p>
+  <p><a href="{% url 'app:center_students' record.center.id %}">Manage Students</a></p>
+  <p><a href="{% url 'app:center_instructors' record.center.id %}">Manage Instructors</a></p>
 </div>
 {% endfor %}
 <h2>Courses</h2>

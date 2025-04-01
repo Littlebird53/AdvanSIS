@@ -4,37 +4,20 @@
 
 {% block content %}
 
-<p>
-  {% if status == None %}
-  <span>All Instructors</span>
-  {% else %}
-  <a href="{% url 'app:center_instructors' center.id %}">All Instructors</a>
-  {% endif %}
-  -
-  {% if status == 'C' %}
-  <span>Current Instructors</span>
-  {% else %}
-  <a href="{% url 'app:center_instructors_current' center.id %}">Current Instructors</a>
-  {% endif %}
-  -
-  {% if status == 'F' %}
-  <span>Former Instructors</span>
-  {% else %}
-  <a href="{% url 'app:center_instructors_former' center.id %}">Former Instructors</a>
-  {% endif %}
-  -
-  {% if status == 'A' %}
-  <span>Pending Applications</span>
-  {% else %}
-  <a href="{% url 'app:center_instructors_applied' center.id %}">Pending Applications</a>
-  {% endif %}
-  -
-  {% if status == 'R' %}
-  <span>Rejected Applications</span>
-  {% else %}
-  <a href="{% url 'app:center_instructors_rejected' center.id %}">Rejected Applications</a>
-  {% endif %}
-</p>
+<nav>
+  {% for item in header %}
+  <li class="menu-item">
+    {% if status == item.0 %}
+    <span class="multiline">{{item.1}}</span>
+    {% else %}
+    <a href="{% url 'app:center_instructors_by_status' center.id item.0 %}"
+       class="multiline">
+      {{item.1}}
+    </a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</nav>
 
 {% if count > 0 %}
 <form method="POST">

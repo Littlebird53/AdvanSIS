@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="{% static 'main.css' %}"/>
   </head>
   <body>
+    <nav>
+      <ul>
+        {% if user.is_authenticated %}
+        <li class="menu-item">
+          <span>Hello, {{user.person.preferred_name}}!</span>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'app:dashboard' %}">Dashboard</a>
+        </li>
+        <li class="menu-item">
+          <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+          </form>
+        </li>
+        {% else %}
+        <li class="menu-item">
+          <a href="{% url 'login' %}">Log in</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    <br/>
     {% block content %}{% endblock %}
   </body>
 </html>

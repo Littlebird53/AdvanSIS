@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from app import models
 from app import forms
@@ -9,6 +10,9 @@ def landing_page(request):
     if request.user.is_authenticated:
         return redirect('app:dashboard')
     return render(request, 'app/index.html')
+
+def permission_denied_page(request, exception):
+    return render(request, 'errors/403.html')
 
 @login_required
 def dashboard(request):
@@ -27,10 +31,12 @@ def dashboard(request):
                   {
                       'form': form,
                       'message': message,
-                      'centers': models.Center.objects.filter(
-                          director=request.user.person),
+                      'centers': models.StaffRecord.objects.filter(
+                          person=request.user.person,
+                          status__in=['D', 'G']),
                       'teaching': models.Course.objects.filter(
-                          instructor=request.user.person),
+                          Q(instructor=request.user.person) |
+                          Q(associate_instructor=request.user.person)),
                       'enrolled': models.Grade.objects.filter(
                           person=request.user.person),
                   })
@@ -50,7 +56,7 @@ def course_details(request, courseid):
 @login_required
 def manage_course(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
-    if request.user.person not in [course.instructor, course.center.director]:
+    if not course.can_edit(request.user.person):
         return redirect('app:course', courseid)
 
     mode = None
@@ -112,7 +118,7 @@ def manage_course(request, courseid):
 def add_student(request, courseid, studentid):
     course = get_object_or_404(models.Course, pk=courseid)
     student = get_object_or_404(models.Person, pk=studentid)
-    if request.user.person not in [course.instructor, course.center.director]:
+    if not course.can_edit(request.user.person):
         return redirect('app:course', courseid)
 
     models.Grade.objects.get_or_create(course=course, person=student)
@@ -120,7 +126,7 @@ def add_student(request, courseid, studentid):
 @login_required
 def add_student_search(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
-    if request.user.person not in [course.instructor, course.center.director]:
+    if not course.can_edit(request.user.person):
         return redirect('app:course', courseid)
 
     qr = models.Person.objects.exclude(grade__course=course).filter(
@@ -143,7 +149,8 @@ def add_student_search(request, courseid):
 @login_required
 def list_centers(request):
     return render(request, 'app/center_catalog.html',
-                  {'centers': models.Center.objects.order_by('name')})
+                  {'centers': models.Center.objects.filter(
+                      active=True).order_by('name')})
 
 @login_required
 def course_catalog(request):
@@ -155,6 +162,27 @@ def degree_catalog(request):
     return render(request, 'app/degree_catalog.html',
                   {'degrees': models.Degree.objects.order_by('name')})
 
+@login_required
+def student_info(request, studentid):
+    student = get_object_or_404(models.Person, pk=studentid)
+    s_centers = student.studentrecord_set.values_list('center', flat=True)
+    i_centers = student.staffrecord_set.values_list('center', flat=True)
+    is_director = models.StaffRecord.objects.filter(
+        person=request.user.person, status__in=['D', 'G'],
+        center__in=s_centers.union(i_centers))
+    is_instructor = models.Grade.objects.filter(
+        (Q(course__instructor=request.user.person) |
+         Q(course__associate_instructor=request.user.person)),
+        person=student)
+    if not is_director and not is_instructor:
+        raise PermissionDenied()
+    return render(request, 'app/student_info.html',
+                  {'student': student,
+                   'emails': student.emails.filter(active=True),
+                   'phones': student.phones.filter(active=True),
+                   'mailings': student.mailings.filter(active=True),
+                   'transcript': student.grade_set.all() if is_director else []})
+
 ####################
 ### CENTERS
 ####################
@@ -162,8 +190,8 @@ def degree_catalog(request):
 @login_required
 def new_course(request, centerid):
     center = get_object_or_404(models.Center, pk=centerid)
-    if request.user.person != center.director:
-        pass # TODO: permission error
+    if not center.is_admin(request.user.person):
+        raise PermissionDenied()
     if request.method == 'POST':
         form = forms.NewCourseForm(center, request.POST)
         if form.is_valid():
@@ -178,26 +206,35 @@ def new_course(request, centerid):
 @login_required
 def view_instructors(request, centerid, status):
     center = get_object_or_404(models.Center, pk=centerid)
-    if request.user.person != center.director:
-        pass # TODO: permission error
-    qs = models.InstructorRecord.objects.filter(center=center)
+    if not center.is_admin(request.user.person):
+        raise PermissionDenied()
+    qs = models.StaffRecord.objects.filter(center=center)
     if status is not None:
         qs = qs.filter(status=status)
     if request.method == 'POST':
-        form = forms.InstructorRecordFormset(request.POST, queryset=qs)
+        form = forms.StaffRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
             form.save()
     else:
         form = forms.StudentRecordFormset(queryset=qs)
+    header = [(None, 'All Staff'),
+              ('CI', 'Current Instructors'),
+              ('FI', 'Former Instructors'),
+              ('AI', 'Pending Applications'),
+              ('RI', 'Rejected Applications'),
+              ('CA', 'Current Associate Instructors'),
+              ('FA', 'Former Associate Instructors'),
+              ('D', 'Directors'),
+              ('R', 'Registrars')]
     return render(request, 'app/view_instructors.html',
                   {'instructors': form, 'count': len(qs), 'status': status,
-                   'center': center})
+                   'center': center, 'header': header})
 
 @login_required
 def view_students(request, centerid, status):
     center = get_object_or_404(models.Center, pk=centerid)
-    if request.user.person != center.director:
-        pass # TODO: permission error
+    if not center.is_admin(request.user.person):
+        raise PermissionDenied()
     qs = models.StudentRecord.objects.filter(center=center)
     if status is not None:
         qs = qs.filter(status=status)
@@ -208,7 +245,7 @@ def view_students(request, centerid, status):
     else:
         form = forms.StudentRecordFormset(queryset=qs)
     return render(request, 'app/view_students.html',
-                  {'students': form, 'count': len(qs), 'status': status,
+                  {'students': form, 'count': qs.count(), 'status': status,
                    'center': center})
 
 ####################
@@ -218,7 +255,7 @@ def view_students(request, centerid, status):
 @login_required
 def instructor_apply(request, centerid):
     center = get_object_or_404(models.Center, pk=centerid)
-    models.InstructorRecord.objects.get_or_create(
+    models.StaffRecord.objects.get_or_create(
         center=center, person=request.user.person)
     return redirect('app:dashboard')
 
@@ -259,7 +296,7 @@ def enroll(request, courseid):
         return render(request, 'app/confirm_enrollment.html',
                       {'grade': grade})
     else:
-        pass # TODO: permission error
+        raise PermissionDenied()
 
 @login_required
 def degree_search(request):

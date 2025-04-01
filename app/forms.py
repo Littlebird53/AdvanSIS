@@ -19,8 +19,8 @@ class NewCourseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.center = center
         self.fields['instructor'].queryset = models.Person.objects.filter(
-            instructorrecord__center=self.center,
-            instructorrecord__status='C')
+            staffrecord__center=self.center,
+            staffrecord__status__in=['C', 'D', 'G'])
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
@@ -28,7 +28,7 @@ class NewCourseForm(forms.ModelForm):
                   'multi_center']
 
 class DisplayPersonWidget(forms.widgets.Widget):
-    DISPLAY_TEMPLATE = Template('''<span>{{value}}</span>''')
+    DISPLAY_TEMPLATE = Template('''<span><a href="{% url 'app:student_info' value.id %}">{{value}}</a></span>''')
     def render(self, value, **kwargs):
         person = models.Person.objects.filter(pk=value).first()
         return self.DISPLAY_TEMPLATE.render(Context({'value': person}))
@@ -55,18 +55,19 @@ class StudentRecordForm(forms.ModelForm):
     class Meta:
         model = models.StudentRecord
         fields = ['person', 'status']
+        widgets = {'person': DisplayPersonWidget}
 StudentRecordFormset = forms.modelformset_factory(
     models.StudentRecord, form=StudentRecordForm, extra=0, edit_only=True)
 
-class InstructorRecordForm(forms.ModelForm):
+class StaffRecordForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['person'].disabled = True
     class Meta:
-        model = models.InstructorRecord
+        model = models.StaffRecord
         fields = ['person', 'status']
-InstructorRecordFormset = forms.modelformset_factory(
-    models.InstructorRecord, form=InstructorRecordForm,
+StaffRecordFormset = forms.modelformset_factory(
+    models.StaffRecord, form=StaffRecordForm,
     extra=0, edit_only=True)
 
 class CertificateForm(forms.ModelForm):

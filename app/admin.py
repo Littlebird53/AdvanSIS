@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from nonrelated_inlines.admin import NonrelatedTabularInline
+from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
 from app import models
 
-class M2MInline(NonrelatedTabularInline):
+class M2MMixin:
     save_to = None
     extra = 0
     def get_set(self, obj):
@@ -15,28 +15,37 @@ class M2MInline(NonrelatedTabularInline):
         instance.save()
         self.get_set(parent).add(instance)
 
-class CenterEmailAddressInline(M2MInline):
+class CenterEmailAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.EmailAddress
     save_to = 'emails'
-class CenterPhoneAddressInline(M2MInline):
+class CenterPhoneAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.PhoneAddress
     save_to = 'phones'
-class CenterMailingAddressInline(M2MInline):
+class CenterMailingAddressInline(M2MMixin, NonrelatedStackedInline):
     model = models.MailingAddress
     save_to = 'mailings'
-class CenterSponsorEmailAddressInline(M2MInline):
+class CenterSponsorEmailAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.EmailAddress
     save_to = 'sponsor_emails'
     verbose_name = 'Sponsor Email'
-class CenterSponsorPhoneAddressInline(M2MInline):
+class CenterSponsorPhoneAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.PhoneAddress
     save_to = 'sponsor_phones'
     verbose_name = 'Sponsor Phone'
-class CenterSponsorMailingAddressInline(M2MInline):
+class CenterSponsorMailingAddressInline(M2MMixin, NonrelatedStackedInline):
     model = models.MailingAddress
     save_to = 'sponsor_mailings'
     verbose_name = 'Sponsor Mailing Address'
-
+class CenterStudentRecords(admin.TabularInline):
+    model = models.StudentRecord
+    autocomplete_fields = ['person']
+    fields = ['person', 'status']
+    extra = 0
+class CenterStaffRecords(admin.TabularInline):
+    model = models.StaffRecord
+    autocomplete_fields = ['person']
+    fields = ['person', 'status']
+    extra = 0
 @admin.register(models.Center)
 class CenterAdmin(admin.ModelAdmin):
     exclude = ['emails', 'phones', 'mailings',
@@ -46,28 +55,29 @@ class CenterAdmin(admin.ModelAdmin):
                CenterMailingAddressInline,
                CenterSponsorEmailAddressInline,
                CenterSponsorPhoneAddressInline,
-               CenterSponsorMailingAddressInline]
-    search_fields = ['name']
-    raw_id_fields = ['director']
-    list_display = ['name', 'code', 'director', 'fte_eligible']
-    list_filter = ['fte_eligible']
+               CenterSponsorMailingAddressInline,
+               CenterStudentRecords, CenterStaffRecords]
+    search_fields = ['name', 'code']
+    list_display = ['name', 'code', 'fte_eligible', 'active']
+    list_filter = ['fte_eligible', 'active']
 
 class CourseGradeAdmin(admin.TabularInline):
     model = models.Grade
-    raw_id_fields = ['person']
+    autocomplete_fields = ['person']
 class CourseFileAdmin(admin.TabularInline):
     model = models.CourseFile
+    extra = 0
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
-    raw_id_fields = ['center', 'instructor']
+    autocomplete_fields = ['template', 'center', 'instructor']
     search_fields = ['template__title', 'instructor__given_name',
                      'instructor__family_name', 'center__name']
     list_display = ['template__title', 'center', 'instructor',
                     'semester', 'year']
     list_filter = ['semester', 'template__division', 'delivery_format']
 
-class DegreeRequirementInline(M2MInline):
+class DegreeRequirementInline(M2MMixin, NonrelatedTabularInline):
     model = models.DegreeRequirement
     save_to = 'requirements'
 @admin.register(models.Degree)
@@ -79,13 +89,19 @@ class DegreeAdmin(admin.ModelAdmin):
 
 @admin.register(models.SharedFile)
 class FileAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['title', 'course__title']
+    search_fields = ['title', 'course__title']
+    autocomplete_fields = ['owner']
+    inlines = [CourseFileAdmin]
 
+class CourseTemplateInline(admin.TabularInline):
+    model = models.CourseTemplate.learning_objectives.through
+    verbose_name_plural = 'Courses with this objective'
 @admin.register(models.LearningObjective)
 class LearningObjectiveAdmin(admin.ModelAdmin):
-    pass
+    inlines = [CourseTemplateInline]
 
-class LearningObjectiveInline(M2MInline):
+class LearningObjectiveInline(M2MMixin, NonrelatedTabularInline):
     model = models.LearningObjective
     save_to = 'learning_objectives'
 @admin.register(models.CourseTemplate)
@@ -99,37 +115,48 @@ class CourseTemplateAdmin(admin.ModelAdmin):
 @admin.register(models.Person)
 class PersonAdmin(admin.ModelAdmin):
     search_fields = ['given_name', 'family_name', 'user__username']
-    raw_id_fields = ['user']
+    readonly_fields = ['user']
     exclude = ['emails', 'phones', 'mailings']
-
-@admin.register(models.StudentRecord)
-class StudentRecordAdmin(admin.ModelAdmin):
-    pass
-
-@admin.register(models.InstructorRecord)
-class InstructorRecordAdmin(admin.ModelAdmin):
-    pass
+    verbose_name_plural = 'People (use Users table instead)'
 
 class PersonInline(admin.StackedInline):
     model = models.Person
     can_delete = False
     exclude = ['emails', 'phones', 'mailings']
-class UserEmailAddressInline(M2MInline):
+class UserEmailAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.EmailAddress
     def get_set(self, obj):
         return obj.person.emails
-class UserPhoneAddressInline(M2MInline):
+class UserPhoneAddressInline(M2MMixin, NonrelatedTabularInline):
     model = models.PhoneAddress
     def get_set(self, obj):
         return obj.person.phones
-class UserMailingAddressInline(M2MInline):
+class UserMailingAddressInline(M2MMixin, NonrelatedStackedInline):
     model = models.MailingAddress
     def get_set(self, obj):
         return obj.person.mailings
+class StudentRecordInline(NonrelatedTabularInline):
+    model = models.StudentRecord
+    extra = 0
+    exclude = ['person']
+    def get_form_queryset(self, obj):
+        return obj.person.studentrecord_set.all()
+    def save_new_instance(self, parent, instance):
+        instance.person = parent.person
+        instance.save()
+class StaffRecordInline(NonrelatedTabularInline):
+    model = models.StaffRecord
+    extra = 0
+    exclude = ['person']
+    def get_form_queryset(self, obj):
+        return obj.person.studentrecord_set.all()
+    def save_new_instance(self, parent, instance):
+        instance.person = parent.person
+        instance.save()
 class PersonGradeInline(NonrelatedTabularInline):
     model = models.Grade
     extra = 0
-    raw_id_fields = ['course']
+    autocomplete_fields = ['course']
     exclude = ['person']
     def get_form_queryset(self, obj):
         return obj.person.grade_set.all()
@@ -157,15 +184,24 @@ class DegreeAwardInline(NonrelatedTabularInline):
 class UserAdmin(BaseUserAdmin):
     inlines = [PersonInline, UserEmailAddressInline,
                UserPhoneAddressInline, UserMailingAddressInline,
+               StudentRecordInline, StaffRecordInline,
                PersonGradeInline, DegreeAwardInline]
     list_display = ['username', 'person__given_name', 'person__family_name']
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
     readonly_fields = ['credits_earned', 'credits_in_progress']
-    fieldsets = BaseUserAdmin.fieldsets + (
-        ('Grade Summary',
-         {'fields': ['credits_earned', 'credits_in_progress']}),
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Permissions', {
+            'fields': ('is_active', 'is_staff', 'is_superuser',
+                       'groups', 'user_permissions'),
+            'classes': ['collapse']}),
+        ('Important dates', {
+            'fields': ('last_login', 'date_joined'),
+            'classes': ['collapse']}),
+        ('Grade Summary', {'fields': ('credits_earned', 'credits_in_progress')}),
     )
+
     def credits_earned(self, instance):
         return instance.person.credits_earned
     def credits_in_progress(self, instance):

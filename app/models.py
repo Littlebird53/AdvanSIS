@@ -13,14 +13,21 @@ class PhoneAddress(models.Model):
     active = models.BooleanField(default=True)
     phone = models.CharField(max_length=30)
     category = models.CharField(
-        choices=[('H', 'Home'), ('M', 'Mobile'), ('W', 'Work')],
+        choices=[('H', 'Home'), ('M', 'Mobile'), ('W', 'Work'),
+                 ('O', 'Other')],
         max_length=1, null=True)
 
 class MailingAddress(models.Model):
     active = models.BooleanField(default=True)
-    mailing = models.TextField()
+    address = models.TextField()
+    attention = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=10, blank=True, null=True)
+    zip_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=10, default='US')
     category = models.CharField(
-        choices=[('H', 'Home'), ('W', 'Work'), ('S', 'Shipping')],
+        choices=[('H', 'Home'), ('W', 'Work'), ('S', 'Shipping'),
+                 ('O', 'Other')],
         max_length=1, null=True)
 
 class Person(models.Model):
@@ -28,17 +35,35 @@ class Person(models.Model):
     given_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
     family_name = models.CharField(max_length=100)
-    title = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(
+        choices=[('MR', 'Mr.'), ('MS', 'Ms.'), ('MRS', 'Mrs.'),
+                 ('MIS', 'Miss'),
+                 ('DR', 'Dr.'), ('REV', 'Rev.'), ('PAS', 'Pastor'),
+                 ('PRF', 'Prof.'), ('CHP', 'Chaplin'), ('MAJ', 'Major'),
+                 ('BR', 'Br.'), ('MIN', 'Minister')],
+        max_length=3, blank=True, null=True)
+    joint_title = models.CharField(max_length=100, blank=True, null=True)
     suffix = models.CharField(max_length=100, blank=True, null=True)
     preferred_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True)
     sex = models.CharField(choices=[('M', 'Male'), ('F', 'Female')],
                            max_length=1, null=True)
     marital_status = models.CharField(
-        choices=[('S', 'Single'), ('M', 'Married'), ('D', 'Divorced'),
-                 ('W', 'Widowed')],
+        choices=[('S', 'Single'), ('M', 'Married'),
+                 ('D', 'Divorced or Separated'), ('W', 'Widowed')],
         max_length=1, null=True)
-    denomination = models.CharField(max_length=50, null=True)
+    denomination = models.CharField(
+        choices=[('B', 'Baptist'), ('L', 'Lutheran'), ('M', 'Methodist'),
+                 ('N', 'Nondenominational'), ('P', 'Pentecostal'),
+                 ('T', 'Presbyterian'), ('R', 'Reformed'),
+                 ('O', 'Other Denomination'), ('U', 'Unknown')],
+        max_length=1, default='U')
+    ethnicity = models.CharField(
+        choices=[('0', 'Unknown'), ('1', 'African'),
+                 ('2', 'Native American'),
+                 ('3', 'Asian or Pacific Islander'), ('4', 'Hispanic'),
+                 ('5', 'Caucasian'), ('6', 'Other')],
+        max_length=1, null=True)
     deceased = models.BooleanField(default=False)
     emails = models.ManyToManyField(EmailAddress)
     phones = models.ManyToManyField(PhoneAddress)
@@ -67,8 +92,6 @@ class Person(models.Model):
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5)
-    director = models.ForeignKey(Person, on_delete=models.SET_NULL,
-                                 null=True)
     emails = models.ManyToManyField(EmailAddress, related_name='+')
     phones = models.ManyToManyField(PhoneAddress, related_name='+')
     mailings = models.ManyToManyField(MailingAddress, related_name='+')
@@ -78,9 +101,14 @@ class Center(models.Model):
     sponsor_phones = models.ManyToManyField(PhoneAddress, related_name='+')
     sponsor_mailings = models.ManyToManyField(MailingAddress,
                                               related_name='+')
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
+
+    def is_admin(self, person):
+        return self.staffrecord_set.filter(
+            person=person, status__in=['D', 'G']).exists()
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
@@ -133,6 +161,8 @@ class Course(models.Model):
         max_length=2, null=True)
     instructor = models.ForeignKey(Person, on_delete=models.SET_NULL,
                                    null=True)
+    associate_instructors = models.ManyToManyField(
+        Person, related_name='associates')
     schedule = models.JSONField(null=True)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
@@ -144,6 +174,9 @@ class Course(models.Model):
 
     def __str__(self):
         return f'{self.template} {self.semester}{self.year}'
+
+    def can_edit(self, person):
+        return person == self.instructor or self.center.is_admin(person)
 
 class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,
@@ -185,13 +218,15 @@ class CourseFile(models.Model):
     shared_file = models.ForeignKey(SharedFile, on_delete=models.CASCADE)
     order = models.IntegerField(blank=True, null=True)
 
-class InstructorRecord(models.Model):
+class StaffRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('C', 'Current'), ('F', 'Former'), ('A', 'Applied'),
-                 ('R', 'Rejected')],
-        max_length=1, default='A')
+        choices=[('CI', 'Current'), ('FI', 'Former'), ('AI', 'Applied'),
+                 ('RI', 'Rejected'), ('CA', 'Current Associate'),
+                 ('FA', 'Former Associate'),
+                 ('D', 'Director'), ('R', 'Registrar')],
+        max_length=2, default='AI')
 
     def __str__(self):
         return f'{self.person} {self.center}'

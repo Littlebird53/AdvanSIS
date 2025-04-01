@@ -1,0 +1,67 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{student}} Student Info{% endblock %}
+
+{% block content %}
+<h2>{{student}}</h2>
+<p>
+  <b>Name:</b>
+  {{student.get_title_display|default_if_none:''}}
+  {{student.given_name|default_if_none:''}}
+  {{student.middle_name|default_if_none:''}}
+  {{student.family_name|default_if_none:''}}
+  {{student.suffix|default_if_none:''}}
+</p>
+{% if student.preferred_name %}
+<p><b>Preferred Name:</b> {{student.preferred_name}}</p>
+{% endif %}
+<p><b>Gender:</b> {{student.get_sex_display}}</p>
+
+{% for e in emails %}
+<p><b>{{e.get_category_display}} Email Address:</b> {{e.email}}</p>
+{% endfor %}
+
+{% for p in phones %}
+<p><b>{{p.get_category_display}} Phone Number:</b> {{p.phone}}</p>
+{% endfor %}
+
+{% for m in mailings %}
+<p>
+  <b>{{m.get_category_display}} Address:</b><br/>
+  {% if m.attention %}
+  ATTN: {{m.attention}}<br/>
+  {% endif %}
+  {{m.address|linebreaksbr}}<br/>
+  {{m.city|default_if_none:''}}
+  {{m.state|default_if_none:''}}
+  {{m.zip_code|default_if_none:''}}
+  {{m.country|default_if_none:''}}
+</p>
+{% endfor %}
+
+{% if transcript %}
+<h3>Transcript</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Course</th>
+      <th>Year</th>
+      <th>Semester</th>
+      <th>Instructor</th>
+      <th>Grade</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for grade in transcript %}
+    <tr>
+      <td>{{grade.course.template.title}}</td>
+      <td>{{grade.course.year}}</td>
+      <td>{{grade.course.semester}}</td>
+      <td>{{grade.course.instructor}}</td>
+      <td>{{grade.value}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

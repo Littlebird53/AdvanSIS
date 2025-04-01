@@ -15,10 +15,13 @@ urlpatterns = [
          name='add_student_confirm'),
     path('center/<int:centerid>/add_course/', views.new_course,
          name='new_course'),
+    path('person/<int:studentid>/', views.student_info, name='student_info'),
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,
          {'status': None}, name='center_instructors'),
+    path('center/<int:centerid>/instructors/<slug:status>/',
+         views.view_instructors, name='center_instructors_by_status'),
     path('center/<int:centerid>/instructors/applied/',
          views.view_instructors,
          {'status': 'A'}, name='center_instructors_applied'),

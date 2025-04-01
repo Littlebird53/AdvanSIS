@@ -5,3 +5,52 @@ div.search-item p {
 div.search-item details {
     margin-left: 3em;
 }
+
+nav {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  background: blue;
+  margin: 0;
+}
+
+nav ul {
+  padding: 0;
+  margin: 0;
+}
+
+li.menu-item {
+  display: inline-block;
+  min-width: 150px;
+  min-height: 50px;
+  background: lightblue;
+  margin: 5px;
+  position: relative;
+}
+
+li.menu-item a, li.menu-item span {
+  text-decoration: none;
+  color: black;
+  position: absolute;
+  line-height: 50px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+li.menu-item form button {
+  background: none;
+  border: none;
+  font-family: unset;
+  cursor: pointer;
+  font-size: medium;
+  line-height: 50px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+li.menu-item a.multiline, li.menu-item span.multiline {
+  line-height: normal;
+}
