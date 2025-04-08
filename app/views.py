@@ -36,7 +36,7 @@ def dashboard(request):
                           status__in=['D', 'G']),
                       'teaching': models.Course.objects.filter(
                           Q(instructor=request.user.person) |
-                          Q(associate_instructor=request.user.person)),
+                          Q(associate_instructors=request.user.person)),
                       'enrolled': models.Grade.objects.filter(
                           person=request.user.person),
                   })

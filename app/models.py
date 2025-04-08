@@ -21,9 +21,9 @@ class MailingAddress(models.Model):
     active = models.BooleanField(default=True)
     address = models.TextField()
     attention = models.CharField(max_length=100, blank=True, null=True)
-    city = models.CharField(max_length=100)
+    city = models.CharField(max_length=100, null=True)
     state = models.CharField(max_length=10, blank=True, null=True)
-    zip_code = models.CharField(max_length=10)
+    zip_code = models.CharField(max_length=10, null=True)
     country = models.CharField(max_length=10, default='US')
     category = models.CharField(
         choices=[('H', 'Home'), ('W', 'Work'), ('S', 'Shipping'),
@@ -32,7 +32,7 @@ class MailingAddress(models.Model):
 
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    given_name = models.CharField(max_length=100)
+    given_name = models.CharField(max_length=100, null=True)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
     family_name = models.CharField(max_length=100)
     title = models.CharField(
@@ -44,7 +44,7 @@ class Person(models.Model):
         max_length=3, blank=True, null=True)
     joint_title = models.CharField(max_length=100, blank=True, null=True)
     suffix = models.CharField(max_length=100, blank=True, null=True)
-    preferred_name = models.CharField(max_length=100)
+    preferred_name = models.CharField(max_length=100, null=True)
     date_of_birth = models.DateField(null=True)
     sex = models.CharField(choices=[('M', 'Male'), ('F', 'Female')],
                            max_length=1, null=True)
