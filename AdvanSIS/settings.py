@@ -26,7 +26,7 @@ SECRET_KEY = secret.SECRET_KEY
 DEBUG = secret.DEBUG
 
 ALLOWED_HOSTS = ['localhost', 'joseph.dangswan.com']
-
+CSRF_TRUSTED_ORIGINS = ['http://joseph.dangswan.com'] # TODO: https
 
 # Application definition
 
