@@ -175,3 +175,5 @@ cython_debug/
 
 # AdvanSIS-specific
 files/
+static/
+secret.py
