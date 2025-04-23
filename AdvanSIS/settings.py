@@ -25,7 +25,7 @@ SECRET_KEY = secret.SECRET_KEY
 
 DEBUG = secret.DEBUG
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', 'joseph.dangswan.com']
 
 
 # Application definition
