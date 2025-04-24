@@ -108,7 +108,7 @@ class LearningObjectiveInline(M2MMixin, NonrelatedTabularInline):
 class CourseTemplateAdmin(admin.ModelAdmin):
     exclude = ['learning_objectives']
     inlines = [LearningObjectiveInline]
-    list_filter = ['division', 'credits']
+    list_filter = ['division', 'credits', 'active']
     search_fields = ['title']
     list_display = ['title', 'code', 'credits']
 

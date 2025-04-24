@@ -21,6 +21,7 @@ class NewCourseForm(forms.ModelForm):
         self.fields['instructor'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status__in=['C', 'D', 'G'])
+        self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True)
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',

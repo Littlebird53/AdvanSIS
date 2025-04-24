@@ -155,12 +155,14 @@ def list_centers(request):
 @login_required
 def course_catalog(request):
     return render(request, 'app/course_catalog.html',
-                  {'courses': models.CourseTemplate.objects.order_by('title')})
+                  {'courses': models.CourseTemplate.objects.filter(
+                      active=True).order_by('title')})
 
 @login_required
 def degree_catalog(request):
     return render(request, 'app/degree_catalog.html',
-                  {'degrees': models.Degree.objects.order_by('name')})
+                  {'degrees': models.Degree.objects.filter(
+                      active=True).order_by('name')})
 
 @login_required
 def student_info(request, studentid):
@@ -303,7 +305,7 @@ def degree_search(request):
     person = request.user.person
     has_already = person.degreeaward_set.filter(
         status__in=['S', 'A']).values_list('degree', 'degree__category')
-    qr = models.Degree.objects.order_by('name').exclude(
+    qr = models.Degree.objects.order_by('name').filter(active=True).exclude(
         Q(category='C', credits__gt=(person.credits_earned
                                      + person.credits_in_progress
                                      - person.certificate_credits))

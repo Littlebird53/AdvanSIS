@@ -74,8 +74,8 @@ class Person(models.Model):
 
     @property
     def credits_earned(self):
-        return self.grade_set.filter(
-            value__in=['A', 'B', 'C', 'D']).aggregate(
+        return self.grade_set.exclude(
+            value__in=['F', 'Au', 'IP', 'W']).aggregate(
                 v=models.Sum('course__template__credits'))['v'] or 0
 
     @property
@@ -125,6 +125,7 @@ class CourseTemplate(models.Model):
     number = models.IntegerField(null=True)
     description = models.TextField()
     learning_objectives = models.ManyToManyField(LearningObjective)
+    active = models.BooleanField(default=True)
 
     @property
     def code(self):
@@ -171,6 +172,7 @@ class Course(models.Model):
     country = models.CharField(max_length=50, null=True)
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(default=False)
+    section = models.CharField(max_length=10, blank=True, null=True)
 
     def __str__(self):
         return f'{self.template} {self.semester}{self.year}'
@@ -184,8 +186,12 @@ class Grade(models.Model):
     person = models.ForeignKey(Person, on_delete=models.SET_NULL,
                                null=True)
     value = models.CharField(
-        choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D'), ('F', 'F'),
-                 ('Au', 'Audit'), ('IP', 'In-Progress'), ('W', 'Withdrawn'),
+        choices=[('A+', 'A+'), ('A', 'A'), ('A-', 'A-'),
+                 ('B+', 'B+'), ('B', 'B'), ('B-', 'B-'),
+                 ('C+', 'C+'), ('C', 'C'), ('C-', 'C-'),
+                 ('D+', 'D+'), ('D', 'D'), ('D-', 'D-'),
+                 ('F', 'F'), ('Au', 'Audit'), ('IP', 'In-Progress'),
+                 ('W', 'Withdrawn'), ('Tr', 'Transferred'), ('P', 'Pass'),
                  ],
         max_length=2, default='IP')
 
@@ -266,6 +272,7 @@ class Degree(models.Model):
         choices=[('C', 'Certificate'), ('D', 'Diploma'),
                  ('L', 'Leadership Diploma')],
         max_length=1)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
