@@ -280,7 +280,8 @@ def course_search(request):
     courses = models.Course.objects.filter(
         Q(center__in=centers) | Q(multi_center=True),
         accepting_enrollments=True).exclude(
-            grade__person=request.user.person)
+            grade__person=request.user.person).order_by(
+                'center__name', 'template__title')
     return render(request, 'app/course_search.html',
                   {'courses': courses})
 

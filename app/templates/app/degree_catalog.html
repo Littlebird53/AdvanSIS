@@ -3,8 +3,18 @@
 {% block title %}Degree Catalog{% endblock %}
 
 {% block content %}
+<div>
+<div id="toc">
+  <ul>
+    {% for degree in degrees %}
+    <li><a href="#d{{degree.id}}">{{degree.short_name}}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+<div id="contents">
 {% for degree in degrees %}
-<div class="search-item">
+<div class="search-item" id="d{{degree.id}}xx">
+  <a class="fake-anchor" name="d{{degree.id}}">null</a>
   <h3>{{degree.name}} ({{degree.abbreviation}})</h3>
   <p>{{degree.description|linebreaksbr}}</p>
   <details>
@@ -21,4 +31,6 @@
   </details>
 </div>
 {% endfor %}
+</div>
+</div>
 {% endblock %}

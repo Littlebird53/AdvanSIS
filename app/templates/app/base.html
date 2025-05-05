@@ -21,12 +21,10 @@
           <a href="{% url 'app:dashboard' %}">Dashboard</a>
         </li>
         <li class="menu-item">
-          <span>
-            <form method="POST" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button type="submit">Log out</button>
-            </form>
-          </span>
+          <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+          </form>
         </li>
         {% else %}
         <li class="menu-item">

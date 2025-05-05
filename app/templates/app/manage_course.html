@@ -3,7 +3,10 @@
 {% block title %}Manage {{course}}{% endblock %}
 
 {% block content %}
-<h2>Manage <i>{{course}}</i></h2>
+<div class="center-subtitle">
+  <h2>Manage <i>{{course.template.title}}</i></h2>
+  <h3>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h3>
+</div>
 <details>
   <summary>Description</summary>
   <p>{{course.template.description|linebreaksbr}}</p>
@@ -47,6 +50,7 @@
       <th>Order</th>
       <th></th>{# id field #}
       <th>Delete</th>
+      <th></th>
     </tr>
     {% for form in files %}
     <tr>
@@ -60,9 +64,18 @@
       </td>
     </tr>
     {% endfor %}
+    <tr id="add_placeholder">
+      <td style="padding-top: 20px;">
+        <button type="button" onclick="addForm();">Add File</button>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
   </table>
+
   <button type="submit">Save</button>
-  <button type="button" onclick="addForm();">Add File</button>
 </form>
 <details>
   <summary>All available files</summary>
@@ -89,6 +102,7 @@
       {{field}}
     </td>
     {% endfor %}
+    <td></td>
   </tr>
 </template>
 
@@ -105,7 +119,11 @@
                   /(?<=order\")(?=>)/g,
                   ' value="'+(total+1).toString()+'"');
       }
-      document.getElementById('file_rows').appendChild(fragment);
+      //document.getElementById('file_rows').appendChild(fragment);
+      let hold = document.getElementById('add_placeholder');
+      hold.parentNode.insertBefore(fragment, hold);
+      //document.getElementById('file_rows').insertBefore(
+      //    fragment, document.getElementById('add_placeholder'));
       totalinput.value = (total+1).toString();
   }
 </script>

@@ -304,6 +304,10 @@ class Degree(models.Model):
                 return False
         return True
 
+    @property
+    def short_name(self):
+        return self.name.replace('Leadership Diploma', '').replace('Diploma', '').replace('Certificate', '').strip()
+
 class DegreeAward(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     degree = models.ForeignKey(Degree, on_delete=models.CASCADE)

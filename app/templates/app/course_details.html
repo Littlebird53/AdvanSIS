@@ -3,8 +3,10 @@
 {% block title %}{{course}}{% endblock %}
 
 {% block content %}
-<h2>{{course.template.title}}</h2>
-<p>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</p>
+<div class="center-subtitle">
+  <h2>{{course.template.title}}</h2>
+  <h3>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h3>
+</div>
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
 <h3>Learning Objectives</h3>
 {{course.template.learning_objectives_block}}
@@ -17,14 +19,18 @@
 </ul>
 {% endif %}
 {% if not grade %}
-<p><a href="{% url 'app:enroll' course.id %}">Enroll</a></p>
+{#<h3><a href="{% url 'app:enroll' course.id %}">Enroll</a></h3>#}
+<form action="{% url 'app:enroll' course.id %}">
+  <div style="width: 200px"></div>
+  <button type="submit">Enroll</button>
+</form>
 {% elif grade.value == 'IP' %}
-<p>You are enrolled in this class.</p>
+<h3>You are enrolled in this class.</h3>
 {% elif grade.value == 'Au' %}
-<p>You are auditting this class.</p>
+<h3>You are auditting this class.</h3>
 {% elif grade.value == 'W' %}
-<p>You have withdrawn from this class.</p>
+<h3>You have withdrawn from this class.</h3>
 {% else %}
-<p>Your grade in this class is {{grade.value}}.</p>
+<h3>Grade: {{grade.value}}</h3>
 {% endif %}
 {% endblock %}
