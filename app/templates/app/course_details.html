@@ -3,7 +3,8 @@
 {% block title %}{{course}}{% endblock %}
 
 {% block content %}
-<h2>{{course}}</h2>
+<h2>{{course.template.title}}</h2>
+<p>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</p>
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
 <h3>Learning Objectives</h3>
 {{course.template.learning_objectives_block}}

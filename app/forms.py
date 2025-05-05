@@ -47,7 +47,8 @@ GradeFormset = forms.modelformset_factory(
 
 class StudentSearchForm(forms.Form):
     query = forms.CharField(max_length=100, required=False)
-    include = forms.BooleanField(required=False)
+    include = forms.BooleanField(
+        required=False, label='Include students from other centers')
 
 class StudentRecordForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

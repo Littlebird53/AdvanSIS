@@ -10,7 +10,7 @@ nav {
   width: 100%;
   position: sticky;
   top: 0;
-  background: blue;
+  background: #6f8ea3;
   margin: 0;
 }
 
@@ -19,21 +19,24 @@ nav ul {
   margin: 0;
 }
 
-li.menu-item {
+nav li {
   display: inline-block;
+  margin: 5px;
+}
+
+li.menu-item {
   min-width: 150px;
   min-height: 50px;
-  background: lightblue;
-  margin: 5px;
+  background: white;
   position: relative;
 }
 
 li.menu-item a, li.menu-item span {
   text-decoration: none;
   color: black;
-  position: absolute;
   line-height: 50px;
   text-align: center;
+  display: block;
   width: 100%;
   height: 100%;
 }
@@ -41,16 +44,36 @@ li.menu-item a, li.menu-item span {
 li.menu-item form button {
   background: none;
   border: none;
-  font-family: unset;
   cursor: pointer;
-  font-size: medium;
   line-height: 50px;
   text-align: center;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 
 li.menu-item a.multiline, li.menu-item span.multiline {
   line-height: normal;
+}
+
+body, button, select, input {
+  font-family: "Lato", sans-serif;
+  font-size: 16pt;
+}
+
+h2 {
+  font-family: "Lato", sans-serif;
+  font-size: 36pt;
+}
+
+h3 {
+  font-family: "Lato", sans-serif;
+  font-size: 24pt;
+}
+
+#maincontent {
+  padding-left: 20px;
+}
+
+th {
+  background-color: #6f8ea3;
 }

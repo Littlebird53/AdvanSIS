@@ -62,7 +62,7 @@
     {% endfor %}
   </table>
   <button type="submit">Save</button>
-  <button type="button" onclick="addForm();">Add Row</button>
+  <button type="button" onclick="addForm();">Add File</button>
 </form>
 <details>
   <summary>All available files</summary>
@@ -77,7 +77,7 @@
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <input type="hidden" name="mode" value="add"></input>
-  <h3>Add file</h3>
+  <h3>Add new file</h3>
   {{add_file}}
   <button type="submit">Submit file</button>
 </form>

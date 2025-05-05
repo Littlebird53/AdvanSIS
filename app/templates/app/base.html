@@ -5,23 +5,28 @@
 <html>
   <head>
     <title>{% block title %}AdvanSIS{% endblock %} | Gateway Seminary ADVANCE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'main.css' %}"/>
   </head>
   <body>
     <nav>
       <ul>
         {% if user.is_authenticated %}
-        <li class="menu-item">
-          <span>Hello, {{user.person.preferred_name}}!</span>
+        <li>
+          <span>Hello, {{user.person.preferred_name}} ({{user.username}})!</span>
         </li>
         <li class="menu-item">
           <a href="{% url 'app:dashboard' %}">Dashboard</a>
         </li>
         <li class="menu-item">
-          <form method="POST" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Log out</button>
-          </form>
+          <span>
+            <form method="POST" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit">Log out</button>
+            </form>
+          </span>
         </li>
         {% else %}
         <li class="menu-item">
@@ -31,6 +36,8 @@
       </ul>
     </nav>
     <br/>
-    {% block content %}{% endblock %}
+    <div id="maincontent">
+      {% block content %}{% endblock %}
+    </div>
   </body>
 </html>

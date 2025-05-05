@@ -171,11 +171,11 @@ def student_info(request, studentid):
     i_centers = student.staffrecord_set.values_list('center', flat=True)
     is_director = models.StaffRecord.objects.filter(
         person=request.user.person, status__in=['D', 'G'],
-        center__in=s_centers.union(i_centers))
+        center__in=s_centers.union(i_centers)).exists()
     is_instructor = models.Grade.objects.filter(
         (Q(course__instructor=request.user.person) |
-         Q(course__associate_instructor=request.user.person)),
-        person=student)
+         Q(course__associate_instructors=request.user.person))
+    ).filter(person=student).exists()
     if not is_director and not is_instructor:
         raise PermissionDenied()
     return render(request, 'app/student_info.html',

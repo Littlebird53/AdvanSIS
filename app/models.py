@@ -32,9 +32,11 @@ class MailingAddress(models.Model):
 
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    given_name = models.CharField(max_length=100, null=True)
+    given_name = models.CharField(max_length=100, null=True,
+                                  verbose_name='Given (First) Name')
     middle_name = models.CharField(max_length=100, blank=True, null=True)
-    family_name = models.CharField(max_length=100)
+    family_name = models.CharField(max_length=100,
+                                   verbose_name='Family (Last) Name')
     title = models.CharField(
         choices=[('MR', 'Mr.'), ('MS', 'Ms.'), ('MRS', 'Mrs.'),
                  ('MIS', 'Miss'),
@@ -43,7 +45,11 @@ class Person(models.Model):
                  ('BR', 'Br.'), ('MIN', 'Minister')],
         max_length=3, blank=True, null=True)
     joint_title = models.CharField(max_length=100, blank=True, null=True)
-    suffix = models.CharField(max_length=100, blank=True, null=True)
+    suffix = models.CharField(max_length=100, blank=True, null=True,
+                              choices=[('Jr.', 'Jr.'), ('Sr.', 'Sr.'),
+                                       ('I', 'I'), ('II', 'II'),
+                                       ('III', 'III'), ('IV', 'IV'),
+                                       ('V', 'V')])
     preferred_name = models.CharField(max_length=100, null=True)
     date_of_birth = models.DateField(null=True)
     sex = models.CharField(choices=[('M', 'Male'), ('F', 'Female')],
