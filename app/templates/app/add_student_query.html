@@ -1,17 +1,12 @@
-<html>
-  <head></head>
-  <body>
-    <form method="GET" target="query">
-      {{form}}
-      <button type="submit">Search</button>
-    </form>
+<form hx-get="{% url 'app:add_student_query' course.id %}" hx-target="#query">
+  {{form}}
+  <button type="submit">Search</button>
+</form>
 
-    <ul>
-      {% for student in students %}
-      <li>
-	{{student}} <a href="{% url 'app:add_student_confirm' course.id student.id %}" target="list">Add</a>
-      </li>
-      {% endfor %}
-    </ul>
-  </body>
-</html>
+<ul>
+  {% for student in students %}
+  <li>
+    {{student}} <button hx-get="{% url 'app:add_student_confirm' course.id student.id %}" hx-target="#list">Add</button>
+  </li>
+  {% endfor %}
+</ul>

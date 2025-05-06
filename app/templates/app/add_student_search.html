@@ -3,16 +3,18 @@
 {% block title %}Add Student to {{course}}{% endblock %}
 
 {% block content %}
-<h2>Add Student</h2>
+<h2>Add Students to <i>{{course}}</i></h2>
 
-<table>
-  <tr>
-    <td>
-      <iframe src="{% url 'app:add_student_list' course.id %}" name="list"></iframe>
-    </td>
-    <td>
-      <iframe src="{% url 'app:add_student_query' course.id %}" name="query"></iframe>
-    </td>
-  </tr>
-</table>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+<div class="flex-row">
+  <div id="list"
+       class="flex-col"
+       hx-trigger="load"
+       hx-get="{% url 'app:add_student_list' course.id %}">loading... </div>
+  <div id="query"
+       class="flex-col"
+       hx-trigger="load"
+       hx-get="{% url 'app:add_student_query' course.id %}">loading...</div>
+</div>
 {% endblock %}

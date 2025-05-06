@@ -168,3 +168,15 @@ div.center-subtitle h3 {
   position: relative;
   top: -20px;
 }
+
+.flex-row {
+  display: flex;
+  max-height: 60vh;
+}
+.flex-col {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  max-height: 100%;
+  overflow-y: scroll;
+}
