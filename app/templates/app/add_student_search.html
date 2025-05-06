@@ -5,18 +5,14 @@
 {% block content %}
 <h2>Add Student</h2>
 
-<form method="GET">
-  {{form}}
-  <button type="submit">Search</button>
-</form>
-
-<p><a href="{% url 'app:manage_course' course.id %}">Cancel</a></p>
-
-<ul>
-  {% for student in students %}
-  <li>
-    {{student}} <a href="{% url 'app:add_student_confirm' course.id student.id %}">Add</a>
-  </li>
-  {% endfor %}
-</ul>
+<table>
+  <tr>
+    <td>
+      <iframe src="{% url 'app:add_student_list' course.id %}" name="list"></iframe>
+    </td>
+    <td>
+      <iframe src="{% url 'app:add_student_query' course.id %}" name="query"></iframe>
+    </td>
+  </tr>
+</table>
 {% endblock %}

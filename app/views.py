@@ -122,9 +122,9 @@ def add_student(request, courseid, studentid):
         return redirect('app:course', courseid)
 
     models.Grade.objects.get_or_create(course=course, person=student)
-    return redirect('app:manage_course', courseid)
+    return redirect('app:add_student_list', courseid)
 @login_required
-def add_student_search(request, courseid):
+def add_student_query(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     if not course.can_edit(request.user.person):
         return redirect('app:course', courseid)
@@ -142,9 +142,22 @@ def add_student_search(request, courseid):
             qr = qr.filter(Q(given_name__icontains=w) | \
                            Q(family_name__icontains=w) | \
                            Q(user__username=w))
-    print(qr.query)
-    return render(request, 'app/add_student_search.html',
+    return render(request, 'app/add_student_query.html',
                   {'form': form, 'students': qr, 'course': course})
+@login_required
+def add_student_list(request, courseid):
+    return render(request, 'app/add_student_list.html',
+                  {'grades': models.Grade.objects.filter(
+                      course=courseid).order_by('person__family_name',
+                                                'person__given_name')})
+@login_required
+def add_student_search(request, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    if not course.can_edit(request.user.person):
+        return redirect('app:course', courseid)
+
+    return render(request, 'app/add_student_search.html',
+                  {'course': course})
 
 @login_required
 def list_centers(request):

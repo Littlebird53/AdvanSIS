@@ -1,0 +1,17 @@
+<html>
+  <head></head>
+  <body>
+    <form method="GET" target="query">
+      {{form}}
+      <button type="submit">Search</button>
+    </form>
+
+    <ul>
+      {% for student in students %}
+      <li>
+	{{student}} <a href="{% url 'app:add_student_confirm' course.id student.id %}" target="list">Add</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
