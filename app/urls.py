@@ -63,4 +63,5 @@ urlpatterns = [
     path('center/', views.list_centers, name='center_search'),
     path('degree/', views.degree_search, name='degree_search'),
     path('degree/catalog/', views.degree_catalog, name='degree_catalog'),
+    path('transcript/', views.transcript, name='transcript'),
 ]

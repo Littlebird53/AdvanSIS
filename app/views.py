@@ -410,3 +410,27 @@ def degree_apply(request, degreeid):
     else:
         return render(request, 'app/degree_apply_reject.html',
                       {'degree': degree})
+
+@login_required
+def transcript(request):
+    import io
+    from django.http import FileResponse
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Table
+    person = request.user.person
+    grades = list(models.Grade.objects.filter(person=person))
+    grades.sort(key=lambda g: g.course.sort_key())
+    data = [['Course', 'Year', 'Semester', 'Grade', 'Center']]
+    for grade in grades:
+        data.append([grade.course.template.title,
+                     grade.course.year,
+                     grade.course.get_semester_display(),
+                     grade.get_value_display(),
+                     grade.course.center.code])
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter,
+                            title='ADVANCE Unofficial Transcript')
+    tab = Table(data, repeatRows=1)
+    doc.build([tab])
+    buf.seek(0)
+    return FileResponse(buf, as_attachment=True, filename="transcript.pdf")
