@@ -186,6 +186,14 @@ class Course(models.Model):
     def can_edit(self, person):
         return person == self.instructor or self.center.is_admin(person)
 
+    def sort_key(self):
+        terms = ['Sp', 'Su', 'Fa', 'Wi']
+        if self.semester in terms:
+            order = terms.index(self.semester)
+        else:
+            order = 4
+        return (self.year, order, self.template.title)
+
 class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,
                                null=True)
@@ -208,8 +216,8 @@ class StudentRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('C', 'Current'), ('F', 'Former'), ('A', 'Applied'),
-                 ('R', 'Rejected')],
+        choices=[('C', 'Current Student'), ('F', 'Former Student'),
+                 ('A', 'Applied Student'), ('R', 'Rejected Student')],
         max_length=1, default='A')
 
     def __str__(self):
@@ -234,9 +242,11 @@ class StaffRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('CI', 'Current'), ('FI', 'Former'), ('AI', 'Applied'),
-                 ('RI', 'Rejected'), ('CA', 'Current Associate'),
-                 ('FA', 'Former Associate'),
+        choices=[('CI', 'Current Instructor'), ('FI', 'Former Instructor'),
+                 ('AI', 'Applied Instructor'),
+                 ('RI', 'Rejected Instructor'),
+                 ('CA', 'Current Associate Instructor'),
+                 ('FA', 'Former Associate Instructor'),
                  ('D', 'Director'), ('R', 'Registrar')],
         max_length=2, default='AI')
 

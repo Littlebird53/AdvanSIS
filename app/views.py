@@ -14,6 +14,36 @@ def landing_page(request):
 def permission_denied_page(request, exception):
     return render(request, 'errors/403.html')
 
+def sort_courses(courses):
+    seq = ['Sp', 'Su', 'Fa', 'Wi']
+    term_map = [0, # skip
+                0, 0, 0, 0, 0, # Jan-May
+                1, 1, # Jun-Jul
+                2, 2, 2, 2, # Aug-Nov
+                3, # Dec
+                ]
+    import datetime
+    year = datetime.date.today().year
+    month = datetime.date.today().month
+    term = term_map[month]
+    dct = {'present': [], 'past': [], 'future': []}
+    for course in courses:
+        key = course.sort_key()
+        print(course, key, year, term)
+        if key[0] < year:
+            dct['past'].append(course)
+        elif key[0] > year:
+            dct['future'].append(course)
+        elif key[1] < term:
+            dct['past'].append(course)
+        elif key[1] > term:
+            dct['future'].append(course)
+        else:
+            dct['present'].append(course)
+    for k in dct:
+        dct[k].sort(key=lambda c: c.sort_key())
+    return dct
+
 @login_required
 def dashboard(request):
     message = None
@@ -27,18 +57,34 @@ def dashboard(request):
             message = 'There were errors. Please correct them below.'
     else:
         form = forms.ContactUpdateForm(instance=request.user.person)
+    current = []
+    other = []
+    for record in request.user.person.studentrecord_set.all():
+        courses = sort_courses(
+            [g.course for g in models.Grade.objects.filter(
+                person=request.user.person,
+                course__center=record.center)])
+        if record.status == 'C':
+            current.append((record, courses, True))
+        else:
+            other.append((record, courses, True))
+    for record in request.user.person.staffrecord_set.all():
+        courses = sort_courses(models.Course.objects.filter(
+            (Q(instructor=request.user.person) |
+             Q(associate_instructors=request.user.person)),
+            center=record.center))
+        if record.status in ['CI', 'CA', 'D', 'R']:
+            current.append((record, courses, False))
+        else:
+            other.append((record, courses, False))
+    current.sort(key=lambda x: (x[0].center.name, x[0].status))
+    other.sort(key=lambda x: (x[0].center.name, x[0].status))
+    print(current, other)
     return render(request, 'app/dashboard.html',
                   {
                       'form': form,
                       'message': message,
-                      'centers': models.StaffRecord.objects.filter(
-                          person=request.user.person,
-                          status__in=['D', 'G']),
-                      'teaching': models.Course.objects.filter(
-                          Q(instructor=request.user.person) |
-                          Q(associate_instructors=request.user.person)),
-                      'enrolled': models.Grade.objects.filter(
-                          person=request.user.person),
+                      'records': current + other,
                   })
 
 @login_required

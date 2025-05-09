@@ -16,23 +16,66 @@
     <button type="submit">Submit</button>
   </form>
 </details>
+{% for row in records %}
+<div class="search-item">
+  <h2>{{row.0.center.name}} ({{row.0.get_status_display}})</h2>
+  {% if not row.2 %}
+  {% if row.0.status == 'D' or row.0.status == 'R' %}
+  <p><a href="{% url 'app:new_course' row.0.center.id %}">Add Course</a></p>
+  <p><a href="{% url 'app:center_students' row.0.center.id %}">Manage Students</a></p>
+  <p><a href="{% url 'app:center_instructors' row.0.center.id %}">Manage Instructors</a></p>
+  {% endif %}
+  {% endif %}
+  {% if row.1.present %}
+  <h3>Current Courses</h3>
+  <ul>
+    {% for course in row.1.present %}
+    <li>{{course}}
+      <a href="{% url 'app:course' course.id %}">View course</a>
+      {% if not row.2 %}
+      <a href="{% url 'app:manage_course' course.id %}">Administer course</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if row.1.future %}
+  <h3>Future Courses</h3>
+  <ul>
+    {% for course in row.1.future %}
+    <li>{{course}}
+      <a href="{% url 'app:course' course.id %}">View course</a>
+      {% if not row.2 %}
+      <a href="{% url 'app:manage_course' course.id %}">Administer course</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if row.1.past %}
+  <details>
+    <summary>Past Courses</summary>
+    <ul>
+      {% for course in row.1.past %}
+      <li>{{course}}
+        <a href="{% url 'app:course' course.id %}">View course</a>
+        {% if not row.2 %}
+        <a href="{% url 'app:manage_course' course.id %}">Administer course</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endif %}
+</div>
+{% endfor %}
 {% for record in centers %}
 <div class="search-item">
   <h2>{{record.center.name}} Administration</h2>
-  <p><a href="{% url 'app:new_course' record.center.id %}">Add Course</a></p>
-  <p><a href="{% url 'app:center_students' record.center.id %}">Manage Students</a></p>
-  <p><a href="{% url 'app:center_instructors' record.center.id %}">Manage Instructors</a></p>
+
 </div>
 {% endfor %}
-<h2>Courses</h2>
-<ul>
-  {% for course in teaching %}
-  <li>{{course}} <a href="{% url 'app:manage_course' course.id %}">Administer course</a></li>
-  {% endfor %}
-  {% for grade in enrolled %}
-  <li>{{grade.course}} <a href="{% url 'app:course' grade.course.id %}">View course</a></li>
-  {% endfor %}
-</ul>
+<h2>Links</h2>
 <p><a href="{% url 'app:course_search' %}">Enroll in a course</a></p>
 <p><a href="{% url 'app:center_search' %}">Apply to another center</a></p>
 <p><a href="{% url 'app:degree_search' %}">Academic Progress</a></p>
