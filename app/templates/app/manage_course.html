@@ -14,7 +14,7 @@
   {{course.template.learning_objectives_block}}
 </details>
 <h3>Grades</h3>
-<form method="POST">
+<form method="POST" data-form-id="grades">
   {% csrf_token %}
   <input type="hidden" name="mode" value="grades"></input>
   {{grades.management_form}}
@@ -40,7 +40,7 @@
   <p>{{message}}</p>
   <p><a href="{% url 'app:add_student' course.id %}">Add student</a></p>
 </form>
-<form method="POST">
+<form method="POST" data-form-id="files">
   {% csrf_token %}
   <input type="hidden" name="mode" value="files"></input>
   {{files.management_form}}
@@ -53,10 +53,18 @@
       <th></th>
     </tr>
     {% for form in files %}
-    <tr>
+    <tr class="movable-row">
       {% for field in form %}
       <td>
+        {% if field.name == 'order' %}
+        <span style="display: none" class="order-field">{{field}}</span>
+        <span class="button-row">
+          <button type="button" class="move-up">&uarr;</button>
+          <button type="button" class="move-down">&darr;</button>
+        </span>
+        {% else %}
         {{field}}
+        {% endif %}
       </td>
       {% endfor %}
       <td>
@@ -96,10 +104,18 @@
 </form>
 
 <template id="empty_row">
-  <tr>
+  <tr class="movable-row">
     {% for field in files.empty_form %}
     <td>
+      {% if field.name == 'order' %}
+      <span style="display: none" class="order-field">{{field}}</span>
+      <span class="button-row">
+        <button type="button" class="move-up">&uarr;</button>
+        <button type="button" class="move-down">&darr;</button>
+      </span>
+      {% else %}
       {{field}}
+      {% endif %}
     </td>
     {% endfor %}
     <td></td>
@@ -126,5 +142,28 @@
       //    fragment, document.getElementById('add_placeholder'));
       totalinput.value = (total+1).toString();
   }
+  function renumberForms() {
+      $('#file_rows .order-field input').each((i, f) => {
+          $(f).val(i+1);
+      });
+  }
+  $(function() {
+      $('#file_rows').on('click', '.move-up', function() {
+          let row = $(this).closest('tr');
+          let prev = row.prev('.movable-row');
+          if (prev) {
+              row.insertBefore(prev);
+              renumberForms();
+          }
+      });
+      $('#file_rows').on('click', '.move-down', function() {
+          let row = $(this).closest('tr');
+          let next = row.next('.movable-row');
+          if (next) {
+              row.insertAfter(next);
+              renumberForms();
+          }
+      });
+  });
 </script>
 {% endblock %}

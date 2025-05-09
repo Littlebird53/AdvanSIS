@@ -137,6 +137,11 @@ form button {
   font-weight: bold;
 }
 
+form span.button-row button {
+  display: inline;
+  margin-bottom: 0px;
+}
+
 td select {
   margin-top: 5px;
   margin-bottom: 5px;
