@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'main.css' %}"/>
+    <script type="text/javascript" src="{% static 'lib/jquery-3.7.1.slim.min.js' %}"></script>
   </head>
   <body>
     <nav>
@@ -37,5 +38,39 @@
     <div id="maincontent">
       {% block content %}{% endblock %}
     </div>
+    <script>
+      var initial_form_data = {};
+      var check_form_inputs = true;
+      function update_form(f, obj) {
+          console.log(f);
+          let action = $(f).attr('action');
+          action = (action ? action : "self");
+          obj[action] = $(f).serialize();
+          return action;
+      }
+      function update_all_forms(obj) {
+          $('form').each((i, f) => update_form(f, obj));
+      }
+      $(function() {
+          update_all_forms(initial_form_data);
+          $('form').submit(_ => {check_form_inputs = false;});
+          $(window).bind('beforeunload', function(e) {
+              if (check_form_inputs) {
+                  let cur = {};
+                  let mismatch = false;
+                  $('form').each((i, f) => {
+                      let a = update_form(f, cur);
+                      if (cur[a] != initial_form_data[a]) {
+                          mismatch = true;
+                      }
+                  });
+                  if (mismatch) {
+                      e.preventDefault();
+                      return true;
+                  }
+              }
+          });
+      });
+    </script>
   </body>
 </html>
