@@ -1,3 +1,8 @@
+:root {
+  --left-pad: 140px;
+  --window-width: calc(min(1000px, 100vw) - var(--left-pad));
+}
+
 div.search-item p {
     margin-left: 3em;
 }
@@ -7,12 +12,13 @@ div.search-item details {
 }
 
 #maincontent {
-  padding-left: 140px;
-  max-width: 1000px;
+  padding-left: var(--left-pad);
+  max-width: var(--window-width);
 }
 
 nav {
-  padding-left: 140px;
+  /*padding-left: 140px;*/
+  padding-left: var(--left-pad);
   width: 100%;
   position: sticky;
   top: 0;
@@ -23,12 +29,14 @@ nav {
 nav ul {
   padding: 0;
   margin: 0;
+  display: flex;
+  justify-content: space-between;
+  width: var(--window-width);
 }
 
 nav li {
-  display: inline-block;
+  display: flex;
   margin: 5px;
-  margin-right: 75px;
 }
 
 li.menu-item {
@@ -144,6 +152,7 @@ div.center-subtitle {
 
 div.center-subtitle h2 {
   margin-bottom: 10px;
+  text-align: center;
 }
 
 div.center-subtitle h3 {
