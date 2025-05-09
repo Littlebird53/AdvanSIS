@@ -26,7 +26,7 @@ SECRET_KEY = secret.SECRET_KEY
 DEBUG = secret.DEBUG
 
 ALLOWED_HOSTS = ['localhost', 'joseph.dangswan.com']
-CSRF_TRUSTED_ORIGINS = ['http://joseph.dangswan.com'] # TODO: https
+CSRF_TRUSTED_ORIGINS = ['https://joseph.dangswan.com']
 
 # Application definition
 
@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Los_Angeles'
 
 USE_I18N = True
 
@@ -129,3 +129,13 @@ MEDIA_URL = 'media/'
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+ADMINS = [('Daniel', 'errors@dangswan.com')]
+APPEND_SLASH = True
+DEFAULT_FROM_EMAIL = 'noreply@joseph.dangswan.com'
+EMAIL_SUBJECT_PREFIX = '[JOSEPH] '
+from django.utils.translation import gettext_lazy as _
+LANGUAGES = [('en', _('English'))]
+LOCALE_PATHS = []
+MANAGERS = ADMINS
+SERVER_EMAIL = 'errors@joseph.dangswan.com'
