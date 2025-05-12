@@ -172,9 +172,10 @@ div.center-subtitle h3 {
   position: fixed;
   width: 220px;
   overflow: scroll;
+  font-size: 12pt;
 }
 #contents {
-  margin-left: 225px;
+  margin-left: 250px;
 }
 
 .fake-anchor {
