@@ -4,6 +4,7 @@
 
 {% block content %}
 <h2>Find a Course</h2>
+<p>For a list of all courses offered by ADVANCE, see <a href="{% url 'app:course_catalog' %}">the course catalog</a>.</p>
 {% for course in courses %}
 <div>
   <h3>{{course}}</h3>

@@ -70,7 +70,8 @@ class CourseFileAdmin(admin.TabularInline):
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
-    autocomplete_fields = ['template', 'center', 'instructor']
+    autocomplete_fields = ['template', 'center', 'instructor',
+                           'associate_instructors']
     search_fields = ['template__title', 'instructor__given_name',
                      'instructor__family_name', 'center__name']
     list_display = ['template__title', 'center', 'instructor',
