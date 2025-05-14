@@ -349,3 +349,11 @@ class DegreeAward(models.Model):
             import datetime
             self.applied = datetime.date.today()
         return super().save(*args, **kwargs)
+
+class PopupMessage(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    sent = models.DateTimeField()
+    text = models.TextField()
+    sender = models.ForeignKey(Person, null=True, on_delete=models.SET_NULL,
+                               related_name='+')
+    dismissed = models.BooleanField(default=False)

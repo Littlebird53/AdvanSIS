@@ -209,3 +209,7 @@ class UserAdmin(BaseUserAdmin):
         return instance.person.credits_in_progress
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+@admin.register(models.PopupMessage)
+class PopupAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['person', 'sender']

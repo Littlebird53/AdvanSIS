@@ -13,6 +13,7 @@
   <h3>Learning Objectives</h3>
   {{course.template.learning_objectives_block}}
 </details>
+<p><a href="{% url 'app:message_course_students' course.id %}">Message all students</a></p>
 <h3>Grades</h3>
 <form method="POST" data-form-id="grades">
   {% csrf_token %}

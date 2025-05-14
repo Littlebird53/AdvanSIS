@@ -1,0 +1,12 @@
+{% for popup in popups %}
+<div class="popup-message">
+  <p class="popup-sender">Message from {{popup.sender}} on {{popup.sent}}:</p>
+  <p class="popup-body">{{popup.text}}</p>
+  <button hx-get="{% url 'app:dismiss_popup' popup.id %}"
+	  hx-target="#popup-messages">Dismiss</button>
+</div>
+{% endfor %}
+
+{% if remaining > 0 %}
+<p>Remaining messages: {{remaining}}</p>
+{% endif %}

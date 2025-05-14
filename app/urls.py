@@ -64,4 +64,17 @@ urlpatterns = [
     path('degree/', views.degree_search, name='degree_search'),
     path('degree/catalog/', views.degree_catalog, name='degree_catalog'),
     path('transcript/', views.transcript, name='transcript'),
+
+    # Messages
+    path('messages/popups/', views.current_popups, name='list_popups'),
+    path('messages/popups/<int:dismiss>/dismiss/',
+         views.current_popups, name='dismiss_popup'),
+    path('messages/center/<int:centerid>/',
+         views.MessageCenterStudentsView.as_view(),
+         name='message_center_students'),
+    path('messages/course/<int:courseid>/',
+         views.MessageCourseStudentsView.as_view(),
+         name='message_course_students'),
+    path('messages/global/',
+         views.MessageAllUsersView.as_view(), name='message_global'),
 ]

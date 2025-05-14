@@ -109,3 +109,6 @@ class AddFileForm(forms.ModelForm):
     class Meta:
         model = models.SharedFile
         fields = ['title', 'content']
+
+class NewPopupForm(forms.Form):
+    text = forms.CharField(label='Message Body', widget=forms.Textarea)

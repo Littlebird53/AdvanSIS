@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.views.generic.edit import FormView
 from app import models
 from app import forms
 import itertools
@@ -244,6 +246,28 @@ def student_info(request, studentid):
                    'mailings': student.mailings.filter(active=True),
                    'transcript': student.grade_set.all() if is_director else []})
 
+@login_required
+def current_popups(request, dismiss=None):
+    if dismiss is not None:
+        models.PopupMessage.objects.filter(id=dismiss).update(
+            dismissed=True)
+    popups = models.PopupMessage.objects.filter(
+        person=request.user.person, dismissed=False).order_by('sent')
+    return render(request, 'app/popup_list.html',
+                  {'popups': popups[:3],
+                   'remaining': max(popups.count()-3, 0)})
+
+def send_message(sender, recipients, text):
+    from django.utils.timezone import now
+    # TODO: send email
+    for recipient in recipients:
+        p = models.PopupMessage()
+        p.person = recipient
+        p.sent = now()
+        p.text = text
+        p.sender = sender
+        p.save()
+
 ####################
 ### CENTERS
 ####################
@@ -309,6 +333,28 @@ def view_students(request, centerid, status):
                   {'students': form, 'count': qs.count(), 'status': status,
                    'center': center})
 
+class CenterAdminMixin(AccessMixin):
+    def dispatch(self, request, centerid, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.center = get_object_or_404(models.Center, pk=centerid)
+        if not self.center.is_admin(request.user.person):
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+class MessageCenterStudentsView(CenterAdminMixin, FormView):
+    form_class = forms.NewPopupForm
+    template_name = 'app/message_center_students.html'
+    success_url = '/dashboard' # TODO
+
+    def form_valid(self, form):
+        send_message(self.request.user.person,
+                     [sr.person
+                      for sr in models.StudentRecord.objects.filter(
+                              center=self.center, status='C')],
+                     form.cleaned_data['text'])
+        return super().form_valid(form)
+
 ####################
 ### Instructors
 ####################
@@ -319,6 +365,26 @@ def instructor_apply(request, centerid):
     models.StaffRecord.objects.get_or_create(
         center=center, person=request.user.person)
     return redirect('app:dashboard')
+
+class MessageCourseStudentsView(AccessMixin, FormView):
+    form_class = forms.NewPopupForm
+    template_name = 'app/message_center_students.html' # TOOD?
+    success_url = '/dashboard' # TODO
+
+    def dispatch(self, request, courseid, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.course = get_object_or_404(models.Course, pk=courseid)
+        if not self.course.can_edit(request.user.person):
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        send_message(self.request.user.person,
+                     [grade.person for grade in models.Grade.objects.filter(
+                         course=self.course)],
+                     form.cleaned_data['text'])
+        return super().form_valid(form)
 
 ####################
 ### Students
@@ -434,3 +500,23 @@ def transcript(request):
     doc.build([tab])
     buf.seek(0)
     return FileResponse(buf, as_attachment=True, filename="transcript.pdf")
+
+####################
+### Staff
+####################
+
+class MessageAllUsersView(AccessMixin, FormView):
+    form_class = forms.NewPopupForm
+    template_name = 'app/message_center_students.html' # TOOD?
+    success_url = '/dashboard' # TODO
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        send_message(self.request.user.person,
+                     models.Person.objects.all(),
+                     form.cleaned_data['text'])
+        return super().form_valid(form)
