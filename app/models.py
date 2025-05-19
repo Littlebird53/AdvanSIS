@@ -265,7 +265,11 @@ class DegreeRequirement(models.Model):
         {{req.count}} of the following:
         <ul>
           {% for course in req.courses.all %}
-          <li>{{course}}</li>
+          <li>
+            <a href="{% url 'app:course_catalog' %}#c{{course.id}}">
+              {{course}}
+            </a>
+          </li>
           {% endfor %}
         </ul>
       {% endif %}

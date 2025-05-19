@@ -5,6 +5,7 @@
 {% block content %}
 {% for course in courses %}
 <div>
+  <a class="fake-anchor" name="c{{course.id}}">null</a>
   <h3>{{course}}</h3>
   <details>
     <summary>Description</summary>
