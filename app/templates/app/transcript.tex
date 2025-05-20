@@ -1,0 +1,89 @@
+{% autoescape off %}
+\documentclass{article}
+
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{graphicx}
+{% graphicspath %}
+\usepackage[letterpaper,landscape,margin=1.5cm]{geometry}
+
+\newenvironment{semblock}{
+  \begin{tabular}{p{1.3cm} p{3.1cm} p{1.4cm} p{1.15cm} p{1.25cm} p{1cm}}
+}{
+  \midrule
+  \end{tabular}
+}
+
+\title{ADVANCE Unofficial Transcript}
+
+\begin{document}
+
+\large
+
+\begin{multicols}{3}
+  \begin{center}
+
+    {\Large ADVANCE} \\
+    Director: Dr. Warren Haynes \\
+    3210 E Guasti Rd, Ontario, CA 91761 \\
+
+    \includegraphics[width=3in]{logo.png}
+
+    {% if center %}
+      {\Large {{center.name|latex_escape}}} \\
+      {% if center.director %}Director: {{center.director.full_name|latex_escape}} \\{% endif %}
+      {% if center_address %}{{center_address.single_line|latex_escape}} \\{% endif %}
+    {% endif %}
+  \end{center}
+\end{multicols}
+
+\normalsize
+
+\begin{center}
+  \begin{tabular}{p{0.05\textwidth}p{0.2\textwidth}p{0.2\textwidth}p{0.45\textwidth}}
+    \midrule
+    ID: {{person.user.id}} & Name: {{person.full_name|latex_escape}} & {% if email %}Email: {{email.email|latex_escape}}{% endif %} & {% if address %}Address: {{address.single_line|latex_escape}}{% endif %} \\
+    \midrule
+  \end{tabular}
+\end{center}
+
+\begin{multicols}{2}
+  \scriptsize
+
+  \begin{semblock}
+    \textbf{\textit{CODE}} & \textbf{\textit{COURSE NAME}} & \textbf{\textit{CREDIT}} & \textbf{\textit{GRADE}} & \textbf{\textit{CENTER}} & \textbf{\textit{NOTE}} \\
+  \end{semblock}
+
+{% for semester in semesters %}
+  \begin{semblock}
+    \multicolumn{6}{l}{\bf \normalsize {{semester.header}}} \\
+    {% for grade in semester.grades %}
+      {{grade.course.template.code}} &
+      {{grade.course.template.title}} &
+      {{grade.course.template.credits}} &
+      {{grade.value}} &
+      {{grade.course.center.code}} &
+      \\ %note \\ % TODO
+    {% endfor %}
+    \multicolumn{6}{l}{\it TERM SUMMARY: Credits Attempted: {{semester.attempted}} Credits Awarded: {{semester.earned}}} \\
+  \end{semblock}
+{% endfor %}
+
+  \begin{tabular}{rr}
+    \textbf{\normalsize Career Summary} \\
+    Credits Attempted: & {{attempted}} \\
+    Credits Earned: & {{earned}} \\
+    GPA: & 3.2 \\ %TODO
+  \end{tabular}
+
+  \begin{tabular}{lc}
+    \textbf{\normalsize Achievements} \\
+    \multicolumn{1}{c}{\textit{Award}} & \textit{Date Conferred} \\
+    {% for ach in achievements %}
+      {{ach.degree.name|latex_escape}} & {{ach.awarded|date("m/d/Y")}} \\
+    {% endfor %}
+  \end{tabular}
+
+\end{multicols}
+\end{document}
+{% endautoescape %}

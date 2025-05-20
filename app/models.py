@@ -30,6 +30,14 @@ class MailingAddress(models.Model):
                  ('O', 'Other')],
         max_length=1, null=True)
 
+    @property
+    def single_line(self):
+        pieces = [self.address, self.city, self.state, self.zip_code,
+                  self.country]
+        def lineify(s):
+            return ', '.join(l.strip() for l in s.splitlines())
+        return ', '.join([lineify(x) for x in pieces if x])
+
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     given_name = models.CharField(max_length=100, null=True,
@@ -95,6 +103,12 @@ class Person(models.Model):
             status__in=['S', 'A'], degree__category='C',
         ).aggregate(v=models.Sum('degree__credits'))['v'] or 0
 
+    @property
+    def full_name(self):
+        ls = [n for n in [self.given_name, self.middle_name,
+                          self.family_name] if n]
+        return ' '.join(ls)
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5)
@@ -115,6 +129,12 @@ class Center(models.Model):
     def is_admin(self, person):
         return self.staffrecord_set.filter(
             person=person, status__in=['D', 'G']).exists()
+
+    @property
+    def director(self):
+        sr = self.staffrecord_set.filter(status='D').first()
+        if sr:
+            return sr.person
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
@@ -187,7 +207,7 @@ class Course(models.Model):
         return person == self.instructor or self.center.is_admin(person)
 
     def sort_key(self):
-        terms = ['Sp', 'Su', 'Fa', 'Wi']
+        terms = ['Wi', 'Sp', 'Su', 'Fa']
         if self.semester in terms:
             order = terms.index(self.semester)
         else:

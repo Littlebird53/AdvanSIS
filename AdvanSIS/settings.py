@@ -32,6 +32,7 @@ CSRF_TRUSTED_ORIGINS = ['https://joseph.dangswan.com']
 
 INSTALLED_APPS = [
     'app',
+    'django_tex',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -66,6 +67,11 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+    },
+    {
+        'NAME': 'tex',
+        'BACKEND': 'django_tex.engine.TeXEngine',
+        'APP_DIRS': True,
     },
 ]
 
@@ -141,3 +147,7 @@ LOCALE_PATHS = []
 MANAGERS = ADMINS
 SITE_ID = 1
 SERVER_EMAIL = 'errors@joseph.dangswan.com'
+
+LATEX_INTERPRETER = 'lualatex'
+import os.path
+LATEX_GRAPHICSPATH = [os.path.join(BASE_DIR, 'app/static/latex')]

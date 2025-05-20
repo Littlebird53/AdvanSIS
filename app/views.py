@@ -480,25 +480,58 @@ def degree_apply(request, degreeid):
 @login_required
 def transcript(request):
     import io
+    import collections
     from django.http import FileResponse
-    from reportlab.lib.pagesizes import letter
-    from reportlab.platypus import SimpleDocTemplate, Table
+    from django_tex.core import compile_template_to_pdf
     person = request.user.person
-    grades = list(models.Grade.objects.filter(person=person))
-    grades.sort(key=lambda g: g.course.sort_key())
-    data = [['Course', 'Year', 'Semester', 'Grade', 'Center']]
+    context = {
+        'person': person,
+        'achievements': models.DegreeAward.objects.filter(
+            person=person, status='A').order_by('awarded'),
+        'email': person.emails.all().filter(active=True).first(),
+        'address': person.mailings.all().filter(active=True).first(),
+    }
+    sr = models.StudentRecord.objects.filter(person=person, status='C').first()
+    if sr is None:
+        sr = models.StudentRecord.objects.filter(person=person, status='F').first()
+    if sr is not None:
+        context['center'] = sr.center
+        context['center_address'] = sr.center.mailings.all().filter(
+            active=True).first()
+    grades = models.Grade.objects.filter(person=person).order_by('course__template__title')
+    semesters = collections.defaultdict(list)
     for grade in grades:
-        data.append([grade.course.template.title,
-                     grade.course.year,
-                     grade.course.get_semester_display(),
-                     grade.get_value_display(),
-                     grade.course.center.code])
-    buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=letter,
-                            title='ADVANCE Unofficial Transcript')
-    tab = Table(data, repeatRows=1)
-    doc.build([tab])
-    buf.seek(0)
+        semesters[grade.course.sort_key()[:2]].append(grade)
+    blocks = []
+    total_att = 0
+    total_get = 0
+    for key in sorted(semesters.keys()):
+        y0 = key[0]
+        y1 = y0 + 1
+        if semesters[key][0].course.semester != 'Fa':
+            y0, y1 = y0 - 1, y0
+        dct = {
+            'header': f'{y0}-{y1} {semesters[key][0].course.get_semester_display()} Semester',
+            'grades': sorted(semesters[key], key=lambda x: x.course.sort_key()),
+        }
+        att = 0
+        get = 0
+        for g in dct['grades']:
+            if g.value != 'Au':
+                att += g.course.template.credits
+                if g.value not in ['F', 'IP', 'W']:
+                    get += g.course.template.credits
+        dct['attempted'] = att
+        dct['earned'] = get
+        blocks.append(dct)
+        total_att += att
+        total_get += get
+    context['semesters'] = blocks
+    context['attempted'] = total_att
+    context['earned'] = total_get
+    print(context)
+    PDF = compile_template_to_pdf('app/transcript.tex', context)
+    buf = io.BytesIO(PDF)
     return FileResponse(buf, as_attachment=True, filename="transcript.pdf")
 
 ####################
