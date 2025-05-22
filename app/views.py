@@ -477,6 +477,21 @@ def degree_apply(request, degreeid):
         return render(request, 'app/degree_apply_reject.html',
                       {'degree': degree})
 
+GPA_VALUES = {
+    'A': 4.0,
+    'A-': 3.7,
+    'B+': 3.3,
+    'B': 3.0,
+    'B-': 2.7,
+    'C+': 2.3,
+    'C': 2.0,
+    'C-': 1.7,
+    'D+': 1.3,
+    'D': 1.0,
+    'D-': 0.7,
+    'F': 0.0,
+}
+
 @login_required
 def transcript(request):
     import io
@@ -505,6 +520,8 @@ def transcript(request):
     blocks = []
     total_att = 0
     total_get = 0
+    gpa_att = 0
+    gpa_get = 0
     for key in sorted(semesters.keys()):
         y0 = key[0]
         y1 = y0 + 1
@@ -518,9 +535,13 @@ def transcript(request):
         get = 0
         for g in dct['grades']:
             if g.value != 'Au':
-                att += g.course.template.credits
+                cr = g.course.template.credits
+                att += cr
                 if g.value not in ['F', 'IP', 'W']:
-                    get += g.course.template.credits
+                    get += cr
+                if g.value in GPA_VALUES:
+                    gpa_att += cr
+                    gpa_get += GPA_VALUES[g.value] * cr
         dct['attempted'] = att
         dct['earned'] = get
         blocks.append(dct)
@@ -529,6 +550,10 @@ def transcript(request):
     context['semesters'] = blocks
     context['attempted'] = total_att
     context['earned'] = total_get
+    if gpa_att > 0:
+        context['gpa'] = round(gpa_get/gpa_att, 2)
+    else:
+        context['gpa'] = 0
     print(context)
     PDF = compile_template_to_pdf('app/transcript.tex', context)
     buf = io.BytesIO(PDF)
