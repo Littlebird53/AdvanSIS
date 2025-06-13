@@ -14,6 +14,46 @@ class ContactUpdateForm(forms.ModelForm):
                   'sex', 'marital_status', 'denomination']
         widgets = {'date_of_birth': DateWidget}
 
+class NewEmailForm(forms.ModelForm):
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+    def clean_category(self):
+        cat = self.cleaned_data['category']
+        if self.person.emails.all().filter(active=True, category=cat).exists():
+            raise forms.ValidationError(_('You already have an email address of that type.'), code='reuse-type')
+        return cat
+    class Meta:
+        model = models.EmailAddress
+        fields = ['email', 'category']
+
+class NewPhoneForm(forms.ModelForm):
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+    def clean_category(self):
+        cat = self.cleaned_data['category']
+        if self.person.phones.all().filter(active=True, category=cat).exists():
+            raise forms.ValidationError(_('You already have a phone number of that type.'), code='reuse-type')
+        return cat
+    class Meta:
+        model = models.PhoneAddress
+        fields = ['phone', 'category']
+
+class NewMailingForm(forms.ModelForm):
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+    def clean_category(self):
+        cat = self.cleaned_data['category']
+        if self.person.mailings.all().filter(active=True, category=cat).exists():
+            raise forms.ValidationError(_('You already have an address of that type.'), code='reuse-type')
+        return cat
+    class Meta:
+        model = models.MailingAddress
+        fields = ['address', 'attention', 'city', 'state', 'zip_code',
+                  'country', 'category']
+
 class NewCourseForm(forms.ModelForm):
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)

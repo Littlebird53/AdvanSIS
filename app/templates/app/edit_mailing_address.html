@@ -1,0 +1,17 @@
+<form hx-post="{% url 'app:edit_mailing' %}" hx-target="#mailings"
+      hx-validate="false" novalidate data-form-id="skip">
+  {% csrf_token %}
+  <table>
+    {% for addr in existing %}
+    <tr>
+      <td>{{addr.as_block|linebreaks}}</td>
+      <td>{{addr.get_category_display}}</td>
+      <td>
+	<button type="submit" name="delete" value="{{addr.id}}">Delete</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {{form}}
+  <button type="submit">Add</button>
+</form>

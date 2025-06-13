@@ -17,6 +17,15 @@ class PhoneAddress(models.Model):
                  ('O', 'Other')],
         max_length=1, null=True)
 
+class Country(models.Model):
+    name = models.CharField(max_length=50)
+    credit_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    student_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    postal_code = models.CharField(max_length=3)
+
+    def __str__(self):
+        return f'{self.name} ({self.postal_code})'
+
 class MailingAddress(models.Model):
     active = models.BooleanField(default=True)
     address = models.TextField()
@@ -25,6 +34,8 @@ class MailingAddress(models.Model):
     state = models.CharField(max_length=10, blank=True, null=True)
     zip_code = models.CharField(max_length=10, null=True)
     country = models.CharField(max_length=10, default='US')
+    #country = models.ForeignKey(Country, on_delete=models.SET_NULL,
+    #                            null=True)
     category = models.CharField(
         choices=[('H', 'Home'), ('W', 'Work'), ('S', 'Shipping'),
                  ('O', 'Other')],
@@ -32,11 +43,25 @@ class MailingAddress(models.Model):
 
     @property
     def single_line(self):
-        pieces = [self.address, self.city, self.state, self.zip_code,
-                  self.country]
+        pieces = [self.address, self.city, self.state, self.zip_code]
+        if self.country:
+            pieces.append(self.county.postal_code)
+        else:
+            pieces.append('US')
         def lineify(s):
             return ', '.join(l.strip() for l in s.splitlines())
         return ', '.join([lineify(x) for x in pieces if x])
+
+    @property
+    def as_block(self):
+        lines = []
+        if self.attention:
+            lines.append('ATTN: ' + self.attention)
+        lines.append(self.address)
+        pieces = [self.city, self.state, self.zip_code, self.country]
+        if any(pieces):
+            lines.append(', '.join(p for p in pieces if p))
+        return '\n'.join(lines)
 
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

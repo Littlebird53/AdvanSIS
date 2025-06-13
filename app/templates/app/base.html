@@ -45,7 +45,8 @@
       var check_form_inputs = true;
       function update_form(f, obj) {
           let action = $(f).data('form-id') || $(f).attr('action') || 'self';
-          obj[action] = $(f).serialize();
+          if (action == 'skip') obj[action] = {};
+          else obj[action] = $(f).serialize();
           return action;
       }
       function update_all_forms(obj) {
@@ -60,7 +61,7 @@
                   let mismatch = false;
                   $('form').each((i, f) => {
                       let a = update_form(f, cur);
-                      if (cur[a] != initial_form_data[a]) {
+                      if (a != 'skip' && cur[a] != initial_form_data[a]) {
                           mismatch = true;
                       }
                   });

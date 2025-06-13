@@ -77,4 +77,9 @@ urlpatterns = [
          name='message_course_students'),
     path('messages/global/',
          views.MessageAllUsersView.as_view(), name='message_global'),
+
+    # Addresses
+    path('address/email/', views.edit_email_address, name='edit_email'),
+    path('address/phone/', views.edit_phone_address, name='edit_phone'),
+    path('address/mailing/', views.edit_mailing_address, name='edit_mailing'),
 ]

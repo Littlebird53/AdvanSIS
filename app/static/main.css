@@ -137,6 +137,10 @@ form button {
   font-weight: bold;
 }
 
+form td button {
+  width: 100%;
+}
+
 form span.button-row button {
   display: inline;
   margin-bottom: 0px;

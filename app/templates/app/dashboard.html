@@ -18,6 +18,21 @@
     </table>
     <button type="submit">Submit</button>
   </form>
+  <details>
+    <summary>Emails</summary>
+    <div id="emails" hx-trigger="load" hx-get="{% url 'app:edit_email' %}">
+    </div>
+  </details>
+  <details>
+    <summary>Phone Numbers</summary>
+    <div id="phones" hx-trigger="load" hx-get="{% url 'app:edit_phone' %}">
+    </div>
+  </details>
+  <details>
+    <summary>Addresses</summary>
+    <div id="mailings" hx-trigger="load" hx-get="{% url 'app:edit_mailing' %}">
+    </div>
+  </details>
 </details>
 {% if user.is_staff %}
 <div class="search-item">

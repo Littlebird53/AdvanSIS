@@ -90,6 +90,75 @@ def dashboard(request):
                   })
 
 @login_required
+def edit_email_address(request):
+    addr = request.user.person.emails.all()
+    if request.method == 'GET':
+        add = forms.NewEmailForm(request.user.person)
+    else:
+        dl = request.POST.get('delete')
+        add = forms.NewEmailForm(request.user.person, request.POST)
+        if dl and dl.isdigit():
+            obj = get_object_or_404(models.EmailAddress, pk=int(dl))
+            if obj in addr:
+                obj.active = False
+                obj.save()
+            keys = list(add.errors.keys())
+            for k in keys:
+                del add.errors[k]
+        elif add.is_valid():
+            obj = add.save()
+            request.user.person.emails.add(obj)
+            add = forms.NewEmailForm(request.user.person)
+    return render(request, 'app/edit_email_address.html',
+                  {'form': add, 'existing': addr.filter(active=True)})
+
+@login_required
+def edit_phone_address(request):
+    addr = request.user.person.phones.all()
+    if request.method == 'GET':
+        add = forms.NewPhoneForm(request.user.person)
+    else:
+        dl = request.POST.get('delete')
+        add = forms.NewPhoneForm(request.user.person, request.POST)
+        if dl and dl.isdigit():
+            obj = get_object_or_404(models.PhoneAddress, pk=int(dl))
+            if obj in addr:
+                obj.active = False
+                obj.save()
+            keys = list(add.errors.keys())
+            for k in keys:
+                del add.errors[k]
+        elif add.is_valid():
+            obj = add.save()
+            request.user.person.phones.add(obj)
+            add = forms.NewPhoneForm(request.user.person)
+    return render(request, 'app/edit_phone_address.html',
+                  {'form': add, 'existing': addr.filter(active=True)})
+
+@login_required
+def edit_mailing_address(request):
+    addr = request.user.person.mailings.all()
+    if request.method == 'GET':
+        add = forms.NewMailingForm(request.user.person)
+    else:
+        dl = request.POST.get('delete')
+        add = forms.NewMailingForm(request.user.person, request.POST)
+        if dl and dl.isdigit():
+            obj = get_object_or_404(models.MailingAddress, pk=int(dl))
+            if obj in addr:
+                obj.active = False
+                obj.save()
+            keys = list(add.errors.keys())
+            for k in keys:
+                del add.errors[k]
+        elif add.is_valid():
+            obj = add.save()
+            request.user.person.mailings.add(obj)
+            add = forms.NewMailingForm(request.user.person)
+    return render(request, 'app/edit_mailing_address.html',
+                  {'form': add, 'existing': addr.filter(active=True)})
+
+@login_required
 def course_details(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     grade = models.Grade.objects.filter(
