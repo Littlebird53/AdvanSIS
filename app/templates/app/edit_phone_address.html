@@ -1,5 +1,5 @@
 <form hx-post="{% url 'app:edit_phone' %}" hx-target="#phones"
-      hx-validate="false" novalidate data-form-id="skip">
+      hx-validate="false" novalidate data-form-id="phone">
   {% csrf_token %}
   <table>
     {% for addr in existing %}

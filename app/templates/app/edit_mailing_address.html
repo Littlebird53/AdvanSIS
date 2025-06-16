@@ -1,5 +1,5 @@
 <form hx-post="{% url 'app:edit_mailing' %}" hx-target="#mailings"
-      hx-validate="false" novalidate data-form-id="skip">
+      hx-validate="false" novalidate data-form-id="mailing">
   {% csrf_token %}
   <table>
     {% for addr in existing %}
