@@ -275,6 +275,25 @@ def add_student_search(request, courseid):
 
     return render(request, 'app/add_student_search.html',
                   {'course': course})
+@login_required
+def edit_schedule(request, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    if not course.can_edit(request.user.person):
+        return redirect('app:course', courseid)
+
+    if request.method == 'POST':
+        form = forms.CalendarForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            data['mode'] = 'weekly'
+            course.schedule = data
+            course.save()
+            return render(request, 'app/view_schedule.html',
+                          {'course': course})
+    else:
+        form = forms.CalendarForm(initial=course.schedule or {})
+    return render(request, 'app/edit_schedule.html',
+                  {'course': course, 'form': form})
 
 @login_required
 def list_centers(request):

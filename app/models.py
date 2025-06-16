@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.serializers.json import DjangoJSONEncoder
 from django.template import Context, Template
 
 class EmailAddress(models.Model):
@@ -220,7 +221,7 @@ class Course(models.Model):
                                    null=True)
     associate_instructors = models.ManyToManyField(
         Person, related_name='associates')
-    schedule = models.JSONField(null=True)
+    schedule = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
         max_length=1, null=True)
@@ -243,6 +244,11 @@ class Course(models.Model):
         else:
             order = 4
         return (self.year, order, self.template.title)
+
+    def display_schedule(self):
+        from django.template.loader import get_template
+        tmpl = get_template('app/display_schedule.html')
+        return tmpl.render(self.schedule or {'mode': 'none'})
 
 class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,

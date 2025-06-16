@@ -1,0 +1,9 @@
+<form hx-post="{% url 'app:edit_schedule' course.id %}"
+      hx-target="#schedule" data-form-id="skip"
+      hx-on:load="console.log('hi', this);">
+  {% csrf_token %}
+  <table>
+    {{form.as_table}}
+  </table>
+  <button type="submit">Save</button>
+</form>

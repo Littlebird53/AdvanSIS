@@ -1,0 +1,23 @@
+{% if mode == 'none' %}
+<p>Schedule not set yet.</p>
+{% elif mode == 'weekly' %}
+<table>
+  <tr>
+    <th>Days</th>
+    <td>{{days|join:", "}}</td>
+  </tr>
+  <tr>
+    <th>Time</th>
+    <td>{{time}}</td>
+  </tr>
+  <tr>
+    <th>Dates</th>
+    <td>{{start}} &mdash; {{end}}</td>
+  </tr>
+  <tr>
+    <th>Location</th>
+    <td>{{location}}</td>
+  </tr>
+</table>
+{% else %}
+{% endif %}

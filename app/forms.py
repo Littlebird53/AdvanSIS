@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 class DateWidget(forms.DateInput):
     input_type = 'date'
+class TimeWidget(forms.TimeInput):
+    input_type = 'time'
 
 class ContactUpdateForm(forms.ModelForm):
     class Meta:
@@ -152,3 +154,15 @@ class AddFileForm(forms.ModelForm):
 
 class NewPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)
+
+class CalendarForm(forms.Form):
+    days = forms.MultipleChoiceField(
+        label='Days of the Week',
+        choices=[('Sunday', 'Sunday'), ('Monday', 'Monday'),
+                 ('Tuesday', 'Tuesday'), ('Wednesday', 'Wednesday'),
+                 ('Thursday', 'Thursday'), ('Friday', 'Friday'),
+                 ('Saturday', 'Saturday')])
+    time = forms.TimeField(widget=TimeWidget)
+    start = forms.DateField(label='First Meeting', widget=DateWidget)
+    end = forms.DateField(label='Last Meeting', widget=DateWidget)
+    location = forms.CharField(label='Location')

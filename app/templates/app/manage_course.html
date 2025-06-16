@@ -14,6 +14,12 @@
   {{course.template.learning_objectives_block}}
 </details>
 <p><a href="{% url 'app:message_course_students' course.id %}">Message all students</a></p>
+<h3>Schedule</h3>
+<div id="schedule">
+  {{course.display_schedule}}
+  <button hx-get="{% url 'app:edit_schedule' course.id %}"
+          hx-target="#schedule">Edit Schedule</button>
+</div>
 <h3>Grades</h3>
 <form method="POST" data-form-id="grades">
   {% csrf_token %}
