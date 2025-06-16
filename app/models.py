@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.template import Context, Template
+from app.languages import LANGUAGES
 
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -225,7 +226,8 @@ class Course(models.Model):
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
         max_length=1, null=True)
-    language = models.CharField(max_length=50, null=True)
+    language = models.CharField(max_length=50, null=True,
+                                choices=LANGUAGES, default='eng')
     country = models.CharField(max_length=50, null=True)
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(default=False)
