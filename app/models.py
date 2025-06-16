@@ -26,6 +26,9 @@ class Country(models.Model):
     def __str__(self):
         return f'{self.name} ({self.postal_code})'
 
+    class Meta:
+        ordering = ['name']
+
 class MailingAddress(models.Model):
     active = models.BooleanField(default=True)
     address = models.TextField()
@@ -33,21 +36,25 @@ class MailingAddress(models.Model):
     city = models.CharField(max_length=100, null=True)
     state = models.CharField(max_length=10, blank=True, null=True)
     zip_code = models.CharField(max_length=10, null=True)
-    country = models.CharField(max_length=10, default='US')
-    #country = models.ForeignKey(Country, on_delete=models.SET_NULL,
-    #                            null=True)
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL,
+                                null=True)
     category = models.CharField(
         choices=[('H', 'Home'), ('W', 'Work'), ('S', 'Shipping'),
                  ('O', 'Other')],
         max_length=1, null=True)
 
     @property
-    def single_line(self):
-        pieces = [self.address, self.city, self.state, self.zip_code]
+    def last_line(self):
+        pieces = [self.city, self.state, self.zip_code]
         if self.country:
-            pieces.append(self.county.postal_code)
+            pieces.append(self.country.postal_code)
         else:
             pieces.append('US')
+        return ', '.join(p for p in pieces if p)
+
+    @property
+    def single_line(self):
+        pieces = [self.address, self.last_line]
         def lineify(s):
             return ', '.join(l.strip() for l in s.splitlines())
         return ', '.join([lineify(x) for x in pieces if x])
@@ -58,9 +65,7 @@ class MailingAddress(models.Model):
         if self.attention:
             lines.append('ATTN: ' + self.attention)
         lines.append(self.address)
-        pieces = [self.city, self.state, self.zip_code, self.country]
-        if any(pieces):
-            lines.append(', '.join(p for p in pieces if p))
+        lines.append(self.last_line)
         return '\n'.join(lines)
 
 class Person(models.Model):
