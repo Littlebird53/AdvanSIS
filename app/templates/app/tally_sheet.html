@@ -1,0 +1,39 @@
+<table>
+  <tr>
+    <th>Student</th>
+    <th>Home Country</th>
+    <th>Credit Rate</th>
+    <th>Credits</th>
+    <th>New Student</th>
+    <th>Total</th>
+  </tr>
+  {% for row in rows %}
+  <tr>
+    <td>{{row.0}}</td>
+    {% if row.2 %}
+    <td>{{row.1}}</td>
+    <td>${{row.1.credit_fee}}</td>
+    {% else %}
+    <td><i>Unknown</i></td>
+    <td title="Using US rate">${{row.1.credit_fee}}</td>
+    {% endif %}
+    <td>{{row.3}}</td>
+    {% if row.4 %}
+    <td {% if not row.2 %}title="Using US rate"{% endif %}>
+      ${{row.1.credit_fee}}
+    </td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    <td>{{row.5}}</td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <th>Totals:</th>
+    <td></td>
+    <td></td>
+    <td>{{total_credits}}</td>
+    <td></td>
+    <td>{{total_fee}}</td>
+  </tr>
+</table>

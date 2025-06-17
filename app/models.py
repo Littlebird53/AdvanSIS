@@ -141,6 +141,14 @@ class Person(models.Model):
                           self.family_name] if n]
         return ' '.join(ls)
 
+    @property
+    def home_country(self):
+        addr = self.mailings.all().filter(active=True, category='H').first()
+        if addr is None or addr.country is None:
+            return Country.objects.get(postal_code='US'), False
+        else:
+            return addr.country, True
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5)
@@ -209,15 +217,15 @@ class CourseTemplate(models.Model):
     def learning_objectives_block(self):
         return self.LO_TEMPLATE.render(Context({'course': self}))
 
+SEMESTERS = [('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
+             ('Wi', 'Winter')]
+
 class Course(models.Model):
     template = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
     center = models.ForeignKey(Center, on_delete=models.SET_NULL,
                                null=True)
     year = models.IntegerField(default=2025)
-    semester = models.CharField(
-        choices=[('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
-                 ('Wi', 'Winter')],
-        max_length=2, null=True)
+    semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
     instructor = models.ForeignKey(Person, on_delete=models.SET_NULL,
                                    null=True)
     associate_instructors = models.ManyToManyField(

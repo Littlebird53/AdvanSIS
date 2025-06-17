@@ -50,6 +50,7 @@
   <p><a href="{% url 'app:center_students' row.0.center.id %}">Manage Students</a></p>
   <p><a href="{% url 'app:center_instructors' row.0.center.id %}">Manage Instructors</a></p>
   <p><a href="{% url 'app:message_center_students' row.0.center.id %}">Message All Students</a></p>
+  <p><a href="{% url 'app:center_report' row.0.center.id %}">Reports</a></p>
   {% endif %}
   {% endif %}
   {% if row.1.present %}

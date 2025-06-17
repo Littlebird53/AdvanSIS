@@ -166,3 +166,7 @@ class CalendarForm(forms.Form):
     start = forms.DateField(label='First Meeting', widget=DateWidget)
     end = forms.DateField(label='Last Meeting', widget=DateWidget)
     location = forms.CharField(label='Location')
+
+class TallySheetForm(forms.Form):
+    semester = forms.ChoiceField(choices=models.SEMESTERS)
+    year = forms.IntegerField()

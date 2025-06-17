@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.views.generic.edit import FormView
 from app import models
 from app import forms
+import collections
+import datetime
 import itertools
 
 def landing_page(request):
@@ -24,7 +26,6 @@ def sort_courses(courses):
                 2, 2, 2, 2, # Aug-Nov
                 3, # Dec
                 ]
-    import datetime
     year = datetime.date.today().year
     month = datetime.date.today().month
     term = term_map[month]
@@ -360,11 +361,17 @@ def send_message(sender, recipients, text):
 ### CENTERS
 ####################
 
-@login_required
-def new_course(request, centerid):
-    center = get_object_or_404(models.Center, pk=centerid)
-    if not center.is_admin(request.user.person):
-        raise PermissionDenied()
+def center_admin(fn):
+    @login_required
+    def _fn(request, centerid, *args, **kwargs):
+        center = get_object_or_404(models.Center, pk=centerid)
+        if not center.is_admin(request.user.person):
+            raise PermissionDenied()
+        return fn(request, center, *args, **kwargs)
+    return _fn
+
+@center_admin
+def new_course(request, center):
     if request.method == 'POST':
         form = forms.NewCourseForm(center, request.POST)
         if form.is_valid():
@@ -376,11 +383,8 @@ def new_course(request, centerid):
         form = forms.NewCourseForm(center)
     return render(request, 'app/new_course.html', {'form': form})
 
-@login_required
-def view_instructors(request, centerid, status):
-    center = get_object_or_404(models.Center, pk=centerid)
-    if not center.is_admin(request.user.person):
-        raise PermissionDenied()
+@center_admin
+def view_instructors(request, center, status):
     qs = models.StaffRecord.objects.filter(center=center)
     if status is not None:
         qs = qs.filter(status=status)
@@ -403,11 +407,8 @@ def view_instructors(request, centerid, status):
                   {'instructors': form, 'count': len(qs), 'status': status,
                    'center': center, 'header': header})
 
-@login_required
-def view_students(request, centerid, status):
-    center = get_object_or_404(models.Center, pk=centerid)
-    if not center.is_admin(request.user.person):
-        raise PermissionDenied()
+@center_admin
+def view_students(request, center, status):
     qs = models.StudentRecord.objects.filter(center=center)
     if status is not None:
         qs = qs.filter(status=status)
@@ -442,6 +443,44 @@ class MessageCenterStudentsView(CenterAdminMixin, FormView):
                               center=self.center, status='C')],
                      form.cleaned_data['text'])
         return super().form_valid(form)
+
+@center_admin
+def center_report(request, center):
+    return render(request, 'app/reports.html',
+                  {'center': center, 'form': forms.TallySheetForm(
+                      initial={'year': datetime.date.today().year})})
+
+@center_admin
+def center_tally(request, center):
+    form = forms.TallySheetForm(request.GET)
+    form.is_valid()
+    year = form.cleaned_data.get('year', datetime.date.today().year)
+    semester = semester=form.cleaned_data.get('semester')
+    courses = models.Course.objects.filter(year=year, semester=semester,
+                                           center=center)
+    grades = models.Grade.objects.filter(course__in=courses).exclude(
+        value='W')
+    ct = collections.Counter()
+    for g in grades:
+        ct[g.person] += g.course.template.credits
+    rows = []
+    semester_seq = [None, 'Wi', 'Sp', 'Su', 'Fa']
+    for person in ct:
+        home, known = person.home_country
+        charge = ct[person]*home.credit_fee
+        new_student = False
+        if not models.Grade.objects.filter(person=person, course__year__lt=year).exists():
+            gr_list = sorted(models.Grade.objects.filter(person=person,
+                                                         course__year=year),
+                             key=lambda g: g.course.sort_key())
+            new_student = (gr_list[0].course.center == center)
+        if new_student:
+            charge += home.student_fee
+        rows.append((person, home, known, ct[person], new_student, charge))
+    rows.sort(key=lambda r: str(r[0]))
+    return render(request, 'app/tally_sheet.html', {
+        'rows': rows, 'total_fee': sum(r[5] for r in rows),
+        'total_credits': sum(r[3] for r in rows)})
 
 ####################
 ### Instructors
