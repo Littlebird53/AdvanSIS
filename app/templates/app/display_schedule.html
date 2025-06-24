@@ -8,7 +8,11 @@
   </tr>
   <tr>
     <th>Time</th>
+    {% if end_time %}
+    <td>{{time}} &mdash; {{end_time}}</td>
+    {% else %}
     <td>{{time}}</td>
+    {% endif %}
   </tr>
   <tr>
     <th>Dates</th>

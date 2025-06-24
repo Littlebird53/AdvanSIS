@@ -2,6 +2,7 @@ from django import forms
 from app import models
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
+from django.contrib.admin import widgets as admin_widgets
 
 class DateWidget(forms.DateInput):
     input_type = 'date'
@@ -63,7 +64,11 @@ class NewCourseForm(forms.ModelForm):
         self.fields['instructor'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status__in=['C', 'D', 'G'])
-        self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True)
+        self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
+        self.fields['template'].widget.attrs['class'] = 'filter-select'
+        self.fields['language'].widget.attrs['class'] = 'filter-select'
+        self.fields['country'].widget.attrs['class'] = 'filter-select'
+        self.fields['country'].initial = center.country
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
@@ -163,6 +168,7 @@ class CalendarForm(forms.Form):
                  ('Thursday', 'Thursday'), ('Friday', 'Friday'),
                  ('Saturday', 'Saturday')])
     time = forms.TimeField(widget=TimeWidget)
+    end_time = forms.TimeField(widget=TimeWidget, required=False)
     start = forms.DateField(label='First Meeting', widget=DateWidget)
     end = forms.DateField(label='Last Meeting', widget=DateWidget)
     location = forms.CharField(label='Location')

@@ -99,10 +99,24 @@ class Person(models.Model):
                  ('D', 'Divorced or Separated'), ('W', 'Widowed')],
         max_length=1, null=True)
     denomination = models.CharField(
-        choices=[('B', 'Baptist'), ('L', 'Lutheran'), ('M', 'Methodist'),
-                 ('N', 'Nondenominational'), ('P', 'Pentecostal'),
-                 ('T', 'Presbyterian'), ('R', 'Reformed'),
-                 ('O', 'Other Denomination'), ('U', 'Unknown')],
+        choices=[('A', 'Anglican'),
+                 ('B', 'Baptist (Non-SBC)'),
+                 ('C', 'Catholic'),
+                 ('c', 'Church of Christ'),
+                 ('G', 'Church of God'),
+                 ('E', 'Eastern Orthodox'),
+                 ('e', 'Episcopalian'),
+                 ('L', 'Lutheran'),
+                 ('J', 'Messianic Judaism'),
+                 ('M', 'Methodist'),
+                 ('N', 'Nondenominational'),
+                 ('P', 'Pentecostal'),
+                 ('7', 'Seventh Day Adventist'),
+                 ('S', 'Southern Baptist'),
+                 ('T', 'Presbyterian'),
+                 ('R', 'Reformed (Non-Baptist)'),
+                 ('O', 'Other Denomination'),
+                 ('U', 'Unknown')],
         max_length=1, default='U')
     ethnicity = models.CharField(
         choices=[('0', 'Unknown'), ('1', 'African'),
@@ -176,6 +190,12 @@ class Center(models.Model):
         if sr:
             return sr.person
 
+    @property
+    def country(self):
+        addr = self.mailings.all().filter(active=True).first()
+        if addr:
+            return addr.country
+
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -236,7 +256,8 @@ class Course(models.Model):
         max_length=1, null=True)
     language = models.CharField(max_length=50, null=True,
                                 choices=LANGUAGES, default='eng')
-    country = models.CharField(max_length=50, null=True)
+    country = models.ForeignKey(Country, null=True,
+                                on_delete=models.SET_NULL)
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(default=False)
     section = models.CharField(max_length=10, blank=True, null=True)
