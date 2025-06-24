@@ -18,6 +18,31 @@ def landing_page(request):
 def permission_denied_page(request, exception):
     return render(request, 'errors/403.html')
 
+class CreateAccountView(FormView):
+    template_name = 'app/create_account.html'
+    success_url = '/'
+    form_class = forms.NewUserForm
+
+    def form_valid(self, form):
+        import uuid
+        user = models.User.objects.create_user(
+            str(uuid.uuid1()),
+            form.cleaned_data['email'],
+            form.cleaned_data['password'])
+        person = form.save(commit=False)
+        person.user = user
+        email = models.EmailAddress()
+        email.email = form.cleaned_data['email']
+        email.category = 'P'
+        email.save()
+        person.save()
+        user.username = str(person.id)
+        user.save()
+        person.emails.add(email)
+        from django.contrib.auth import login
+        login(self.request, user)
+        return super().form_valid(form)
+
 def sort_courses(courses):
     seq = ['Sp', 'Su', 'Fa', 'Wi']
     term_map = [0, # skip

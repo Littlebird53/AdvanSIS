@@ -9,6 +9,26 @@ class DateWidget(forms.DateInput):
 class TimeWidget(forms.TimeInput):
     input_type = 'time'
 
+class NewUserForm(forms.ModelForm):
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput())
+    confirm_password = forms.CharField(widget=forms.PasswordInput())
+
+    def clean_confirm_password(self):
+        p1 = self.cleaned_data.get('password')
+        p2 = self.cleaned_data.get('confirm_password')
+        if p1 != p2:
+            raise forms.ValidationError(_('The passwords do not match.'),
+                                        code='password-mismatch')
+        return p2
+
+    class Meta:
+        model = models.Person
+        fields = ['given_name', 'middle_name', 'family_name',
+                  'title', 'suffix', 'preferred_name', 'date_of_birth',
+                  'sex', 'marital_status', 'denomination']
+        widgets = {'date_of_birth': DateWidget}
+
 class ContactUpdateForm(forms.ModelForm):
     class Meta:
         model = models.Person

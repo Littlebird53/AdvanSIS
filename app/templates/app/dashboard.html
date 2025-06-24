@@ -95,12 +95,13 @@
   </details>
   {% endif %}
 </div>
-{% endfor %}
-{% for record in centers %}
-<div class="search-item">
-  <h2>{{record.center.name}} Administration</h2>
-
-</div>
+{% empty %}
+<h2>You are not currently associated with any centers.</h2>
+<p>Please select one of the following:</p>
+<p><a href="">I am a student.</a></p>
+<p><a href="">I am an instructor.</a></p>
+<p><a href="">I am a staff member of an existing center.</a></p>
+<p><a href="">I am interested in starting a new center.</a></p>
 {% endfor %}
 <h2>Links</h2>
 <p><a href="{% url 'app:course_search' %}">Enroll in a course</a></p>
