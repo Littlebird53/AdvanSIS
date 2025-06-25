@@ -3,6 +3,7 @@
 {% block title %}Degree Search{% endblock %}
 
 {% block content %}
+<h1>Degree Search</h1>
 {% if degrees|length > 0 %}
 <p>The following are all of the diplomas and certificates that you will be eligible for at the end of the current semester.</p>
 {% else %}
@@ -12,7 +13,7 @@
 
 {% for degree in degrees %}
 <div class="search-item">
-  <h3>{{degree.name}} ({{degree.abbreviation}})</h3>
+  <h2>{{degree.name}} ({{degree.abbreviation}})</h2>
   <p>{{degree.description|linebreaksbr}}</p>
   <details>
     <summary>Requirements</summary>

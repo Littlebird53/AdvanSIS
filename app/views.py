@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 from app import models
 from app import forms
 import collections
@@ -548,6 +548,56 @@ def student_apply(request, centerid):
     models.StudentRecord.objects.get_or_create(
         center=center, person=request.user.person)
     return redirect('app:dashboard')
+
+class StudentApplyView(AccessMixin, FormView):
+    form_class = forms.StudentApplicationForm
+    template_name = 'app/student_apply.html'
+    success_url = '/dashboard' # TODO
+
+    def dispatch(self, request, centerid, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.center = get_object_or_404(models.Center, pk=centerid)
+        self.person = request.user.person
+        if models.StudentRecord.objects.filter(
+                center=self.center, person=self.person).exists():
+            return redirect('app:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx['center'] = self.center
+        return ctx
+
+    def form_valid(self, form):
+        form.instance.center = self.center
+        form.instance.person = self.person
+        sr = form.save()
+        # TODO: send endorsement email
+        return render(self.request, 'app/student_apply_success.html',
+                      {'sr': sr})
+
+class ChurchEndorsementView(UpdateView):
+    model = models.StudentRecord
+    form_class = forms.ChurchEndorsementForm
+    template_name_suffix = '_endorsement_form'
+
+    def form_valid(self, form):
+        form.instance.pastor_date = datetime.date.today()
+        expl = []
+        if not form.instance.good_character:
+            expl += ['Character', form.cleaned_data['good_character_expl']]
+        if not form.instance.good_standing:
+            expl += ['Standing', form.cleaned_data['good_standing_expl']]
+        if not form.instance.endorsement:
+            expl += ['Endorsement', form.cleaned_data['endorsement_expl']]
+        form.instance.pastor_explanation = '\n\n'.join(expl)
+        if not expl:
+            form.instance.status = 'C'
+            # TODO: send email
+        form.save()
+        return render(self.request, 'app/endorsement_submitted.html',
+                      {'sr': self.object})
 
 @login_required
 def course_search(request):

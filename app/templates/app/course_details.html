@@ -4,16 +4,16 @@
 
 {% block content %}
 <div class="center-subtitle">
-  <h2>{{course.template.title}}</h2>
-  <h3>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h3>
+  <h1>{{course.template.title}}</h1>
+  <h2>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h2>
 </div>
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
-<h3>Learning Objectives</h3>
+<h2>Learning Objectives</h2>
 {{course.template.learning_objectives_block}}
-<h3>Schedule</h3>
+<h2>Schedule</h2>
 {{course.display_schedule}}
 {% if files %}
-<h3>Files</h3>
+<h2>Files</h2>
 <ul>
   {% for fl in files %}
   <li><a href="{{fl.shared_file.content.url}}">{{fl.shared_file.title}}</a></li>
@@ -21,18 +21,18 @@
 </ul>
 {% endif %}
 {% if not grade %}
-{#<h3><a href="{% url 'app:enroll' course.id %}">Enroll</a></h3>#}
+{#<h2><a href="{% url 'app:enroll' course.id %}">Enroll</a></h2>#}
 <form action="{% url 'app:enroll' course.id %}">
   <div style="width: 200px"></div>
   <button type="submit">Enroll</button>
 </form>
 {% elif grade.value == 'IP' %}
-<h3>You are enrolled in this class.</h3>
+<h2>You are enrolled in this class.</h2>
 {% elif grade.value == 'Au' %}
-<h3>You are auditting this class.</h3>
+<h2>You are auditting this class.</h2>
 {% elif grade.value == 'W' %}
-<h3>You have withdrawn from this class.</h3>
+<h2>You have withdrawn from this class.</h2>
 {% else %}
-<h3>Grade: {{grade.value}}</h3>
+<h2>Grade: {{grade.value}}</h2>
 {% endif %}
 {% endblock %}

@@ -6,8 +6,9 @@
 <div id="popup-messages">
   <span hx-trigger="load" hx-get="{% url 'app:list_popups' %}"></span>
 </div>
+<h1>ADVANCE JOSEPH Dashboard</h1>
 {% if message %}
-<h3>{{message}}</h3>
+<h2>{{message}}</h2>
 {% endif %}
 <details {% if form.errors %}open{% endif %}>
   <summary>Update personal information</summary>

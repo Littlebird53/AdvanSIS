@@ -4,23 +4,23 @@
 
 {% block content %}
 <div class="center-subtitle">
-  <h2>Manage <i>{{course.template.title}}</i></h2>
-  <h3>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h3>
+  <h1>Manage <i>{{course.template.title}}</i></h1>
+  <h2>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h2>
 </div>
 <details>
   <summary>Description</summary>
   <p>{{course.template.description|linebreaksbr}}</p>
-  <h3>Learning Objectives</h3>
+  <h2>Learning Objectives</h2>
   {{course.template.learning_objectives_block}}
 </details>
 <p><a href="{% url 'app:message_course_students' course.id %}">Message all students</a></p>
-<h3>Schedule</h3>
+<h2>Schedule</h2>
 <div id="schedule">
   {{course.display_schedule}}
   <button hx-get="{% url 'app:edit_schedule' course.id %}"
           hx-target="#schedule">Edit Schedule</button>
 </div>
-<h3>Grades</h3>
+<h2>Grades</h2>
 <form method="POST" data-form-id="grades">
   {% csrf_token %}
   <input type="hidden" name="mode" value="grades"></input>
@@ -105,7 +105,7 @@
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <input type="hidden" name="mode" value="add"></input>
-  <h3>Add new file</h3>
+  <h2>Add new file</h2>
   {{add_file}}
   <button type="submit">Submit file</button>
 </form>

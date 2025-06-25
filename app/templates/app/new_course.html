@@ -3,8 +3,9 @@
 {% block title %}Add Course{% endblock %}
 
 {% block content %}
+<h1>Add a Course</h1>
 {% if message %}
-<h3>{{message}}</h3>
+<h2>{{message}}</h2>
 {% endif %}
 <form method="POST">
   {% csrf_token %}

@@ -1,17 +1,24 @@
 <form hx-post="{% url 'app:edit_phone' %}" hx-target="#phones"
       hx-validate="false" novalidate data-form-id="phone">
   {% csrf_token %}
+  {% if existing %}
   <table>
+    <tr>
+      <th>Number</th>
+      <th>Category</th>
+      <th>Delete</th>
+    </tr>
     {% for addr in existing %}
     <tr>
       <td>{{addr.phone}}</td>
       <td>{{addr.get_category_display}}</td>
       <td>
-	<button type="submit" name="delete" value="{{addr.id}}">Delete</button>
+	      <button type="submit" name="delete" value="{{addr.id}}">Delete</button>
       </td>
     </tr>
     {% endfor %}
   </table>
+  {% endif %}
   {{form}}
   <button type="submit">Add</button>
 </form>

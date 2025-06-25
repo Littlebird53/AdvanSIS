@@ -3,11 +3,11 @@
 {% block title %}Course Search{% endblock %}
 
 {% block content %}
-<h2>Find a Course</h2>
+<h1>Find a Course</h1>
 <p>For a list of all courses offered by ADVANCE, see <a href="{% url 'app:course_catalog' %}">the course catalog</a>.</p>
 {% for course in courses %}
 <div>
-  <h3>{{course}}</h3>
+  <h2>{{course}}</h2>
   <p><b>Center:</b> {{course.center.name}}</p>
   <details>
     <summary>Description</summary>

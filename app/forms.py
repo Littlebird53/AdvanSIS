@@ -38,6 +38,7 @@ class ContactUpdateForm(forms.ModelForm):
         widgets = {'date_of_birth': DateWidget}
 
 class NewEmailForm(forms.ModelForm):
+    prefix = 'email'
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person
@@ -51,6 +52,7 @@ class NewEmailForm(forms.ModelForm):
         fields = ['email', 'category']
 
 class NewPhoneForm(forms.ModelForm):
+    prefix = 'phone'
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person
@@ -64,6 +66,7 @@ class NewPhoneForm(forms.ModelForm):
         fields = ['phone', 'category']
 
 class NewMailingForm(forms.ModelForm):
+    prefix='mailing'
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person
@@ -196,3 +199,51 @@ class CalendarForm(forms.Form):
 class TallySheetForm(forms.Form):
     semester = forms.ChoiceField(choices=models.SEMESTERS)
     year = forms.IntegerField()
+
+class StudentApplicationForm(forms.ModelForm):
+    church_sbc = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    prev_gateway = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    called_to_ministry = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    christian_year = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    conduct_standard = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    class Meta:
+        model = models.StudentRecord
+        fields = ['church', 'church_membership', 'church_sbc',
+                  'reference1', 'reference2',
+                  'church_rec_name', 'church_rec_email',
+                  'prev_gateway', 'gateway_id', 'ed_level',
+                  'called_to_ministry', 'christian_year',
+                  'conduct_standard']
+
+class ChurchEndorsementForm(forms.ModelForm):
+    good_character = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    good_character_expl = forms.CharField(label='If not, please explain.',
+                                          widget=forms.Textarea,
+                                          required=False)
+    good_standing = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    good_standing_expl = forms.CharField(label='If not, please explain.',
+                                         widget=forms.Textarea,
+                                         required=False)
+    endorsement = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    endorsement_expl = forms.CharField(label='If not, please explain.',
+                                       widget=forms.Textarea,
+                                       required=False)
+    class Meta:
+        model = models.StudentRecord
+        fields = ['good_character', 'good_standing', 'endorsement']

@@ -3,9 +3,10 @@
 {% block title %}Centers{% endblock %}
 
 {% block content %}
+<h1>All Centers</h1>
 {% for center in centers %}
 <div class="search-item">
-  <h3>{{center.name}} ({{center.code}})</h3>
+  <h2>{{center.name}} ({{center.code}})</h2>
   <p><b>Director:</b> {{center.director.given_name}} {{center.director.family_name}}</p>
   {# TODO: contact info #}
   <p><a href="{% url 'app:student_apply' center.id %}">Apply to be a student at this center</a></p>

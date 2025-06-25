@@ -1,0 +1,171 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Student Application{% endblock %}
+
+{% block content %}
+<h1>Apply to be a student at {{center.name}}</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th colspan="2">Church Membership</th>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.church.id_for_label}}">Name of Church</label>
+      </th>
+      <td>
+	{{form.church.errors}}
+	{{form.church}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.church_membership.id_for_label}}">
+	  Length of Membership
+	</label>
+      </th>
+      <td>
+	{{form.church_membership.errors}}
+	{{form.church_membership}}
+      </td>
+    </tr>
+    <tr>
+      <th>Affiliated with the SBC?</th>
+      <td>
+	{{form.church_sbc.errors}}
+	<fieldset class="radio-row">
+	  <legend style="display: none">Is the church affiliated with the SBC?</legend>
+	  {% for radio in form.church_sbc %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">References</th>
+    </tr>
+    <tr>
+      <td colspan="2">Provide 2 character references who have known you well for more than a year. You may not list family members.</td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference1.id_for_label}}">Reference 1</label>
+      </th>
+      <td>
+	{{form.reference1.errors}}
+	{{form.reference1}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference2.id_for_label}}">Reference 2</label>
+      </th>
+      <td>
+	{{form.reference2.errors}}
+	{{form.reference2}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">Church Reference</th>
+    </tr>
+    <tr>
+      <td colspan="2">Provide the name and email of a church leader who can complete a recommendation for you.</td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.church_rec_name.id_for_label}}">Name</label>
+      </th>
+      <td>
+	{{form.church_rec_name.errors}}
+	{{form.church_rec_name}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.church_rec_email.id_for_label}}">Email</label>
+      </th>
+      <td>
+	{{form.church_rec_email.errors}}
+	{{form.church_rec_email}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">Other Questions</th>
+    </tr>
+    <tr>
+      <th>
+	Have you previously been a student of Gateway Seminary or Golden Gate Baptist Theological Seminary?
+      </th>
+      <td>
+	{{form.prev_gateway.errors}}
+	<fieldset class="radio-row">
+	  <legend style="display: none">Have you previously been a Gateway Seminary student?</legend>
+	  {% for radio in form.prev_gateway %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+	<br/>
+	<label for="{{form.gateway_id.id_for_label}}">
+	  If yes, please enter your student ID number:
+	</label>
+	<br/>
+	{{form.gateway_id.errors}}
+	{{form.gateway_id}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.ed_level.id_for_label}}">
+	  Highest Education Level Achieved
+	</label>
+      </th>
+      <td>
+	{{form.ed_level.errors}}
+	{{form.ed_level}}
+      </td>
+    </tr>
+    <tr>
+      <th>Do you feel called to ministry?</label>
+      </th>
+      <td>
+	{{form.called_to_ministry.errors}}
+	<fieldset class="radio-row">
+	  <legend style="display: none">Do you feel called to ministry?</legend>
+	  {% for radio in form.called_to_ministry %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+      </td>
+    </tr>
+    <tr>
+      <th>Have you been a Christian for at least one year?</th>
+      <td>
+	{{form.christian_year.errors}}
+	<fieldset class="radio-row">
+	  <legend style="display: none">Have you been a Christian for at least one year?</legend>
+	  {% for radio in form.christian_year %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+      </td>
+    </tr>
+    <tr>
+      <th>
+	Do you agree to the <a href="https://docs.google.com/document/d/10Ge570CmYifjXnDXwWlXYlGeEYRgK2m1/edit?tab=t.0" target="_blank">ADVANCE Ethical Conduct Standard</a>?
+      </th>
+      <td>
+	{{form.conduct_standard.errors}}
+	<fieldset class="radio-row">
+	  <legend style="display: none">Do you agree to the Ethical Conduct Standard?</legend>
+	  {% for radio in form.conduct_standard %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}

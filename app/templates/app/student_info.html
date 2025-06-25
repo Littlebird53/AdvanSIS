@@ -3,7 +3,7 @@
 {% block title %}{{student}} Student Info{% endblock %}
 
 {% block content %}
-<h2>{{student}}</h2>
+<h1>{{student}}</h1>
 <p>
   <b>Name:</b>
   {{student.get_title_display|default_if_none:''}}
@@ -40,7 +40,7 @@
 {% endfor %}
 
 {% if transcript %}
-<h3>Transcript</h3>
+<h2>Transcript</h2>
 <table>
   <thead>
     <tr>

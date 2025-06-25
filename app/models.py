@@ -163,6 +163,12 @@ class Person(models.Model):
         else:
             return addr.country, True
 
+class StudyArea(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5)
@@ -171,11 +177,15 @@ class Center(models.Model):
     mailings = models.ManyToManyField(MailingAddress, related_name='+')
     fte_eligible = models.BooleanField(default=False)
     sponsor = models.CharField(max_length=100, null=True)
+    sponsor_rep = models.CharField(max_length=100, null=True)
     sponsor_emails = models.ManyToManyField(EmailAddress, related_name='+')
     sponsor_phones = models.ManyToManyField(PhoneAddress, related_name='+')
     sponsor_mailings = models.ManyToManyField(MailingAddress,
                                               related_name='+')
     active = models.BooleanField(default=True)
+    coi_file = models.FileField(blank=True, null=True)
+    areas = models.ManyToManyField(StudyArea, blank=True)
+    other_areas = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -195,6 +205,17 @@ class Center(models.Model):
         addr = self.mailings.all().filter(active=True).first()
         if addr:
             return addr.country
+
+class MOU(models.Model):
+    center = models.ForeignKey(Center, on_delete=models.CASCADE)
+    director_sig = models.DateField(blank=True, null=True)
+    advance_sig = models.DateField(blank=True, null=True)
+    gs_dean_sig = models.DateField(blank=True, null=True)
+    expiration = models.DateField()
+    status = models.CharField(max_length=1, choices=[
+        ('P', 'Pending'), ('A', 'Active'), ('E', 'Expired'),
+        ('R', 'Renewed')], default='P')
+    # template_name
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
@@ -306,6 +327,31 @@ class StudentRecord(models.Model):
         choices=[('C', 'Current Student'), ('F', 'Former Student'),
                  ('A', 'Applied Student'), ('R', 'Rejected Student')],
         max_length=1, default='A')
+    areas = models.ManyToManyField(StudyArea, blank=True)
+    other_areas = models.CharField(max_length=100, blank=True, null=True)
+    church = models.CharField(max_length=100, null=True)
+    church_membership = models.CharField(max_length=100, null=True)
+    church_sbc = models.BooleanField(null=True)
+    reference1 = models.TextField(null=True)
+    reference2 = models.TextField(null=True)
+    church_rec_name = models.CharField(max_length=100, null=True)
+    church_rec_email = models.EmailField(max_length=100, null=True)
+    prev_gateway = models.BooleanField(null=True)
+    gateway_id = models.IntegerField(blank=True, null=True)
+    ed_level = models.CharField(max_length=3, choices=[
+        ('N', 'No formal education'), ('J', 'Middle/Junior High School'),
+        ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
+        ('B', 'Bachelors'), ('M', 'Masters'),
+        ('D', 'Doctoral/Professional Degree')],
+        null=True)
+    called_to_ministry = models.BooleanField(null=True)
+    christian_year = models.BooleanField(null=True)
+    conduct_standard = models.BooleanField(null=True)
+    good_character = models.BooleanField(null=True)
+    good_standing = models.BooleanField(null=True)
+    endorsement = models.BooleanField(null=True)
+    pastor_explanation = models.TextField(blank=True, null=True)
+    pastor_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.person} {self.center}'
@@ -336,6 +382,15 @@ class StaffRecord(models.Model):
                  ('FA', 'Former Associate Instructor'),
                  ('D', 'Director'), ('R', 'Registrar')],
         max_length=2, default='AI')
+    reference1 = models.TextField(null=True)
+    reference2 = models.TextField(null=True)
+    ordained = models.BooleanField(null=True)
+    church = models.CharField(max_length=100, null=True)
+    email_transcript = models.BooleanField(default=False)
+    alum_transcript = models.BooleanField(default=False)
+    upload_transcript = models.FileField(blank=True, null=True)
+    no_transcript = models.BooleanField(default=False)
+    accept_bfm = models.BooleanField(null=True)
 
     def __str__(self):
         return f'{self.person} {self.center}'

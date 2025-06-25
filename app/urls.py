@@ -55,8 +55,10 @@ urlpatterns = [
     # Applications
     path('center/<int:centerid>/instructor_apply/', views.instructor_apply,
          name='instructor_apply'),
-    path('center/<int:centerid>/apply/', views.student_apply,
+    path('center/<int:centerid>/apply/', views.StudentApplyView.as_view(),
          name='student_apply'),
+    path('endorsement/<int:pk>/', views.ChurchEndorsementView.as_view(),
+         name='church_endorsement'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
     path('degree/<int:degreeid>/', views.degree_apply, name='degree_apply'),
 

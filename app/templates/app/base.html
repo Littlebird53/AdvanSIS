@@ -2,7 +2,7 @@
 {% load i18n %}
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>{% block title %}AdvanSIS{% endblock %} | Gateway Seminary ADVANCE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
       <ul>
         {% if user.is_authenticated %}
         <li>
-          <span>Hello, {{user.person.preferred_name}} ({{user.username}})!</span>
+          <span><b>Hello, {{user.person.preferred_name}} ({{user.username}})!</b></span>
         </li>
         <li class="menu-item">
           <a href="{% url 'app:dashboard' %}">Dashboard</a>

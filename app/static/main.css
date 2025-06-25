@@ -85,14 +85,19 @@ body, button, select, input {
   font-size: 16pt;
 }
 
+h1 {
+  font-size: 36pt;
+  text-align: center;
+}
+
 h2 {
   font-family: "Lato", sans-serif;
-  font-size: 36pt;
+  font-size: 24pt;
 }
 
 h3 {
   font-family: "Lato", sans-serif;
-  font-size: 24pt;
+  font-size: 20pt;
 }
 
 th {
@@ -198,4 +203,16 @@ div.center-subtitle h3 {
   flex-grow: 1;
   max-height: 100%;
   overflow-y: scroll;
+}
+
+fieldset.radio-row {
+  border: none;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+span.radio-block {
+  padding: 5px;
+}
+span.radio-block:has(input:checked) {
+  background: #6f8ea3;
 }

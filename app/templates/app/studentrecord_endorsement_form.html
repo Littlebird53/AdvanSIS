@@ -1,0 +1,111 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Student Application{% endblock %}
+
+{% block content %}
+<h1>Church Endorsement Form</h1>
+
+<table>
+  <tr>
+    <th>Student</th>
+    <td>{{object.person.full_name}}</td>
+  </tr>
+  <tr>
+    <th>ADVANCE Center</th>
+    <td>{{object.center.name}}</td>
+  </tr>
+</table>
+
+<p>Dear Pastor / Church Leader,<br/></br/>
+A member of your church has applied for admission to the ADVANCE Ministry Preparation program of
+Gateway Seminary. We want to know that a church heartily endorses a man or woman as one with real
+potential for vocational Christian service. Thank you for your assistance in this matter. Gateway Seminary
+would be unable to minister effectively without the cooperation of churches.</p>
+
+<hr/>
+
+<p>The signature of the pastor is required in order to submit this form. The applicant may not sign this form, nor any member of
+his or her family. In the event that the pastor is the student applying to ADVANCE, a church leader may complete and sign this
+form. If the applicant has not been at their current church for at least one year, then a reference from a pastor of their previous
+church will be required. If the student is a missionary, the pastor of his or her sponsoring church or home church may complete
+and sign this form. If for some other reason a Church Endorsement form cannot be completed, but the local director has deemed
+the student a good candidate to study with ADVANCE, then the local director must write, date, and sign a letter of explanation
+  and submit it for approval to the National ADVANCE Director.</p>
+
+<form method="POST">
+  {% csrf_token %}
+
+  <p>I affirm that this applicant demonstrates:
+    <ul>
+      <li>a commitment to the Christian faith;</li>
+      <li>a call to ministry;</li>
+      <li>moral integrity;</li>
+      <li>emotional stability;</li>
+      <li>leadership potential;</li>
+      <li>potential for responsible Christian ministry.</li>
+    </ul>
+  </p>
+  {{form.good_character.errors}}
+  <fieldset class="radio-row" data-expl="good_character_expl_div">
+	  <legend style="display: none">Is the applicant a person of good character?</legend>
+	  {% for radio in form.good_character %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+  <div id="good_character_expl_div">
+    {{form.good_character_expl.label}}
+    <br/>
+    {{form.good_character_expl.errors}}
+    {{form.good_character_expl}}
+  </div>
+  <p>The applicant is a regular attendee in good standing.</p>
+  {{form.good_standing.errors}}
+  <fieldset class="radio-row" data-expl="good_standing_expl_div">
+	  <legend style="display: none">Is the applicant a church member in good standing?</legend>
+	  {% for radio in form.good_standing %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+  <div id="good_standing_expl_div">
+    {{form.good_standing_expl.label}}
+    <br/>
+    {{form.good_standing_expl.errors}}
+    {{form.good_standing_expl}}
+  </div>
+  <p>I endorse this applicant for ministry training.</p>
+  {{form.endorsement.errors}}
+  <fieldset class="radio-row" data-expl="endorsement_expl_div">
+	  <legend style="display: none">Is the applicant a person of good character?</legend>
+	  {% for radio in form.endorsement %}
+	  <span class="radio-block">{{radio}}</span>
+	  {% endfor %}
+	</fieldset>
+  <div id="endorsement_expl_div">
+    {{form.endorsement_expl.label}}
+    <br/>
+    {{form.endorsement_expl.errors}}
+    {{form.endorsement_expl}}
+  </div>
+  <button type="submit">Submit</button>
+</form>
+<script type="text/javascript">
+  function show_hide_expls() {
+      $('fieldset').each(function(i, f) {
+          let div = $('#'+$(f).data('expl'));
+          let hide = true;
+          $(f).find('input:checked').each(function(j, inp) {
+              if (inp.value == 'False') hide = false;
+          });
+          if (hide) {
+              div.hide().find('textarea').prop('required', false);
+          } else {
+              div.show().find('textarea').prop('required', true);
+          }
+      });
+  }
+  $(document).ready(function() {
+      $('input[type=radio]').change(show_hide_expls);
+      show_hide_expls();
+  });
+</script>
+{% endblock %}
