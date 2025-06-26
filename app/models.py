@@ -479,11 +479,11 @@ class DegreeAward(models.Model):
                  ('BAC', 'Bay Area'), ('AZC', 'Arizona'),
                  ('PNWC', 'Pacific Northwest')],
         max_length=5, blank=True, null=True)
-    year = models.IntegerField(default=2025)
+    year = models.IntegerField(default=2025, blank=False)
     semester = models.CharField(
         choices=[('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
                  ('Wi', 'Winter')],
-        max_length=2, blank=True, null=True)
+        max_length=2, blank=False, null=True)
     shirt_size = models.CharField(
         choices=[('S', 'Small'), ('M', 'Medium'), ('L', 'Large'),
                  ('XL', 'X-Large'), ('XXL', 'XX-Large'),

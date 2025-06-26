@@ -5,6 +5,7 @@
     <th>Credit Rate</th>
     <th>Credits</th>
     <th>New Student</th>
+    <th>Graduation</th>
     <th>Total</th>
   </tr>
   {% for row in rows %}
@@ -25,7 +26,14 @@
     {% else %}
     <td></td>
     {% endif %}
-    <td>{{row.5}}</td>
+    {% if row.5 %}
+    <td {% if not row.2 %}title="Using US rate"{% endif %}>
+      ${{row.5}}
+    </td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    <td>{{row.6}}</td>
   </tr>
   {% endfor %}
   <tr>
@@ -34,6 +42,7 @@
     <td></td>
     <td>{{total_credits}}</td>
     <td></td>
+    <td>{{total_degree}}</td>
     <td>{{total_fee}}</td>
   </tr>
 </table>

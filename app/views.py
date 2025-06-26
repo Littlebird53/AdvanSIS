@@ -284,7 +284,7 @@ def add_student_query(request, courseid):
         for w in form.cleaned_data['query'].split():
             qr = qr.filter(Q(given_name__icontains=w) | \
                            Q(family_name__icontains=w) | \
-                           Q(user__username=w))
+                           Q(user__username__icontains=w))
     return render(request, 'app/add_student_query.html',
                   {'form': form, 'students': qr, 'course': course})
 @login_required
@@ -494,17 +494,32 @@ def center_tally(request, center):
         home, known = person.home_country
         charge = ct[person]*home.credit_fee
         new_student = False
-        if not models.Grade.objects.filter(person=person, course__year__lt=year).exists():
-            gr_list = sorted(models.Grade.objects.filter(person=person,
-                                                         course__year=year),
-                             key=lambda g: g.course.sort_key())
-            new_student = (gr_list[0].course.center == center)
-        if new_student:
-            charge += home.student_fee
-        rows.append((person, home, known, ct[person], new_student, charge))
+        graduating = False
+        deg_charge = 0
+        if models.StudentRecord.objects.filter(
+                person=person, center=center, status='C').exists():
+            if not models.Grade.objects.filter(person=person, course__year__lt=year).exists():
+                gr_list = sorted(models.Grade.objects.filter(
+                    person=person, course__year=year),
+                                 key=lambda g: g.course.sort_key())
+                new_student = ((gr_list[0].course.semester == semester)
+                               and (gr_list[0].course.center == center))
+            if new_student:
+                charge += home.student_fee
+            degrees = models.DegreeAward.objects.filter(
+                person=person, year=year, semester=semester, status='A')
+            for degree in degrees:
+                if degree.walking:
+                    deg_charge += 90
+                else:
+                    deg_charge += min(home.student_fee, 10)
+            charge += deg_charge
+        rows.append((person, home, known, ct[person], new_student,
+                     deg_charge, charge))
     rows.sort(key=lambda r: str(r[0]))
     return render(request, 'app/tally_sheet.html', {
-        'rows': rows, 'total_fee': sum(r[5] for r in rows),
+        'rows': rows, 'total_fee': sum(r[6] for r in rows),
+        'total_degree': sum(r[5] for r in rows),
         'total_credits': sum(r[3] for r in rows)})
 
 ####################
