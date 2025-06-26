@@ -44,9 +44,9 @@
 {% endif %}
 {% for row in records %}
 <div class="search-item">
-  <h2>{{row.0.center.name}} ({{row.0.get_status_display}})</h2>
+  <h2>{{row.0.center.name}} ({{row.0.status_line}})</h2>
   {% if not row.2 %}
-  {% if row.0.status == 'D' or row.0.status == 'R' %}
+  {% if row.0.role == 'D' or row.0.role == 'R' %}
   <p><a href="{% url 'app:new_course' row.0.center.id %}">Add Course</a></p>
   <p><a href="{% url 'app:center_students' row.0.center.id %}">Manage Students</a></p>
   <p><a href="{% url 'app:center_instructors' row.0.center.id %}">Manage Instructors</a></p>

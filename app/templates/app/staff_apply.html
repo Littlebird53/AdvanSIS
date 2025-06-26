@@ -1,0 +1,156 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Staff Application{% endblock %}
+
+{% block content %}
+<h1>Apply to be a staff member at {{center.name}}</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th><label for="{{form.role.id_for_label}}">Role</label></th>
+      <td>
+	      {{form.role.errors}}
+	      {{form.role}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">References</th>
+    </tr>
+    <tr>
+      <td colspan="2">
+	      Instructors, please provide references who have observed your teaching abilities/skills.
+	      Registrars, please provide character references.
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      <label for="{{form.reference1.id_for_label}}">Reference 1</label>
+      </th>
+      <td>
+	      {{form.reference1.errors}}
+	      {{form.reference1}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      <label for="{{form.reference2.id_for_label}}">Reference 2</label>
+      </th>
+      <td>
+	      {{form.reference2.errors}}
+	      {{form.reference2}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">Church Membership</th>
+    </tr>
+    <tr>
+      <th>
+	      <label for="{{form.church.id_for_label}}">Name of Church</label>
+      </th>
+      <td>
+	      {{form.church.errors}}
+	      {{form.church}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      <label for="{{form.denomination.id_for_label}}">Denomination</label>
+      </th>
+      <td>
+	      {{form.denomination.errors}}
+	      {{form.denomination}}
+      </td>
+    </tr>
+    <tr>
+      <th>Are you ordained?</th>
+      <td>
+	      {{form.ordained.errors}}
+	      <fieldset class="radio-row">
+	        <legend style="display: none">Are you ordained?</legend>
+	        {% for radio in form.ordained %}
+	        <span class="radio-block">{{radio}}</span>
+	        {% endfor %}
+	      </fieldset>
+      </td>
+    </tr>
+    <tr><th colspan="2">Transcripts</th></tr>
+    <tr>
+      <td colspan="2">
+	      To be approved as an instructor, the ADVANCE Office requires a copy of your transcript (either official or unofficial) to verify your highest or most relevant degree in theological or ministerial education.
+	      Assistant Instructors and Registrars are encouraged, but not required to submit transcripts. How will you submit your transcripts?
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      I will request official or unofficial transcripts from all relevant theological/ministerial education and email to <a href="mailto:advance@gs.edu">advance@gs.edu</a>.
+      </th>
+      <td>
+	      {{form.email_transcript.errors}}
+	      <fieldset class="radio-row">
+	        <legend style="display: none">I will send transcripts by email.</legend>
+	        {% for radio in form.email_transcript %}
+	        <span class="radio-block">{{radio}}</span>
+	        {% endfor %}
+	      </fieldset>
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      As a Gateway student/alumni, I authorize use of my transcripts for this purpose.
+      </th>
+      <td>
+	      {{form.alum_transcript.errors}}
+	      <fieldset class="radio-row">
+	        <legend style="display: none">I am an alum.</legend>
+	        {% for radio in form.alum_transcript %}
+	        <span class="radio-block">{{radio}}</span>
+	        {% endfor %}
+	      </fieldset>
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      <label for="{{form.upload_transcript.id_for_label}}">
+	        I will upload my transcript now.
+	      </label>
+      </th>
+      <td>
+	      {{form.upload_transcript.errors}}
+	      {{form.upload_transcript}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	      I am an assistant instructor/registrar and do not have relevant transcripts.
+      </th>
+      <td>
+	      {{form.no_transcript.errors}}
+	      <fieldset class="radio-row">
+	        <legend style="display: none">I have no transcripts.</legend>
+	        {% for radio in form.no_transcript %}
+	        <span class="radio-block">{{radio}}</span>
+	        {% endfor %}
+	      </fieldset>
+      </td>
+    </tr>
+    <tr><th colspan="2">Statement of Faith</th></tr>
+    <tr>
+      <th>
+        As an instructor with Gateway Seminary ADVANCE, I agree to teach in accordance with <a href="https://bfm.sbc.net/">the Baptist Faith and Message</a>.
+      </th>
+      <td>
+	      {{form.accept_bfm.errors}}
+	      <fieldset class="radio-row">
+	        <legend style="display: none">I will teach in accordance with the Baptist Faith and Message.</legend>
+	        {% for radio in form.accept_bfm %}
+	        <span class="radio-block">{{radio}}</span>
+	        {% endfor %}
+	      </fieldset>
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}

@@ -3,30 +3,26 @@
 {% block title %}View Instructors{% endblock %}
 
 {% block content %}
+<h1>Staff Roster for {{center.name}}</h1>
 
-<nav>
-  {% for item in header %}
-  <li class="menu-item">
-    {% if status == item.0 %}
-    <span class="multiline">{{item.1}}</span>
-    {% else %}
-    <a href="{% url 'app:center_instructors_by_status' center.id item.0 %}"
-       class="multiline">
-      {{item.1}}
-    </a>
-    {% endif %}
-  </li>
-  {% endfor %}
-</nav>
+<form method="GET">
+  <table>
+    {{filter_form.as_table}}
+  </table>
+  <button type="submit">Search</button>
+</form>
 
-{% if count > 0 %}
 <form method="POST">
   {% csrf_token %}
+  <div style="display: none">
+    {{filter_form}}
+  </div>
   {{instructors.management_form}}
   <table>
     <tr>
       <th>Person</th>
       <th>Status</th>
+      <th>Role</th>
     </tr>
     {% for form in instructors %}
     <tr>
@@ -44,7 +40,4 @@
   <button type="submit">Save</button>
   <p>{{message}}</p>
 </form>
-{% else %}
-<p>No instructor records found.</p>
-{% endif %}
 {% endblock %}

@@ -192,11 +192,11 @@ class Center(models.Model):
 
     def is_admin(self, person):
         return self.staffrecord_set.filter(
-            person=person, status__in=['D', 'G']).exists()
+            person=person, role__in=['D', 'R'], status='C').exists()
 
     @property
     def director(self):
-        sr = self.staffrecord_set.filter(status='D').first()
+        sr = self.staffrecord_set.filter(status='C', role='D').first()
         if sr:
             return sr.person
 
@@ -356,6 +356,13 @@ class StudentRecord(models.Model):
     def __str__(self):
         return f'{self.person} {self.center}'
 
+    def sort_key(self):
+        return (self.center.name, self.status)
+
+    @property
+    def status_line(self):
+        return self.get_status_display()
+
 class SharedFile(models.Model):
     owner = models.ForeignKey(Person, on_delete=models.SET_NULL,
                               null=True, blank=True)
@@ -375,17 +382,18 @@ class StaffRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('CI', 'Current Instructor'), ('FI', 'Former Instructor'),
-                 ('AI', 'Applied Instructor'),
-                 ('RI', 'Rejected Instructor'),
-                 ('CA', 'Current Associate Instructor'),
-                 ('FA', 'Former Associate Instructor'),
+        choices=[('C', 'Current'), ('F', 'Former'),
+                 ('A', 'Applied'), ('R', 'Rejected')],
+        max_length=1, default='A')
+    role = models.CharField(
+        choices=[('I', 'Instructor'), ('A', 'Associate Instructor'),
                  ('D', 'Director'), ('R', 'Registrar')],
-        max_length=2, default='AI')
+        max_length=1, default='I')
     reference1 = models.TextField(null=True)
     reference2 = models.TextField(null=True)
     ordained = models.BooleanField(null=True)
     church = models.CharField(max_length=100, null=True)
+    denomination = models.CharField(max_length=100, null=True)
     email_transcript = models.BooleanField(default=False)
     alum_transcript = models.BooleanField(default=False)
     upload_transcript = models.FileField(blank=True, null=True)
@@ -394,6 +402,13 @@ class StaffRecord(models.Model):
 
     def __str__(self):
         return f'{self.person} {self.center}'
+
+    @property
+    def status_line(self):
+        return self.get_status_display() + ' ' + self.get_role_display()
+
+    def sort_key(self):
+        return (self.center.name, self.role)
 
 class DegreeRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)

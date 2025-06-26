@@ -101,13 +101,12 @@ def dashboard(request):
             (Q(instructor=request.user.person) |
              Q(associate_instructors=request.user.person)),
             center=record.center))
-        if record.status in ['CI', 'CA', 'D', 'R']:
+        if record.status == 'C':
             current.append((record, courses, False))
         else:
             other.append((record, courses, False))
-    current.sort(key=lambda x: (x[0].center.name, x[0].status))
-    other.sort(key=lambda x: (x[0].center.name, x[0].status))
-    print(current, other)
+    current.sort(key=lambda x: x[0].sort_key())
+    other.sort(key=lambda x: x[0].sort_key())
     return render(request, 'app/dashboard.html',
                   {
                       'form': form,
@@ -345,7 +344,7 @@ def student_info(request, studentid):
     s_centers = student.studentrecord_set.values_list('center', flat=True)
     i_centers = student.staffrecord_set.values_list('center', flat=True)
     is_director = models.StaffRecord.objects.filter(
-        person=request.user.person, status__in=['D', 'G'],
+        person=request.user.person, role__in=['D', 'R'], status='C',
         center__in=s_centers.union(i_centers)).exists()
     is_instructor = models.Grade.objects.filter(
         (Q(course__instructor=request.user.person) |
@@ -411,26 +410,19 @@ def new_course(request, center):
 @center_admin
 def view_instructors(request, center, status):
     qs = models.StaffRecord.objects.filter(center=center)
-    if status is not None:
-        qs = qs.filter(status=status)
-    if request.method == 'POST':
+    if request.method == 'GET':
+        filter_form = forms.StaffRecordFilterForm(request.GET)
+        qs = filter_form.make_queryset(center)
+        form = forms.StaffRecordFormset(queryset=qs)
+    else:
+        filter_form = forms.StaffRecordFilterForm(request.POST)
+        qs = filter_form.make_queryset(center)
         form = forms.StaffRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
             form.save()
-    else:
-        form = forms.StudentRecordFormset(queryset=qs)
-    header = [(None, 'All Staff'),
-              ('CI', 'Current Instructors'),
-              ('FI', 'Former Instructors'),
-              ('AI', 'Pending Applications'),
-              ('RI', 'Rejected Applications'),
-              ('CA', 'Current Associate Instructors'),
-              ('FA', 'Former Associate Instructors'),
-              ('D', 'Directors'),
-              ('R', 'Registrars')]
     return render(request, 'app/view_instructors.html',
-                  {'instructors': form, 'count': len(qs), 'status': status,
-                   'center': center, 'header': header})
+                  {'instructors': form, 'filter_form': filter_form,
+                   'center': center})
 
 @center_admin
 def view_students(request, center, status):
@@ -526,12 +518,33 @@ def center_tally(request, center):
 ### Instructors
 ####################
 
-@login_required
-def instructor_apply(request, centerid):
-    center = get_object_or_404(models.Center, pk=centerid)
-    models.StaffRecord.objects.get_or_create(
-        center=center, person=request.user.person)
-    return redirect('app:dashboard')
+class StaffApplyView(AccessMixin, FormView):
+    form_class = forms.StaffApplicationForm
+    template_name = 'app/staff_apply.html'
+
+    def dispatch(self, request, centerid, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.center = get_object_or_404(models.Center, pk=centerid)
+        self.person = request.user.person
+        if models.StaffRecord.objects.filter(
+                center=self.center, person=self.person).exists():
+            # TODO: explain?
+            return redirect('app:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx['center'] = self.center
+        return ctx
+
+    def form_valid(self, form):
+        form.instance.center = self.center
+        form.instance.person = self.person
+        sr = form.save()
+        # TODO: notify director?
+        return render(self.request, 'app/student_apply_success.html',
+                      {'sr': sr})
 
 class MessageCourseStudentsView(AccessMixin, FormView):
     form_class = forms.NewPopupForm
@@ -557,17 +570,9 @@ class MessageCourseStudentsView(AccessMixin, FormView):
 ### Students
 ####################
 
-@login_required
-def student_apply(request, centerid):
-    center = get_object_or_404(models.Center, pk=centerid)
-    models.StudentRecord.objects.get_or_create(
-        center=center, person=request.user.person)
-    return redirect('app:dashboard')
-
 class StudentApplyView(AccessMixin, FormView):
     form_class = forms.StudentApplicationForm
     template_name = 'app/student_apply.html'
-    success_url = '/dashboard' # TODO
 
     def dispatch(self, request, centerid, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -576,6 +581,7 @@ class StudentApplyView(AccessMixin, FormView):
         self.person = request.user.person
         if models.StudentRecord.objects.filter(
                 center=self.center, person=self.person).exists():
+            # TODO: explain?
             return redirect('app:dashboard')
         return super().dispatch(request, *args, **kwargs)
 

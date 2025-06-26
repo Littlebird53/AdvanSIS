@@ -86,7 +86,7 @@ class NewCourseForm(forms.ModelForm):
         self.center = center
         self.fields['instructor'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
-            staffrecord__status__in=['C', 'D', 'G'])
+            staffrecord__status='C', staffrecord__role__in=['I', 'D'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
         self.fields['template'].widget.attrs['class'] = 'filter-select'
         self.fields['language'].widget.attrs['class'] = 'filter-select'
@@ -137,10 +137,27 @@ class StaffRecordForm(forms.ModelForm):
         self.fields['person'].disabled = True
     class Meta:
         model = models.StaffRecord
-        fields = ['person', 'status']
+        fields = ['person', 'status', 'role']
 StaffRecordFormset = forms.modelformset_factory(
     models.StaffRecord, form=StaffRecordForm,
     extra=0, edit_only=True)
+class StaffRecordFilterForm(forms.Form):
+    any_option = [(None, 'All')]
+    status = forms.ChoiceField(
+        choices=any_option+models.StaffRecord.status.field.choices,
+        required=False)
+    role = forms.ChoiceField(
+        choices=any_option+models.StaffRecord.role.field.choices,
+        required=False)
+    def make_queryset(self, center):
+        qs = models.StaffRecord.objects.filter(center=center)
+        status = self.data.get('status')
+        if status:
+            qs = qs.filter(status=status)
+        role = self.data.get('role')
+        if role:
+            qs = qs.filter(role=role)
+        return qs
 
 class CertificateForm(forms.ModelForm):
     class Meta:
@@ -247,3 +264,41 @@ class ChurchEndorsementForm(forms.ModelForm):
     class Meta:
         model = models.StudentRecord
         fields = ['good_character', 'good_standing', 'endorsement']
+
+class StaffApplicationForm(forms.ModelForm):
+    ordained = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    email_transcript = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    alum_transcript = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    no_transcript = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    accept_bfm = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+
+    def clean_upload_transcript(self):
+        val = self.cleaned_data.get('upload_transcript')
+        if val is None:
+            other = ['email_transcript', 'alum_transcript',
+                     'no_transcript']
+            if not any(self.data.get(t) == 'True' for t in other):
+                raise forms.ValidationError(_('You must select at least one transcript option.'), code='no-transcript')
+        return val
+
+    def clean_no_transcript(self):
+        val = self.cleaned_data.get('no_transcript')
+        if val == 'True' and self.data.get('role') in ['I', 'D']:
+            raise forms.ValidationError(_('Transcripts are required for instructors and directors.'), code='instructor-no-transcript')
+        return val
+
+    class Meta:
+        model = models.StaffRecord
+        fields = ['role', 'reference1', 'reference2', 'ordained', 'church',
+                  'denomination', 'email_transcript', 'alum_transcript',
+                  'upload_transcript', 'no_transcript', 'accept_bfm']

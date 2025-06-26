@@ -150,7 +150,7 @@ class StaffRecordInline(NonrelatedTabularInline):
     extra = 0
     exclude = ['person']
     def get_form_queryset(self, obj):
-        return obj.person.studentrecord_set.all()
+        return obj.person.staffrecord_set.all()
     def save_new_instance(self, parent, instance):
         instance.person = parent.person
         instance.save()
