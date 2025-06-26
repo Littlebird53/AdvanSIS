@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
+from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
 from app import models
 from app import forms
@@ -594,7 +596,14 @@ class StudentApplyView(AccessMixin, FormView):
         form.instance.center = self.center
         form.instance.person = self.person
         sr = form.save()
-        # TODO: send endorsement email
+        path = reverse('app:church_endorsement', args=[sr.id])
+        # TODO: actual email content
+        send_mail(
+            'Gateway ADVANCE Recommendation',
+            f'https://joseph.dangswan.com{path}',
+            None,
+            [sr.church_rec_email],
+        )
         return render(self.request, 'app/student_apply_success.html',
                       {'sr': sr})
 
@@ -613,9 +622,6 @@ class ChurchEndorsementView(UpdateView):
         if not form.instance.endorsement:
             expl += ['Endorsement', form.cleaned_data['endorsement_expl']]
         form.instance.pastor_explanation = '\n\n'.join(expl)
-        if not expl:
-            form.instance.status = 'C'
-            # TODO: send email
         form.save()
         return render(self.request, 'app/endorsement_submitted.html',
                       {'sr': self.object})

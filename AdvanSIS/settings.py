@@ -147,6 +147,8 @@ LOCALE_PATHS = []
 MANAGERS = ADMINS
 SITE_ID = 1
 SERVER_EMAIL = 'errors@joseph.dangswan.com'
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LATEX_INTERPRETER = 'lualatex'
 import os.path
