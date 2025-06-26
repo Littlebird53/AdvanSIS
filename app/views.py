@@ -1,15 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
-from django.core.mail import send_mail
+from django.contrib.staticfiles import finders
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
 from app import models
 from app import forms
 import collections
 import datetime
+from email.mime.image import MIMEImage
 import itertools
 
 def landing_page(request):
@@ -572,6 +575,13 @@ class MessageCourseStudentsView(AccessMixin, FormView):
 ### Students
 ####################
 
+def add_email_image(message, name):
+    with open(finders.find(f'email/{name}.png'), 'rb') as fin:
+        data = fin.read()
+        blob = MIMEImage(data)
+        blob.add_header('Content-ID', f'<{name}>')
+        message.attach(blob)
+
 class StudentApplyView(AccessMixin, FormView):
     form_class = forms.StudentApplicationForm
     template_name = 'app/student_apply.html'
@@ -596,14 +606,19 @@ class StudentApplyView(AccessMixin, FormView):
         form.instance.center = self.center
         form.instance.person = self.person
         sr = form.save()
-        path = reverse('app:church_endorsement', args=[sr.id])
-        # TODO: actual email content
-        send_mail(
-            'Gateway ADVANCE Recommendation',
-            f'https://joseph.dangswan.com{path}',
-            None,
-            [sr.church_rec_email],
+        tmpl = get_template('app/church_recommendation_email.html')
+        message = EmailMultiAlternatives(
+            subject='Gateway ADVANCE Church Recommendation',
+            to=[sr.church_rec_email],
         )
+        message.mixed_subtype = 'related'
+        message.attach_alternative(tmpl.render({'sr': sr}), 'text/html')
+        add_email_image(message, 'logo')
+        add_email_image(message, 'facebook')
+        add_email_image(message, 'twitter')
+        add_email_image(message, 'instagram')
+        add_email_image(message, 'youtube')
+        message.send()
         return render(self.request, 'app/student_apply_success.html',
                       {'sr': sr})
 
