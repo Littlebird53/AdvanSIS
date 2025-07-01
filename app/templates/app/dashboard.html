@@ -10,7 +10,7 @@
 {% if message %}
 <h2>{{message}}</h2>
 {% endif %}
-<details {% if form.errors %}open{% endif %}>
+<details {% if info_open %}open{% endif %}>
   <summary>Update personal information</summary>
   <form method="POST">
     {% csrf_token %}
@@ -29,7 +29,7 @@
     <div id="phones" hx-trigger="load" hx-get="{% url 'app:edit_phone' %}">
     </div>
   </details>
-  <details>
+  <details {% if not user.person.has_address %}open{% endif %}>
     <summary>Addresses</summary>
     <div id="mailings" hx-trigger="load" hx-get="{% url 'app:edit_mailing' %}">
     </div>
@@ -99,7 +99,7 @@
 {% empty %}
 <h2>You are not currently associated with any centers.</h2>
 <p><a href="{% url 'app:center_search' %}">Find my center</a></p>
-<p><a href="">Apply to start a new center</a></p>
+<p><a href="{% url 'app:new_center' %}">Apply to start a new center</a></p>
 {% endfor %}
 <h2>Links</h2>
 <p><a href="{% url 'app:course_search' %}">Enroll in a course</a></p>

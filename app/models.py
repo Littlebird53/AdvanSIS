@@ -163,6 +163,14 @@ class Person(models.Model):
         else:
             return addr.country, True
 
+    @property
+    def has_profile(self):
+        return self.date_of_birth is not None
+
+    @property
+    def has_address(self):
+        return self.mailings.all().filter(active=True).exists()
+
 class StudyArea(models.Model):
     name = models.CharField(max_length=50)
 

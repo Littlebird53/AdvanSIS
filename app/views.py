@@ -112,11 +112,20 @@ def dashboard(request):
             other.append((record, courses, False))
     current.sort(key=lambda x: x[0].sort_key())
     other.sort(key=lambda x: x[0].sort_key())
+    info_open = bool(form.errors)
+    if not message and not info_open:
+        if not request.user.person.has_profile:
+            info_open = True
+            message = 'Please complete your profile'
+        elif not request.user.person.has_address:
+            info_open = True
+            message = 'Please add your address'
     return render(request, 'app/dashboard.html',
                   {
                       'form': form,
                       'message': message,
                       'records': current + other,
+                      'info_open': info_open,
                   })
 
 @login_required
