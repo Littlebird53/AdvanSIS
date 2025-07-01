@@ -352,6 +352,7 @@ class StudentRecord(models.Model):
     endorsement = models.BooleanField(null=True)
     pastor_explanation = models.TextField(blank=True, null=True)
     pastor_date = models.DateField(blank=True, null=True)
+    acceptance_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.person} {self.center}'

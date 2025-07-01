@@ -26,7 +26,7 @@ urlpatterns = [
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,
-         {'status': None}, name='center_instructors'),
+         name='center_instructors'),
     path('center/<int:centerid>/students/', views.view_students,
          {'status': None}, name='center_students'),
     path('center/<int:centerid>/students/applied/', views.view_students,

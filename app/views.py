@@ -348,21 +348,36 @@ def student_info(request, studentid):
     student = get_object_or_404(models.Person, pk=studentid)
     s_centers = student.studentrecord_set.values_list('center', flat=True)
     i_centers = student.staffrecord_set.values_list('center', flat=True)
-    is_director = models.StaffRecord.objects.filter(
+    director_centers = models.StaffRecord.objects.filter(
         person=request.user.person, role__in=['D', 'R'], status='C',
-        center__in=s_centers.union(i_centers)).exists()
+        center__in=s_centers.union(i_centers)).values_list(
+            'center', flat=True)
+    if request.user.is_staff:
+        director_centers = s_centers.union(i_centers)
+    is_director = len(director_centers) > 0
     is_instructor = models.Grade.objects.filter(
         (Q(course__instructor=request.user.person) |
          Q(course__associate_instructors=request.user.person))
     ).filter(person=student).exists()
     if not is_director and not is_instructor:
         raise PermissionDenied()
+    s_applications = []
+    i_applications = []
+    transcript = []
+    if is_director:
+        transcript = student.grade_set.all()
+        s_applications = student.studentrecord_set.all().filter(
+            center__in=director_centers)
+        i_applications = student.staffrecord_set.all().filter(
+            center__in=director_centers)
     return render(request, 'app/student_info.html',
                   {'student': student,
                    'emails': student.emails.filter(active=True),
                    'phones': student.phones.filter(active=True),
                    'mailings': student.mailings.filter(active=True),
-                   'transcript': student.grade_set.all() if is_director else []})
+                   'transcript': transcript,
+                   'student_applications': s_applications,
+                   'instructor_applications': i_applications})
 
 @login_required
 def current_popups(request, dismiss=None):
@@ -413,7 +428,7 @@ def new_course(request, center):
     return render(request, 'app/new_course.html', {'form': form})
 
 @center_admin
-def view_instructors(request, center, status):
+def view_instructors(request, center):
     qs = models.StaffRecord.objects.filter(center=center)
     if request.method == 'GET':
         filter_form = forms.StaffRecordFilterForm(request.GET)
@@ -429,6 +444,23 @@ def view_instructors(request, center, status):
                   {'instructors': form, 'filter_form': filter_form,
                    'center': center})
 
+def send_welcome_email(sr):
+    print('send_welcome_email')
+    from django_tex.core import compile_template_to_pdf
+    addr = sr.person.mailings.all().filter(active=True, category='H').first()
+    if addr is None:
+        addr = {'address': '~', 'last_line': '~'}
+    message = EmailMultiAlternatives(
+        subject='Gateway ADVANCE Acceptance Letter',
+        to=[sr.person.user.email],
+    )
+    # TODO: message body
+    message.mixed_subtype = 'related'
+    pdf = compile_template_to_pdf('latex/student_welcome.tex',
+                                  {'sr': sr, 'addr': addr})
+    message.attach('acceptance_letter.pdf', pdf)
+    message.send()
+
 @center_admin
 def view_students(request, center, status):
     qs = models.StudentRecord.objects.filter(center=center)
@@ -438,6 +470,11 @@ def view_students(request, center, status):
         form = forms.StudentRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
             form.save()
+            for sr, changed in form.changed_objects:
+                if sr.status == 'C' and sr.acceptance_date is None:
+                    sr.acceptance_date = datetime.date.today()
+                    sr.save()
+                    send_welcome_email(sr)
     else:
         form = forms.StudentRecordFormset(queryset=qs)
     return render(request, 'app/view_students.html',

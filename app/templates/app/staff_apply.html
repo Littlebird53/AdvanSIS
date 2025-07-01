@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Apply to be a staff member at {{center.name}}</h1>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>
     <tr>

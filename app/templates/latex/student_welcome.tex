@@ -1,0 +1,68 @@
+\documentclass[letterpaper]{article} % This line defines the document class as an article and explicitly sets the paper size to US Letter (8.5x11 inches).
+\usepackage[utf8]{inputenc} % Standard package for handling text encoding.
+\usepackage[T1]{fontenc} % Standard package for font encoding.
+\usepackage{geometry} % This package allows for precise control over page dimensions.
+\geometry{letterpaper, margin=1.5in} % While 'letterpaper' is set in the documentclass, using the geometry package with 'letterpaper' and 'margin=1in' ensures standard US letter dimensions and sets all margins to one inch for a clean layout.
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage[default]{lato}
+
+\newcommand{\apprdate}{ {{- sr.acceptance_date -}} }
+\newcommand{\studentname}{ {{- sr.person.full_name -}} }
+\newcommand{\studentaddrone}{ {{- addr.address -}} }
+\newcommand{\studentaddrtwo}{ {{- addr.last_line -}} }
+\newcommand{\studentid}{ {{- sr.person.user.username -}} }
+
+\definecolor{blue}{HTML}{6F8EA3}
+
+{% graphicspath %}
+
+\begin{document}
+\pagestyle{fancy}
+\fancyfoot[C]{\textcolor{blue}{ 3210 East Guasti Road • Ontario, CA 91761-8642 • 909.687.165 • advance@gs.edu}}
+\begin{center}
+    \includegraphics{Gateway new blue logo horizontal.PNG}
+\end{center}
+
+\vspace{1cm}
+% Sender's details and date, typically placed at the top.
+\raggedright % Aligns the following text to the left margin.
+\apprdate
+\vspace{0.5cm} % Adds a vertical space.
+
+% Student's address block, using the defined variables.
+\studentname \\ % Prints the student's name in bold.
+\studentaddrone \\ % Prints the first line of the student's address.
+\studentaddrtwo % Prints the second line of the student's address
+
+\vspace{1cm} % Adds more vertical space before the salutation.
+
+% Salutation, using the defined student name variable.
+Dear \studentname,
+
+\vspace{0.5cm}
+
+% Body of the letter, compiled from the provided excerpts.
+Thank you for your interest in pursuing God’s will for your life as it pertains to ADVANCE! \\ I am pleased to inform you that your application for admission to Gateway Seminary of the Southern Baptist Convention as an Advance Program student has been approved for study at your local center. Congratulations! Your student identification number is \textbf{\studentid}. Please remember this number for all future correspondence with Gateway Seminary.
+
+\vspace{0.5cm}
+
+Please let me know if we can be of any further assistance as you continue your studies.
+\\
+
+Welcome to the Gateway family!
+
+\vspace{1cm} % Adds vertical space before the closing.
+
+Sincerely,
+
+\includegraphics[scale=.5]{Warren Haynes Signature.jpg}
+\vspace{.1cm} \\
+Dr. Warren Haynes \\
+ADVANCE Program Director, Gateway Seminary
+
+
+\end{document}

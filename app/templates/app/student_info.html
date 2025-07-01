@@ -64,4 +64,129 @@
   </tbody>
 </table>
 {% endif %}
+
+{% for app in student_applications %}
+<h2>Application to {{app.center.name}} (Student)</h2>
+<table>
+  <tr>
+    <th>Church</th>
+    <td>{{app.church}}</td>
+  </tr>
+  <tr>
+    <th>Length of Church Membership</th>
+    <td>{{app.church_membership}}</td>
+  </tr>
+  <tr>
+    <th>Church is SBC</th>
+    <td>{{app.church_sbc|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Pastoral Recommender</th>
+    <td>{{app.church_rec_name}} ({{app.church_rec_email|urlize}})</td>
+  </tr>
+  <tr>
+    <th>Recommendation Date</th>
+    <td>{{app.pastor_date|default_if_none:"Not yet submitted"}}</td>
+  </tr>
+  {% if app.pastor_date %}
+  <tr>
+    <th>Pastor Affirms Good Character</th>
+    <td>{{app.good_character|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Pastor Affirms Good Standing</th>
+    <td>{{app.good_standing|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Pastor Endorses Student</th>
+    <td>{{app.endorsement|yesno}}</td>
+  </tr>
+  {% if app.pastor_explanation %}
+  <tr>
+    <th>Further Comments</th>
+    <td>{{app.pastor_explanation}}</td>
+  </tr>
+  {% endif %}
+  {% endif %}
+  <tr>
+    <th>Reference 1</th>
+    <td>{{app.reference1}}</td>
+  </tr>
+  <tr>
+    <th>Reference 2</th>
+    <td>{{app.reference2}}</td>
+  </tr>
+  <tr>
+    <th>Level of Education</th>
+    <td>{{app.get_ed_level_display}}</td>
+  </tr>
+  <tr>
+    <th>Student Feels Called to Ministry</th>
+    <td>{{app.called_to_ministry|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Student has been Christian for a Year</th>
+    <td>{{app.christian_year|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Student Accepts ADVANCE Standard of Conduct</th>
+    <td>{{app.conduct_standard|yesno}}</td>
+  </tr>
+  {% if user.is_staff %}
+  <tr>
+    <th>Previous Gateway Student</th>
+    <td>{{app.prev_gateway|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Gateway Student ID</th>
+    <td>{{app.gateway_id}}</td>
+  </tr>
+  {% endif %}
+</table>
+{% endfor %}
+
+{% for app in instructor_applications %}
+<h2>Application to {{app.center.name}} ({{app.get_role_display}})</h2>
+<table>
+  <tr>
+    <th>Reference 1</th>
+    <td>{{app.reference1}}</td>
+  </tr>
+  <tr>
+    <th>Reference 2</th>
+    <td>{{app.reference2}}</td>
+  </tr>
+  <tr>
+    <th>Ordained</th>
+    <td>{{app.ordained|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Church</th>
+    <td>{{app.church}}</td>
+  </tr>
+  <tr>
+    <th>Church Denomination</th>
+    <td>{{app.denomination}}</td>
+  </tr>
+  <tr>
+    <th>Transcript</th>
+    <td>
+      {% if app.upload_transcript %}
+      <a href="{{app.upload_transcript.url}}">Download</a>
+      {% elif app.email_transcript %}
+      Sent by email
+      {% elif app.alum_transcript %}
+      Use Gateway transcript
+      {% else %}
+      No transcript provided
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <th>Agrees to Baptist Faith &amp; Message</th>
+    <td>{{app.accept_bfm|yesno}}</td>
+  </tr>
+</table>
+{% endfor %}
+
 {% endblock %}
