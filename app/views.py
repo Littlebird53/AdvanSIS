@@ -298,6 +298,8 @@ def add_student_query(request, courseid):
             qr = qr.filter(Q(given_name__icontains=w) | \
                            Q(family_name__icontains=w) | \
                            Q(user__username__icontains=w))
+    if form.cleaned_data.get('courses'):
+        qr = qr.filter(grade__course__template__in=form.cleaned_data['courses'])
     return render(request, 'app/add_student_query.html',
                   {'form': form, 'students': qr, 'course': course})
 @login_required

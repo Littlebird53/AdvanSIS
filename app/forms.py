@@ -92,6 +92,7 @@ class NewCourseForm(forms.ModelForm):
         self.fields['language'].widget.attrs['class'] = 'filter-select'
         self.fields['country'].widget.attrs['class'] = 'filter-select'
         self.fields['country'].initial = center.country
+        self.fields['year'].widget.attrs['style'] = 'text-align: center;width: 5em;'
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
@@ -119,6 +120,12 @@ class StudentSearchForm(forms.Form):
     query = forms.CharField(max_length=100, required=False)
     include = forms.BooleanField(
         required=False, label='Include students from other centers')
+    courses = forms.ModelMultipleChoiceField(
+        queryset=models.CourseTemplate.objects.filter(
+            active=True).order_by('title'),
+        required=False, label='Is taking or has taken')
+    courses.widget.attrs.update({'class': 'filter-select',
+                                 'style': 'width: 100%'})
 
 class StudentRecordForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
