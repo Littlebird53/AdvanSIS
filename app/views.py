@@ -294,10 +294,15 @@ def add_student_query(request, courseid):
         qr = qr.filter(studentrecord__center=course.center,
                        studentrecord__status='C')
     if form.cleaned_data.get('query'):
-        for w in form.cleaned_data['query'].split():
-            qr = qr.filter(Q(given_name__icontains=w) | \
+        q1 = Q()
+        for sec in form.cleaned_data['query'].split(';'):
+            q2 = Q()
+            for w in sec.strip().split():
+                q2 = q2 & (Q(given_name__icontains=w) | \
                            Q(family_name__icontains=w) | \
                            Q(user__username__icontains=w))
+            q1 = q1 | q2
+        qr = qr.filter(q1)
     if form.cleaned_data.get('courses'):
         qr = qr.filter(grade__course__template__in=form.cleaned_data['courses'])
     return render(request, 'app/add_student_query.html',
