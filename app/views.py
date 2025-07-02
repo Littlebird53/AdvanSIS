@@ -369,7 +369,33 @@ def list_centers(request):
 def course_catalog(request):
     return render(request, 'app/course_catalog.html',
                   {'courses': models.CourseTemplate.objects.filter(
-                      active=True).order_by('title')})
+                      active=True).order_by('title'),
+                   'staff_view': request.user.person.staffrecord_set.all().filter(status='C').exists()})
+
+@login_required
+def course_resources(request, courseid):
+    if not request.user.is_staff and not request.user.person.staffrecord_set.all().filter(status='C').exists():
+        raise PermissionDenied()
+    course = get_object_or_404(models.CourseTemplate, pk=courseid)
+    if request.method == 'POST':
+        form = forms.AddFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            sf = form.save(commit=False)
+            sf.course = course
+            if not request.user.is_staff:
+                sf.owner = request.user.person
+            sf.save()
+            form = forms.AddFileForm()
+    else:
+        form = forms.AddFileForm()
+    qs = models.SharedFile.objects.filter(course=course).order_by('title')
+    if not request.user.is_staff:
+        qs = qs.filter(Q(owner__isnull=True) | Q(owner=request.user.person))
+    return render(request, 'app/course_resources.html', {
+        'course': course,
+        'form': form,
+        'files': qs,
+    })
 
 @login_required
 def degree_catalog(request):

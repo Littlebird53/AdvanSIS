@@ -1,0 +1,81 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Center Application{% endblock %}
+
+{% block content %}
+<h1>Apply to start a new center</h1>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th><label for="{{form.name.id_for_label}}">Center Name</label></th>
+      <td>
+	{{form.name.errors}}
+	{{form.name}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">Sponsoring Organization</th>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor.id_for_label}}">Organization</label>
+      </th>
+      <td>
+	{{form.sponsor.errors}}
+	{{form.sponsor}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor_rep.id_for_label}}">Representative Name</label>
+      </th>
+      <td>
+	{{form.sponsor_rep.errors}}
+	{{form.sponsor_rep}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor_rep_title.id_for_label}}">Representative Title</label>
+      </th>
+      <td>
+	{{form.sponsor_rep_title.errors}}
+	{{form.sponsor_rep_title}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor_email.id_for_label}}">Email Address</label>
+      </th>
+      <td>
+	{{form.sponsor_email.errors}}
+	{{form.sponsor_email}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor_phone.id_for_label}}">Phone Number</label>
+      </th>
+      <td>
+	{{form.sponsor_phone.errors}}
+	{{form.sponsor_phone}}
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2">Documents</th>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.church.id_for_label}}">Certificate of Insurance (Optional)</label>
+      </th>
+      <td>
+	{{form.coi_file.errors}}
+	{{form.coi_file}}
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}

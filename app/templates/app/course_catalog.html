@@ -8,6 +8,9 @@
 <div>
   <a class="fake-anchor" name="c{{course.id}}">null</a>
   <h2>{{course}}</h2>
+  {% if staff_view %}
+  <p><a href="{% url 'app:course_resources' course.id %}">View resources</a></p>
+  {% endif %}
   <details>
     <summary>Description</summary>
     <p>{{course.description|linebreaksbr}}</p>
