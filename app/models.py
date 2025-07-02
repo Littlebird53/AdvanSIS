@@ -211,7 +211,7 @@ class Center(models.Model):
                                      blank=True, null=True)
     instructor_payment = models.DecimalField(max_digits=5, decimal_places=2,
                                              blank=True, null=True)
-    instructor_payment_unit = moels.CharField(max_length=1, choices=[
+    instructor_payment_unit = models.CharField(max_length=1, choices=[
         ('R', 'Per Registration'), ('C', 'Per Course'),
         ('S', 'Per Semester'), ('Y', 'Per Year')],
                                               blank=True, null=True)
