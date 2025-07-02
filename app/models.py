@@ -192,7 +192,7 @@ class Person(models.Model):
 
 class Center(models.Model):
     name = models.CharField(max_length=400)
-    code = models.CharField(max_length=5)
+    code = models.CharField(max_length=5, null=True)
     emails = models.ManyToManyField(EmailAddress, related_name='+')
     phones = models.ManyToManyField(PhoneAddress, related_name='+')
     mailings = models.ManyToManyField(MailingAddress, related_name='+')
@@ -204,8 +204,19 @@ class Center(models.Model):
     sponsor_phones = models.ManyToManyField(PhoneAddress, related_name='+')
     sponsor_mailings = models.ManyToManyField(MailingAddress,
                                               related_name='+')
+    approved = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     coi_file = models.FileField(blank=True, null=True)
+    credit_fee = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+    instructor_payment = models.DecimalField(max_digits=5, decimal_places=2,
+                                             blank=True, null=True)
+    instructor_payment_unit = moels.CharField(max_length=1, choices=[
+        ('R', 'Per Registration'), ('C', 'Per Course'),
+        ('S', 'Per Semester'), ('Y', 'Per Year')],
+                                              blank=True, null=True)
+    staff_payment = models.DecimalField(max_digits=5, decimal_places=2,
+                                        blank=True, null=True)
 
     def __str__(self):
         return self.name

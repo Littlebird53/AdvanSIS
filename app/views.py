@@ -623,7 +623,20 @@ class NewCenterApplyView(AccessMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        pass
+        center = form.save()
+        center.sponsor_emails.add(models.EmailAddress.objects.create(
+            email=form.cleaned_data['sponsor_email'],
+            category='W'))
+        center.sponsor_phones.add(models.PhoneAddress.objects.create(
+            phone=form.cleaned_data['sponsor_phone'],
+            category='W'))
+        models.StaffRecord.objects.create(center=center, person=self.person,
+                                          status='C', role='D')
+        models.MOU.objects.create(center=center,
+                                  director_sig=datetime.date.today(),
+                                  sponsor_sig=datetime.date.today())
+        return render(self.request, 'app/new_center_apply_success.html',
+                      {'center': center})
 
 ####################
 ### Instructors
