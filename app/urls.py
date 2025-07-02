@@ -43,6 +43,8 @@ urlpatterns = [
          views.StaffApplyView.as_view(), name='instructor_apply'),
     path('center/<int:centerid>/apply/', views.StudentApplyView.as_view(),
          name='student_apply'),
+    path('center/new/', views.NewCenterApplyView.as_view(),
+         name='new_center'),
     path('endorsement/<int:pk>/', views.ChurchEndorsementView.as_view(),
          name='church_endorsement'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),

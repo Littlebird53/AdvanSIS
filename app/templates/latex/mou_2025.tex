@@ -1,0 +1,121 @@
+% Preamble
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{calligra}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in} % Sets page margins for a cleaner look
+\usepackage{setspace}
+\doublespacing % Sets the document to double-spacing, consistent with the source document's appearance
+\usepackage{enumitem} % Provides more control over list environments, used for nested lists
+% ====================================================================
+% DEFINE VARIABLES FOR AUTO-FILLING THE TEMPLATE
+% Modify the content within the curly braces {} for each field.
+% ====================================================================
+
+% Blanks on the first page:
+% 1. The blank for the ADVANCE Center in the title
+\newcommand{\advancemastercentername}{ {{- center.name -}} }
+% 2. The blank for the Sponsoring Organization name at the beginning of the agreement
+\newcommand{\sponsoringorgname}{ {{- center.sponsor -}} }
+% 3. The blank for the ADVANCE Local Center name at the beginning of the agreement
+\newcommand{\advancelocalcentername}{ {{- center.name -}} }
+
+% Dates on the final page (Revision Procedures section):
+\newcommand{\agreementstartdate}{ {{- mou.start_date -}} }
+\newcommand{\agreementenddate}{ {{- mou.expiration -}} }
+
+% Signature lines and corresponding date lines on the final page:
+% Gateway Seminary Dates (fixed names, only dates are variable)
+\newcommand{\gatewayalexstewartdate}{ {{- mou.gs_dean_sig -}} }
+\newcommand{\gatewaywarrenhaynesdate}{ {{- mou.advance_sig -}} }
+
+% Sponsoring Organization Signer Details
+\newcommand{\sponsoringorgsignature}{ {{- center.sponsor_rep -}} }
+\newcommand{\sponsoringorgsignername}{ {{- center.sponsor_rep -}} }
+\newcommand{\sponsoringorgsignertitle}{ {{- center.sponsor_rep_title -}} }
+\newcommand{\sponsoringorgsigndate}{ {{- mou.sponsor_sig -}} }
+
+% ADVANCE Local Center Signer Details (Title "Local Center Director" is fixed)
+\newcommand{\centersignature}{ {{- director.full_name }} }
+\newcommand{\advancelocalsignername}{ {{- director.name -}} }
+\newcommand{\advancelocalsigndate}{ {{- mou.director_sig -}} }
+
+% ====================================================================
+
+\begin{document}
+
+% Title section, centered as in the source
+\begin{center}
+\Large \textbf{A Memorandum of Understanding} \\
+\textbf{between} \\
+\textbf{Gateway Seminary} \\
+\textbf{of the Southern Baptist Convention} \\
+\textbf{and the} \\
+\textbf{Sponsoring Organization for the} \\
+\textbf{ADVANCE Center \advancemastercentername}
+\end{center}
+
+The \sponsoringorgname\ sponsoring ADVANCE Local Center \advancelocalcentername\ and Gateway Seminary of the Southern Baptist Convention (Gateway), wishing to enhance understanding between the two parties and to establish an academic partnership in the area of Biblical, theological, and ministerial education, hereby adopt the policies and guidelines contained in this memorandum of understanding as an expression of our desire to cooperate and work together toward strategic and mutually beneficial objectives.
+\section*{\textbf{ADVANCE Center and Sponsoring Organization Obligations}}
+The Sponsoring Organization, upon applying for New Center Certification, agrees to the following responsibilities, as outlined in the ADVANCE Local Center Operations Manual:
+\begin{enumerate} \singlespacing
+    \item Provision of administrative oversight and support
+    \item Provision of a cost-free meeting location for classes
+    \item Financial responsibility for operating the ADVANCE Local Center
+    \begin{enumerate}[label=\alph*.] % Nested list for sub-items
+        \item Submission of a Budget Planning Tool that will include student enrollment and budget projections
+        \item Collection of tuition and fees
+        \item Payment of all Center expenses
+        \item Filing of all state and federal requirements
+    \end{enumerate}
+    \item Maintenance of accurate student records
+    \item Confidentiality for student records and information both in the keeping of records and in all forms of communication
+    \item Provision of leaders and students who are spiritually mature Christians of high moral character, committed to the purposes and goals of the ADVANCE program, and compliant with the policies described in the Local Center Operations Manual
+    \item Recruiting of qualified instructors and the appropriate due diligence to vet the spiritual and moral conduct of all instructors
+    \item Regular, responsible, accurate communication with Gateway personnel
+    \item Participation in ADVANCE training, either via video conference or by completing independent course modules
+    \item Adherence to Gateway guidelines and deadlines
+    \item Provision and oversight of advertising and promotion for the ADVANCE Local Center, which shall accurately and responsibly represent ADVANCE Ministry Preparation, Gateway Seminary, and all Gateway Seminary logos in accordance with the Style Guidelines set forth by the Communications Office of Gateway Seminary
+    \item Remission to Gateway of the current support fee per registered credit hour, application and graduation fees
+    \item Function as the employer or independent contractor of instructors, which will include filing a 1099 for each instructor, whether ordained or not ordained
+    \item If operating in-person classes on premises owned by the Sponsoring Organization, provide Gateway with proof of a certificate of insurance from the Sponsoring Organization to show that they have appropriate insurance that is current and viable. The certificate must accompany the Center application
+\end{enumerate}
+
+\section*{\textbf{Gateway Seminary Obligations}}
+Gateway agrees to the following responsibilities:
+\begin{enumerate} \singlespacing
+    \item Identification of ADVANCE students as Gateway students, which shall include the provision of a student ID number and library privileges for all ADVANCE Students
+    \item Provision of certificates for students who complete all certificate course requirements
+    \item Provision of diplomas and the opportunity to participate in official Gateway graduation ceremony for students who complete all diploma course requirements 
+    \item Provision of syllabi templates for each course
+    \item Prompt response to ADVANCE Local Center communication 
+    \item Provision of regular training opportunities for ADVANCE Local Center personnel 
+    \item Verification of academic credentials for potential ADVANCE Local Center instructors
+\end{enumerate}
+
+\section*{\textbf{Revision Procedures}}
+This agreement shall be effective upon approval by both parties and shall remain in effect for five years, beginning on \underline{\agreementstartdate}\ and ending on \underline{\agreementenddate}. This agreement may be renewed at the end of the term by mutual consent.
+
+Any modification of this agreement within the five-year period in which it is in effect must be made in writing and agreed to by the Chief Academic Officers (CAO) of both institutions prior to the enactment of any revision.
+
+This agreement can be canceled upon sixty (60) day written notification of either CAO of one of the participant schools.
+
+\vspace{1em} % Adds vertical space before the signature block
+
+% Signature Block, formatted to match the source's layout
+\begin{flushleft}
+\textbf{Gateway Seminary} \hfill \textbf{Gateway Seminary} \\
+\vspace{1em} 
+\underline{\hspace{6.4cm}} \hfill \underline{\hspace{6.4cm}} \\ % Placeholder lines for physical signatures
+Dr. Alex Stewart, VP Academic Services \hfill Dr. Warren Haynes, ADVANCE Director \\
+Date \underline{\gatewayalexstewartdate} \hfill Date \underline{\gatewaywarrenhaynesdate} \\
+\vspace{2em} % Vertical space between Gateway and Sponsoring Organization blocks
+\textbf{Sponsoring Organization} \hfill \textbf{ADVANCE Local Center} \\
+\vspace{1em}
+\underline{{\fontfamily{calligra}\selectfont \sponsoringorgsignature}} \hfill \underline{{\fontfamily{calligra}\selectfont \centersignature}} \\
+\underline{\sponsoringorgsignername}, \underline{\sponsoringorgsignertitle} \hfill \underline{\advancelocalsignername}, Local Center Director \\ % Signer name and title lines
+Date \underline{\sponsoringorgsigndate} \hfill Date \underline{\advancelocalsigndate}
+\end{flushleft}
+
+\end{document}

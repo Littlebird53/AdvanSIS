@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.template import Context, Template
 from app.languages import LANGUAGES
+from functools import cached_property
 
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -155,9 +156,13 @@ class Person(models.Model):
                           self.family_name] if n]
         return ' '.join(ls)
 
+    @cached_property
+    def home_address(self):
+        return self.mailings.all().filter(active=True, category='H').first()
+
     @property
     def home_country(self):
-        addr = self.mailings.all().filter(active=True, category='H').first()
+        addr = self.home_address
         if addr is None or addr.country is None:
             return Country.objects.get(postal_code='US'), False
         else:
@@ -171,11 +176,19 @@ class Person(models.Model):
     def has_address(self):
         return self.mailings.all().filter(active=True).exists()
 
-class StudyArea(models.Model):
-    name = models.CharField(max_length=50)
+    @property
+    def latex_addr1(self):
+        if self.home_address:
+            return self.home_address.address
+        else:
+            return '~'
 
-    def __str__(self):
-        return self.name
+    @property
+    def latex_addr2(self):
+        if self.home_address:
+            return self.home_address.last_line
+        else:
+            return '~'
 
 class Center(models.Model):
     name = models.CharField(max_length=400)
@@ -186,14 +199,13 @@ class Center(models.Model):
     fte_eligible = models.BooleanField(default=False)
     sponsor = models.CharField(max_length=100, null=True)
     sponsor_rep = models.CharField(max_length=100, null=True)
+    sponsor_rep_title = models.CharField(max_length=100, null=True)
     sponsor_emails = models.ManyToManyField(EmailAddress, related_name='+')
     sponsor_phones = models.ManyToManyField(PhoneAddress, related_name='+')
     sponsor_mailings = models.ManyToManyField(MailingAddress,
                                               related_name='+')
     active = models.BooleanField(default=True)
     coi_file = models.FileField(blank=True, null=True)
-    areas = models.ManyToManyField(StudyArea, blank=True)
-    other_areas = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -217,13 +229,24 @@ class Center(models.Model):
 class MOU(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     director_sig = models.DateField(blank=True, null=True)
+    sponsor_sig = models.DateField(blank=True, null=True)
     advance_sig = models.DateField(blank=True, null=True)
     gs_dean_sig = models.DateField(blank=True, null=True)
     expiration = models.DateField()
     status = models.CharField(max_length=1, choices=[
         ('P', 'Pending'), ('A', 'Active'), ('E', 'Expired'),
         ('R', 'Renewed')], default='P')
-    # template_name
+    template_name = models.CharField(max_length=100,
+                                     default='latex/mou_2025.tex')
+
+    @property
+    def start_date(self):
+        dates = [self.director_sig, self.sponsor_sig, self.advance_sig,
+                 self.gs_dean_sig]
+        if any(dates):
+            return max([d for d in dates if d])
+        else:
+            return datetime.date.today()
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
@@ -335,13 +358,15 @@ class StudentRecord(models.Model):
         choices=[('C', 'Current Student'), ('F', 'Former Student'),
                  ('A', 'Applied Student'), ('R', 'Rejected Student')],
         max_length=1, default='A')
-    areas = models.ManyToManyField(StudyArea, blank=True)
-    other_areas = models.CharField(max_length=100, blank=True, null=True)
     church = models.CharField(max_length=100, null=True)
     church_membership = models.CharField(max_length=100, null=True)
     church_sbc = models.BooleanField(null=True)
-    reference1 = models.TextField(null=True)
-    reference2 = models.TextField(null=True)
+    reference1_name = models.CharField(max_length=100, blank=True, null=True)
+    reference1_email = models.EmailField(max_length=100, blank=True, null=True)
+    reference1_phone = models.CharField(max_length=30, blank=True, null=True)
+    reference2_name = models.CharField(max_length=100, blank=True, null=True)
+    reference2_email = models.EmailField(max_length=100, blank=True, null=True)
+    reference2_phone = models.CharField(max_length=30, blank=True, null=True)
     church_rec_name = models.CharField(max_length=100, null=True)
     church_rec_email = models.EmailField(max_length=100, null=True)
     prev_gateway = models.BooleanField(null=True)
@@ -398,8 +423,12 @@ class StaffRecord(models.Model):
         choices=[('I', 'Instructor'), ('A', 'Associate Instructor'),
                  ('D', 'Director'), ('R', 'Registrar')],
         max_length=1, default='I')
-    reference1 = models.TextField(null=True)
-    reference2 = models.TextField(null=True)
+    reference1_name = models.CharField(max_length=100, blank=True, null=True)
+    reference1_email = models.EmailField(max_length=100, blank=True, null=True)
+    reference1_phone = models.CharField(max_length=30, blank=True, null=True)
+    reference2_name = models.CharField(max_length=100, blank=True, null=True)
+    reference2_email = models.EmailField(max_length=100, blank=True, null=True)
+    reference2_phone = models.CharField(max_length=30, blank=True, null=True)
     ordained = models.BooleanField(null=True)
     church = models.CharField(max_length=100, null=True)
     denomination = models.CharField(max_length=100, null=True)
@@ -408,6 +437,7 @@ class StaffRecord(models.Model):
     upload_transcript = models.FileField(blank=True, null=True)
     no_transcript = models.BooleanField(default=False)
     accept_bfm = models.BooleanField(null=True)
+    acceptance_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.person} {self.center}'

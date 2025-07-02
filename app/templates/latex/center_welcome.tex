@@ -10,15 +10,16 @@
 \usepackage{fancyhdr}
 \usepackage[default]{lato}
 
-\newcommand{\apprdate}{ {{- sr.acceptance_date -}} }
-\newcommand{\studentname}{ {{- sr.person.full_name -}} }
-\newcommand{\studentaddrone}{ {{- sr.person.latex_addr1 -}} }
-\newcommand{\studentaddrtwo}{ {{- sr.person.latex_addr2 -}} }
-\newcommand{\studentid}{ {{- sr.person.user.username -}} }
-
-\definecolor{blue}{HTML}{6F8EA3}
+\newcommand{\apprdate}{ {{- Approval Date -}} }
+\newcommand{\centername}{ {{- Center Name -}} }
+\newcommand{\directorname}{ {{- Director Name -}} }
+\newcommand{\centeraddrone}{ {{- Address Line 1 -}} }
+\newcommand{\centeraddrtwo}{ {{- Address Line 2 -}} }
+\newcommand{\centercode}{ {{- Center Code -}} }
 
 {% graphicspath %}
+
+\definecolor{blue}{HTML}{6F8EA3}
 
 \begin{document}
 \pagestyle{fancy}
@@ -34,26 +35,22 @@
 \vspace{0.5cm} % Adds a vertical space.
 
 % Student's address block, using the defined variables.
-\studentname \\ % Prints the student's name in bold.
-\studentaddrone \\ % Prints the first line of the student's address.
-\studentaddrtwo % Prints the second line of the student's address
+\directorname \\
+\centername   \\
+\centeraddrone \\ % Prints the first line of the student's address.
+\centeraddrtwo % Prints the second line of the student's address
 
 \vspace{1cm} % Adds more vertical space before the salutation.
 
 % Salutation, using the defined student name variable.
-Dear \studentname,
+Dear \directorname,
 
 \vspace{0.5cm}
 
 % Body of the letter, compiled from the provided excerpts.
-Thank you for your interest in pursuing God’s will for your life as it pertains to ADVANCE! \\ I am pleased to inform you that your application for admission to Gateway Seminary of the Southern Baptist Convention as an Advance Program student has been approved for study at your local center. Congratulations! Your student identification number is \textbf{\studentid}. Please remember this number for all future correspondence with Gateway Seminary.
-
-\vspace{0.5cm}
-
-Please let me know if we can be of any further assistance as you continue your studies.
-\\
-
-Welcome to the Gateway family!
+We are happy to inform you that your application for \textbf{\centername} has been approved. Your center code is \textbf{\centercode}. Please remember this number for all future correspondence with Gateway Seminary. With your a team of good leaders, we feel that your ADVANCE center has excellent prospects to make a significant impact on the world for Christ. \\
+\vspace{.5cm}
+Gateway Seminary has proudly sponsored the ADVANCE program for more than 40 years with inspiring results. We have had thousands of students take classes and many graduates who serve as pastors, missionaries, and in many other types of ministry roles. We pray that God will bless your commitment to theological education and that you will have the chance to see your students grow in their wisdom, knowledge, and faithfulness to the Gospel. May God advance His kingdom through your service.
 
 \vspace{1cm} % Adds vertical space before the closing.
 

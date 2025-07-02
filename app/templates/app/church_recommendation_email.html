@@ -1,98 +1,15 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      p {
-	  font-family: Lato;
-	  font-size: 11pt;
-	  text-align: left;
-	  margin: 0px;
-      }
-      img {
-	  min-width: auto;
-	  min-height: auto;
-	  margin: 0px;
-	  width: 18px;
-	  height: 18px;
-      }
-      span a {
-	  margin: 0px;
-      }
-    </style>
-  </head>
-  <body>
-    <p>Hello {{sr.church_rec_name}},</p>
-    <br/>
-    <p>
-      A member of your church named <b>{{sr.person.full_name}}</b> has applied for admission to the <a href="https://www.gs.edu/academics/degrees/advance/">ADVANCE program of Gateway Seminary</a>.
-      We require your endorsement of them as someone with real potential for Christian service.
-      Please <a href="https://joseph.dangswan.com{% url 'app:church_endorsement' sr.id %}">submit your endorsement</a> today to help complete the student’s application process.
-    </p>
-    <br/>
-    <p>Thank you!</p>
-    <br/>
-    <table cellspacing="0" cellpadding="0" style="text-align:left; background-color:rgb(255,255,255); color:rgb(36,36,36); box-sizing:border-box; border-collapse:collapse; border-spacing:0px">
-      <tbody>
-	<tr>
-	  <td style="width:54pt; height:21.9pt; border-right:1pt solid; padding-right:5.4pt; padding-left:5.4pt">
-	    <p style="text-align:center;">
-	      <span>
-		<a href="https://www.gs.edu/" target="_blank">
-		  <img alt="Gateway Seminary logo"
-		       width="88" height="115" style="width:66.74pt; height:86.99pt;" src="cid:logo"/>
-		</a>
-	      </span>
-	    </p>
-	  </td>
-	  <td style="width:348pt; height:21.9pt; text-align:left; padding-right:5.4pt; padding-left:5.4pt">
-	    <p style="margin:0px 0px 3pt;">
-	      <span style="letter-spacing:0.75pt; font-size:10pt; color:rgb(108,131,149)">
-		<b>ADVANCE Admissions</b>
-	      </span>
-	    </p>
-	    <p style="margin:0px; font-size: 9pt">
-	      <span style="letter-spacing:0.75pt; font-size:9pt; color:rgb(108,131,149)">
-		<b>Gateway Seminary</b>
-	      </span>
-	      <span>&nbsp;</span>
-	      <span style="color:rgb(36,36,36)">3210 E. Guasti Rd. | Ontario, CA&nbsp;91761</span>
-	    </p>
-	    <p style="font-size:9pt; color:rgb(36,36,36)">
-	      &nbsp;909.687.1654&nbsp; (Phone)
-	    </p>
-	    <p>
-	      <span>&nbsp;</span>
-	      <span>
-		<a href="https://www.facebook.com/GatewaySeminary"
-		   target="_blank">
-		  <img width="24" height="24" src="cid:facebook">
-		</a>
-	      </span>
-	      <span>&nbsp;</span>
-	      <span>
-		<a href="https://twitter.com/GatewaySeminary"
-		   target="_blank">
-		  <img width="24" height="24" src="cid:twitter">
-		</a>
-	      </span>
-	      <span>&nbsp;</span>
-	      <span>
-		<a href="https://www.instagram.com/gatewayseminary"
-		   target="_blank">
-		  <img width="24" height="24" src="cid:instagram">
-		</a>
-	      </span>
-	      <span>&nbsp;</span>
-	      <span>
-		<a href="https://www.youtube.com/@GatewaySeminary"
-		   target="_blank">
-		  <img width="24" height="24" src="cid:youtube">
-		</a>
-	      </span>
-	    </p>
-	  </td>
-	</tr>
-      </tbody>
-    </table>
-  </body>
-</html>
+{% extends 'app/email_base.html' %}
+
+{% block content %}
+<p>Hello {{sr.church_rec_name}},</p>
+<br/>
+<p>
+  A member of your church named <b>{{sr.person.full_name}}</b> has applied for admission to the <a href="https://www.gs.edu/academics/degrees/advance/">ADVANCE program of Gateway Seminary</a>.
+  We require your endorsement of them as someone with real potential for Christian service.
+  Please <a href="https://joseph.dangswan.com{% url 'app:church_endorsement' sr.id %}">submit your endorsement</a> today to help complete the student’s application process.
+</p>
+<br/>
+<p>Thank you!</p>
+{% endblock %}
+
+{% block signature %}ADVANCE Admissions{% endblock %}

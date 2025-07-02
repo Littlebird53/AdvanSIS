@@ -1,0 +1,53 @@
+{% extends 'app/email_base.html' %}
+
+{% block content %}
+<p>Hello {{sr.person.full_name}},</p>
+<br/>
+<p>Welcome to the ADVANCE team!</p>
+<br/>
+<p>
+  Your ADVANCE Center application for the {{sr.center}} has been approved!
+  Please see the attached letter for your official notice and the body of this email for next steps. 
+</p>
+<br/>
+<p>
+  Your center staff and students will have access to JOSEPH, a custom database for the ADVANCE program.
+  Through JOSEPH you can plan and manage your courses, communicate with students, access the Gateway Seminary library, assign final grades, access additional teaching resources, and collect data on your center’s enrollment and instructional trends to make the best decisions possible.
+</p>
+<br/>
+<p>
+  To access JOSEPH, click <a href="https://joseph.dangswan.com">here</a>.
+</p>
+<p>
+  **You may wish to bookmark this link for easy access.
+</p>
+<br/>
+<p>
+  <b>
+    Please see the <a href="https://drive.google.com/file/d/18ohnoESsg5-GdFAhMg5z5FVxPJ7t6dNN/view">Local Center Operations Manual</a> for instructions about your responsibilities as an ADVANCE Center Director and available resources for staff and students.
+  </b>
+</p>
+<br/>
+<p>
+  As with many things in life, communication is key to success in this role. You will need to coordinate with potential and current students, instructors, local pastors, other ministry leaders, and the ADVANCE office.
+  We are to here to help in any way we can and pray that God blesses your efforts for the growth of His kingdom.
+</p>
+<br/>
+<p>
+  Finally, you can learn more about the ADVANCE program by visiting
+  <a href="https://www.gs.edu/academics/degrees/advance/">www.gs.edu/advance</a>.
+  To read blogs and listen to podcasts by Gateway faculty, students, and friends, check out <a href="https://thegateway.press/">TheGateway.Press</a>.
+  You can also watch Gateway <a href="https://www.gs.edu/news-events/chapel/">chapel services online</a> and follow Gateway on <a href="https://www.facebook.com/GatewaySeminary/">Facebook</a> | <a href="https://www.instagram.com/gatewayseminary/">Instagram</a> | <a href="https://x.com/GatewaySeminary">Twitter</a> for other news and events.
+</p>
+<br/>
+<p>
+  Please do not hesitate to reach out if we can assist you with anything as you prepare to serve in this important role.
+</p>
+<br/>
+<p>
+  <i>For Christ and His kingdom,</i>
+</p>
+{% endblock %}
+
+{% block signature %}Bryce Bussert{% endblock %}
+{% block signature_title %}ADVANCE, Program Coordinator{% endblock %}

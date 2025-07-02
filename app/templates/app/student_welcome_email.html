@@ -1,0 +1,38 @@
+{% extends 'app/email_base.html' %}
+
+{% block content %}
+<p>Hello {{sr.person.full_name}},</p>
+<br/>
+<p>
+  Your student application to the ADVANCE program of Gateway Seminary has been approved!
+  Please see your official acceptance letter attached.
+</p>
+<br/>
+<p>
+  Using your JOSEPH account, you can access syllabi and course information, track your academic progress, view the Academic Catalog, see upcoming courses, and apply for certificates and diplomas.
+</p>
+<br/>
+<p>
+  To access JOSEPH, click <a href="https://joseph.dangswan.com">here</a>.
+</p>
+<p>
+  **You may wish to bookmark this link for easy access.
+</p>
+<br/>
+<p>
+  Finally, you can learn more about the ADVANCE program by visiting
+  <a href="https://www.gs.edu/academics/degrees/advance/">www.gs.edu/advance</a>.
+  To read blogs and listen to podcasts by Gateway faculty, students, and friends, check out <a href="https://thegateway.press/">TheGateway.Press</a>.
+  You can also watch Gateway <a href="https://www.gs.edu/news-events/chapel/">chapel services online</a> and follow Gateway on <a href="https://www.facebook.com/GatewaySeminary/">Facebook</a> | <a href="https://www.instagram.com/gatewayseminary/">Instagram</a> | <a href="https://x.com/GatewaySeminary">Twitter</a> for other news and events.
+</p>
+<br/>
+<p>
+  Your Center Director and Registrar are the primary contact for any questions you may have, but you may contact the <a href="mailto:advance@gs.edu">ADVANCE</a> office for assistance if needed.
+</p>
+<br/>
+<p>
+  <i>For Christ and His kingdom,</i>
+</p>
+{% endblock %}
+
+{% block signature %}ADVANCE Staff{% endblock %}

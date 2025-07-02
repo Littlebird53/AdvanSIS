@@ -92,7 +92,6 @@ class NewCourseForm(forms.ModelForm):
         self.fields['language'].widget.attrs['class'] = 'filter-select'
         self.fields['country'].widget.attrs['class'] = 'filter-select'
         self.fields['country'].initial = center.country
-        self.fields['year'].widget.attrs['style'] = 'text-align: center;width: 5em;'
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
@@ -240,10 +239,14 @@ class StudentApplicationForm(forms.ModelForm):
     conduct_standard = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
+    membership_number = forms.IntegerField()
+    membership_unit = forms.ChoiceField(
+        choices=[('Months', 'Months'), ('Years', 'Years')])
     class Meta:
         model = models.StudentRecord
-        fields = ['church', 'church_membership', 'church_sbc',
-                  'reference1', 'reference2',
+        fields = ['church', 'church_sbc',
+                  'reference1_name', 'reference1_email', 'reference1_phone',
+                  'reference2_name', 'reference2_email', 'reference2_phone',
                   'church_rec_name', 'church_rec_email',
                   'prev_gateway', 'gateway_id', 'ed_level',
                   'called_to_ministry', 'christian_year',
@@ -306,6 +309,16 @@ class StaffApplicationForm(forms.ModelForm):
 
     class Meta:
         model = models.StaffRecord
-        fields = ['role', 'reference1', 'reference2', 'ordained', 'church',
-                  'denomination', 'email_transcript', 'alum_transcript',
-                  'upload_transcript', 'no_transcript', 'accept_bfm']
+        fields = ['role', 'church', 'denomination', 'accept_bfm',
+                  'reference1_name', 'reference1_email', 'reference1_phone',
+                  'reference2_name', 'reference2_email', 'reference2_phone',
+                  'email_transcript', 'alum_transcript',
+                  'upload_transcript', 'no_transcript']
+
+class NewCenterApplicationForm(forms.ModelForm):
+    sponsor_email = forms.EmailField()
+    sponsor_phone = forms.CharField(max_length=30)
+    class Meta:
+        model = models.Center
+        fields = ['name', 'sponsor', 'sponsor_rep', 'sponsor_rep_title',
+                  'coi_file']

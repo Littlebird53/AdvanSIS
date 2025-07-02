@@ -15,6 +15,24 @@ import datetime
 from email.mime.image import MIMEImage
 import itertools
 
+def make_email(subject, to, template_name, context):
+    message = EmailMultiAlternatives(subject=subject, to=[to])
+    message.mixed_subtype = 'related'
+    tmpl = get_template(template_name)
+    message.attach_alternatives(tmpl.render(context), 'text/html')
+    for name in ['logo', 'facebook', 'twitter', 'instagram', 'youtube']:
+        with open(finders.find(f'email/{name}.png'), 'rb') as fin:
+            data = fin.read()
+            blob = MIMEImage(data)
+            blob.add_header('Content-ID', f'<{name}>')
+            message.attach(blob)
+    return message
+
+def add_pdf(message, filename, template_name, context):
+    from django_tex.core import compile_template_to_pdf
+    pdf = compile_template_to_pdf(template_name, context)
+    message.attach(filename, pdf)
+
 def landing_page(request):
     if request.user.is_authenticated:
         return redirect('app:dashboard')
@@ -443,6 +461,14 @@ def new_course(request, center):
         form = forms.NewCourseForm(center)
     return render(request, 'app/new_course.html', {'form': form})
 
+def send_welcome_email(sr, mode):
+    msg = make_email('Gateway ADVANCE Acceptance Letter',
+                     sr.person.user.email,
+                     f'app/{mode}_welcome_email.html', {'sr': sr})
+    add_pdf(msg, 'acceptance_letter.pdf', f'latex/{mode}_welcome.tex',
+            {'sr': sr})
+    msg.send()
+
 @center_admin
 def view_instructors(request, center):
     qs = models.StaffRecord.objects.filter(center=center)
@@ -456,26 +482,14 @@ def view_instructors(request, center):
         form = forms.StaffRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
             form.save()
+            for sr, changed in form.changed_objects:
+                if 'status' in changed and sr.status == 'C' and sr.acceptance_date is None:
+                    sr.acceptance_date = datetime.date.today()
+                    sr.save()
+                    send_welcome_email(sr, 'instructor')
     return render(request, 'app/view_instructors.html',
                   {'instructors': form, 'filter_form': filter_form,
                    'center': center})
-
-def send_welcome_email(sr):
-    print('send_welcome_email')
-    from django_tex.core import compile_template_to_pdf
-    addr = sr.person.mailings.all().filter(active=True, category='H').first()
-    if addr is None:
-        addr = {'address': '~', 'last_line': '~'}
-    message = EmailMultiAlternatives(
-        subject='Gateway ADVANCE Acceptance Letter',
-        to=[sr.person.user.email],
-    )
-    # TODO: message body
-    message.mixed_subtype = 'related'
-    pdf = compile_template_to_pdf('latex/student_welcome.tex',
-                                  {'sr': sr, 'addr': addr})
-    message.attach('acceptance_letter.pdf', pdf)
-    message.send()
 
 @center_admin
 def view_students(request, center, status):
@@ -490,7 +504,7 @@ def view_students(request, center, status):
                 if sr.status == 'C' and sr.acceptance_date is None:
                     sr.acceptance_date = datetime.date.today()
                     sr.save()
-                    send_welcome_email(sr)
+                    send_welcome_email(sr, 'student')
     else:
         form = forms.StudentRecordFormset(queryset=qs)
     return render(request, 'app/view_students.html',
@@ -572,6 +586,19 @@ def center_tally(request, center):
         'total_degree': sum(r[5] for r in rows),
         'total_credits': sum(r[3] for r in rows)})
 
+class NewCenterApplyView(AccessMixin, FormView):
+    form_class = forms.NewCenterApplicationForm
+    template_name = 'app/new_center_apply.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.person = request.user.person
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        pass
+
 ####################
 ### Instructors
 ####################
@@ -628,13 +655,6 @@ class MessageCourseStudentsView(AccessMixin, FormView):
 ### Students
 ####################
 
-def add_email_image(message, name):
-    with open(finders.find(f'email/{name}.png'), 'rb') as fin:
-        data = fin.read()
-        blob = MIMEImage(data)
-        blob.add_header('Content-ID', f'<{name}>')
-        message.attach(blob)
-
 class StudentApplyView(AccessMixin, FormView):
     form_class = forms.StudentApplicationForm
     template_name = 'app/student_apply.html'
@@ -658,19 +678,12 @@ class StudentApplyView(AccessMixin, FormView):
     def form_valid(self, form):
         form.instance.center = self.center
         form.instance.person = self.person
+        form.instance.church_membership = str(form.cleaned_data['membership_number']) + ' ' + form.cleaned_data['membership_unit']
         sr = form.save()
-        tmpl = get_template('app/church_recommendation_email.html')
-        message = EmailMultiAlternatives(
-            subject='Gateway ADVANCE Church Recommendation',
-            to=[sr.church_rec_email],
-        )
-        message.mixed_subtype = 'related'
-        message.attach_alternative(tmpl.render({'sr': sr}), 'text/html')
-        add_email_image(message, 'logo')
-        add_email_image(message, 'facebook')
-        add_email_image(message, 'twitter')
-        add_email_image(message, 'instagram')
-        add_email_image(message, 'youtube')
+        message = make_email('Gateway ADVANCE Church Recommendation',
+                             sr.church_rec_email,
+                             'app/church_recommendation_email.html',
+                             {'sr': sr})
         message.send()
         return render(self.request, 'app/student_apply_success.html',
                       {'sr': sr})

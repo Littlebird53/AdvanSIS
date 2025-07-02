@@ -22,13 +22,15 @@
     </tr>
     <tr>
       <th>
-	<label for="{{form.church_membership.id_for_label}}">
+	<label for="{{form.membership_number.id_for_label}}">
 	  Length of Membership
 	</label>
       </th>
       <td>
-	{{form.church_membership.errors}}
-	{{form.church_membership}}
+	{{form.membership_number.errors}}
+	{{form.membership_unit.errors}}
+	{{form.membership_number}}
+	{{form.membership_unit}}
       </td>
     </tr>
     <tr>
@@ -51,20 +53,56 @@
     </tr>
     <tr>
       <th>
-	<label for="{{form.reference1.id_for_label}}">Reference 1</label>
+	<label for="{{form.reference1.id_for_label}}">Reference 1 Name</label>
       </th>
       <td>
-	{{form.reference1.errors}}
-	{{form.reference1}}
+	{{form.reference1_name.errors}}
+	{{form.reference1_name}}
       </td>
     </tr>
     <tr>
       <th>
-	<label for="{{form.reference2.id_for_label}}">Reference 2</label>
+	<label for="{{form.reference1.id_for_label}}">Reference 1 Email</label>
       </th>
       <td>
-	{{form.reference2.errors}}
-	{{form.reference2}}
+	{{form.reference1_email.errors}}
+	{{form.reference1_email}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference1.id_for_label}}">Reference 1 Phone Number</label>
+      </th>
+      <td>
+	{{form.reference1_phone.errors}}
+	{{form.reference1_phone}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference2.id_for_label}}">Reference 2 Name</label>
+      </th>
+      <td>
+	{{form.reference2_name.errors}}
+	{{form.reference2_name}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference2.id_for_label}}">Reference 2 Email</label>
+      </th>
+      <td>
+	{{form.reference2_email.errors}}
+	{{form.reference2_email}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.reference2.id_for_label}}">Reference 2 Phone Number</label>
+      </th>
+      <td>
+	{{form.reference2_phone.errors}}
+	{{form.reference2_phone}}
       </td>
     </tr>
     <tr>

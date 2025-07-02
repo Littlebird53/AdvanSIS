@@ -216,3 +216,8 @@ span.radio-block {
 span.radio-block:has(input:checked) {
   background: #6f8ea3;
 }
+
+input[type=number] {
+  text-align: center;
+  width: 5em;
+}
