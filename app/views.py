@@ -95,6 +95,12 @@ def sort_courses(courses):
         dct[k].sort(key=lambda c: c.sort_key())
     return dct
 
+def get_staff_stats():
+    ret = {}
+    ret['staff_applications'] = models.StaffRecord.objects.filter(
+        status='C', center_approved=True, advance_approved=False).count()
+    return ret
+
 @login_required
 def dashboard(request):
     message = None
@@ -138,12 +144,16 @@ def dashboard(request):
         elif not request.user.person.has_address:
             info_open = True
             message = 'Please add your address'
+    stats = None
+    if request.user.is_staff:
+        stats = get_staff_stats()
     return render(request, 'app/dashboard.html',
                   {
                       'form': form,
                       'message': message,
                       'records': current + other,
                       'info_open': info_open,
+                      'stats': stats,
                   })
 
 @login_required

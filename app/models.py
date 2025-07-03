@@ -369,8 +369,9 @@ class StudentRecord(models.Model):
         choices=[('C', 'Current Student'), ('F', 'Former Student'),
                  ('A', 'Applied Student'), ('R', 'Rejected Student')],
         max_length=1, default='A')
-    church = models.CharField(max_length=100, null=True)
-    church_membership = models.CharField(max_length=100, null=True)
+    church = models.CharField(max_length=100, blank=True, null=True)
+    church_membership = models.CharField(max_length=100, blank=True,
+                                         null=True)
     church_sbc = models.BooleanField(null=True)
     reference1_name = models.CharField(max_length=100, blank=True, null=True)
     reference1_email = models.EmailField(max_length=100, blank=True, null=True)
@@ -378,8 +379,10 @@ class StudentRecord(models.Model):
     reference2_name = models.CharField(max_length=100, blank=True, null=True)
     reference2_email = models.EmailField(max_length=100, blank=True, null=True)
     reference2_phone = models.CharField(max_length=30, blank=True, null=True)
-    church_rec_name = models.CharField(max_length=100, null=True)
-    church_rec_email = models.EmailField(max_length=100, null=True)
+    church_rec_name = models.CharField(max_length=100, blank=True,
+                                       null=True)
+    church_rec_email = models.EmailField(max_length=100, blank=True,
+                                         null=True)
     prev_gateway = models.BooleanField(null=True)
     gateway_id = models.IntegerField(blank=True, null=True)
     ed_level = models.CharField(max_length=3, choices=[
@@ -387,7 +390,7 @@ class StudentRecord(models.Model):
         ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
         ('B', 'Bachelors'), ('M', 'Masters'),
         ('D', 'Doctoral/Professional Degree')],
-        null=True)
+                                blank=True, null=True)
     called_to_ministry = models.BooleanField(null=True)
     christian_year = models.BooleanField(null=True)
     conduct_standard = models.BooleanField(null=True)
@@ -441,14 +444,15 @@ class StaffRecord(models.Model):
     reference2_email = models.EmailField(max_length=100, blank=True, null=True)
     reference2_phone = models.CharField(max_length=30, blank=True, null=True)
     ordained = models.BooleanField(null=True)
-    church = models.CharField(max_length=100, null=True)
-    denomination = models.CharField(max_length=100, null=True)
+    church = models.CharField(max_length=100, blank=True, null=True)
+    denomination = models.CharField(max_length=100, blank=True, null=True)
     email_transcript = models.BooleanField(default=False)
     alum_transcript = models.BooleanField(default=False)
     upload_transcript = models.FileField(blank=True, null=True)
     no_transcript = models.BooleanField(default=False)
     accept_bfm = models.BooleanField(null=True)
-    acceptance_date = models.DateField(blank=True, null=True)
+    acceptance_date = models.DateField(blank=True, null=True,
+                                       help_text='Date welcome letter was sent')
     center_approved = models.BooleanField(default=False)
     advance_approved = models.BooleanField(default=False)
 

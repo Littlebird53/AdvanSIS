@@ -9,6 +9,13 @@ class DateWidget(forms.DateInput):
 class TimeWidget(forms.TimeInput):
     input_type = 'time'
 
+class RequiredMixin:
+    make_required = []
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.make_required:
+            self.fields[field].required = True
+
 class NewUserForm(forms.ModelForm):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput())
@@ -223,7 +230,7 @@ class TallySheetForm(forms.Form):
     semester = forms.ChoiceField(choices=models.SEMESTERS)
     year = forms.IntegerField()
 
-class StudentApplicationForm(forms.ModelForm):
+class StudentApplicationForm(RequiredMixin, forms.ModelForm):
     church_sbc = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
@@ -242,6 +249,12 @@ class StudentApplicationForm(forms.ModelForm):
     membership_number = forms.IntegerField()
     membership_unit = forms.ChoiceField(
         choices=[('Months', 'Months'), ('Years', 'Years')])
+
+    make_required = ['church', 'church_rec_name', 'church_rec_email',
+                     'reference1_name', 'reference1_email',
+                     'reference1_phone', 'reference2_name',
+                     'reference2_email', 'reference2_phone',
+                     'ed_level']
     class Meta:
         model = models.StudentRecord
         fields = ['church', 'church_sbc',
@@ -275,7 +288,7 @@ class ChurchEndorsementForm(forms.ModelForm):
         model = models.StudentRecord
         fields = ['good_character', 'good_standing', 'endorsement']
 
-class StaffApplicationForm(forms.ModelForm):
+class StaffApplicationForm(RequiredMixin, forms.ModelForm):
     ordained = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
@@ -291,6 +304,8 @@ class StaffApplicationForm(forms.ModelForm):
     accept_bfm = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
+
+    make_required = ['church', 'denomination']
 
     def clean_upload_transcript(self):
         val = self.cleaned_data.get('upload_transcript')

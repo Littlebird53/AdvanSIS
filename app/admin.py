@@ -213,3 +213,13 @@ admin.site.register(User, UserAdmin)
 @admin.register(models.PopupMessage)
 class PopupAdmin(admin.ModelAdmin):
     autocomplete_fields = ['person', 'sender']
+
+@admin.register(models.StaffRecord)
+class StaffAdmin(admin.ModelAdmin):
+    readonly_fields = ['center', 'person', 'acceptance_date']
+    list_filter = ['status', 'role', 'center_approved', 'advance_approved']
+
+@admin.register(models.StudentRecord)
+class StudentAdmin(admin.ModelAdmin):
+    readonly_fields = ['center', 'person', 'acceptance_date']
+    list_filter = ['status']
