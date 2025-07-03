@@ -487,14 +487,6 @@ def new_course(request, center):
         form = forms.NewCourseForm(center)
     return render(request, 'app/new_course.html', {'form': form})
 
-def send_welcome_email(sr, mode):
-    msg = make_email('Gateway ADVANCE Acceptance Letter',
-                     sr.person.user.email,
-                     f'app/{mode}_welcome_email.html', {'sr': sr})
-    add_pdf(msg, 'acceptance_letter.pdf', f'latex/{mode}_welcome.tex',
-            {'sr': sr})
-    msg.send()
-
 @center_admin
 def view_instructors(request, center):
     qs = models.StaffRecord.objects.filter(center=center)
@@ -510,9 +502,10 @@ def view_instructors(request, center):
             form.save()
             for sr, changed in form.changed_objects:
                 if 'status' in changed and sr.status == 'C' and sr.acceptance_date is None:
-                    sr.acceptance_date = datetime.date.today()
+                    sr.center_approved = True
+                    if sr.role in ['A', 'R'] or request.user.is_staff:
+                        sr.advance_approved = True
                     sr.save()
-                    send_welcome_email(sr, 'instructor')
     return render(request, 'app/view_instructors.html',
                   {'instructors': form, 'filter_form': filter_form,
                    'center': center})
@@ -526,11 +519,6 @@ def view_students(request, center, status):
         form = forms.StudentRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
             form.save()
-            for sr, changed in form.changed_objects:
-                if sr.status == 'C' and sr.acceptance_date is None:
-                    sr.acceptance_date = datetime.date.today()
-                    sr.save()
-                    send_welcome_email(sr, 'student')
     else:
         form = forms.StudentRecordFormset(queryset=qs)
     return render(request, 'app/view_students.html',

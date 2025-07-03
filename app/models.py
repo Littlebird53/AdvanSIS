@@ -449,6 +449,8 @@ class StaffRecord(models.Model):
     no_transcript = models.BooleanField(default=False)
     accept_bfm = models.BooleanField(null=True)
     acceptance_date = models.DateField(blank=True, null=True)
+    center_approved = models.BooleanField(default=False)
+    advance_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.person} {self.center}'
