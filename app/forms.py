@@ -11,10 +11,13 @@ class TimeWidget(forms.TimeInput):
 
 class RequiredMixin:
     make_required = []
+    make_filtered = []
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.make_required:
             self.fields[field].required = True
+        for field in self.make_filtered:
+            self.fields[field].widget.attrs['class'] = 'filter-select'
 
 class NewUserForm(forms.ModelForm):
     email = forms.EmailField()
@@ -87,7 +90,9 @@ class NewMailingForm(forms.ModelForm):
         fields = ['address', 'attention', 'city', 'state', 'zip_code',
                   'country', 'category']
 
-class NewCourseForm(forms.ModelForm):
+class NewCourseForm(RequiredMixin, forms.ModelForm):
+    make_filtered = ['template', 'language', 'country']
+
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.center = center
@@ -95,9 +100,6 @@ class NewCourseForm(forms.ModelForm):
             staffrecord__center=self.center,
             staffrecord__status='C', staffrecord__role__in=['I', 'D'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
-        self.fields['template'].widget.attrs['class'] = 'filter-select'
-        self.fields['language'].widget.attrs['class'] = 'filter-select'
-        self.fields['country'].widget.attrs['class'] = 'filter-select'
         self.fields['country'].initial = center.country
     class Meta:
         model = models.Course
@@ -337,3 +339,49 @@ class NewCenterApplicationForm(forms.ModelForm):
         model = models.Center
         fields = ['name', 'sponsor', 'sponsor_rep', 'sponsor_rep_title',
                   'coi_file']
+
+class CenterBudgetExpenseForm(forms.ModelForm):
+    class Meta:
+        model = models.CenterBudget
+        fields = ['marketing', 'office', 'books', 'other_expense']
+
+class CenterBudgetIncomeForm(forms.ModelForm):
+    class Meta:
+        model = models.CenterBudget
+        fields = ['other_income']
+
+class CenterStipendForm(forms.ModelForm):
+    class Meta:
+        model = models.CenterStipend
+        fields = ['stipend']
+
+class CenterFeeForm(forms.ModelForm):
+    class Meta:
+        model = models.CenterFees
+        fields = ['credit_fee']
+
+class NewCenterFeeForm(RequiredMixin, forms.ModelForm):
+    make_filtered = ['country']
+    class Meta:
+        model = models.CenterFees
+        fields = ['country']
+
+class NewExpectedCourseForm(RequiredMixin, forms.ModelForm):
+    make_filtered = ['course']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['course'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
+    class Meta:
+        model = models.ExpectedCourse
+        fields = ['course', 'semester']
+
+class ExpectedEnrollmentForm(forms.ModelForm):
+    class Meta:
+        model = models.ExpectedEnrollment
+        fields = ['students']
+
+class NewExpectedEnrollmentForm(RequiredMixin, forms.ModelForm):
+    make_filtered = ['country']
+    class Meta:
+        model = models.ExpectedEnrollment
+        fields = ['country']

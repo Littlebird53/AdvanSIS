@@ -1,0 +1,21 @@
+<tr class="fee" id="fee_{{fee.id}}" data-country-id="{{fee.country.id}}">
+  <td>
+    {{fee.country}}
+  </td>
+  <td>
+    <form hx-trigger="change"
+	        hx-target="#fee_{{fee.id}}"
+	        hx-swap="outerHTML"
+	        hx-post="{% url 'app:center_budget_fee' fee.budget.center.id fee.id %}"
+          data-form-id="skip">
+      {% csrf_token %}
+      {{fee.as_form.credit_fee}}
+    </form>
+  </td>
+  <td>
+    {{fee.country.credit_fee}}
+  </td>
+  <td>
+    Delete
+  </td>
+</tr>

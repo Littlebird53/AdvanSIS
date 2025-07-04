@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.contrib.staticfiles import finders
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
@@ -13,6 +13,7 @@ from app import forms
 import collections
 import datetime
 from email.mime.image import MIMEImage
+import json
 import itertools
 
 def make_email(subject, to, template_name, context):
@@ -635,6 +636,122 @@ class NewCenterApplyView(AccessMixin, FormView):
                                   sponsor_sig=datetime.date.today())
         return render(self.request, 'app/new_center_apply_success.html',
                       {'center': center})
+
+@center_admin
+def center_budget(request, center, year=None):
+    year = year or datetime.date.today().year
+    all_budgets = models.CenterBudget.objects.filter(center=center)
+    budget = all_budgets.filter(year=year).first()
+    if budget is None:
+        if all_budgets.exists():
+            last_year = all_budgets.aggregate(Max('year'))['year__max']
+            old_budget = all_budgets.filter(year=last_year).first()
+            budget = all_budgets.filter(year=last_year).first()
+            budget.pk = None
+            budget._state.adding = True
+            budget.year = year
+            budget.save()
+            for fee in old_budget.centerfees_set.all():
+                fee.pk = None
+                fee._state.adding = True
+                fee.budget = budget
+                fee.save()
+        else:
+            budget = models.CenterBudget()
+            budget.center = center
+            budget.year = year
+            budget.save()
+        for sr in center.staffrecord_set.all().filter(status='C'):
+            cs = models.CenterStipend()
+            cs.budget = budget
+            cs.staff = sr
+            cs.save()
+    return render(request, 'app/center_budget.html', {
+        'budget': budget,
+        'other_budgets': all_budgets.order_by('year'),
+        'fees': budget.centerfees_set.all().order_by('country__name'),
+        'courses': budget.expectedcourse_set.all().order_by('course__title'),
+        'stipends': budget.centerstipend_set.all().order_by('-stipend'),
+        'add_fee': forms.NewCenterFeeForm(),
+        'add_course': forms.NewExpectedCourseForm(),
+        'countries': json.dumps(dict([
+            (i, float(v)) for i, v in
+            models.Country.objects.all().values_list('id', 'credit_fee')])),
+    })
+@center_admin
+def center_budget_expenses(request, center, budgetid):
+    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
+    form = forms.CenterBudgetExpenseForm(request.POST, instance=budget)
+    if form.is_valid():
+        form.save()
+    return render(request, 'app/center_budget_expenses.html',
+                  {'budget': budget})
+@center_admin
+def center_budget_income(request, center, budgetid):
+    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
+    form = forms.CenterBudgetIncomeForm(request.POST, instance=budget)
+    if form.is_valid():
+        form.save()
+    return render(request, 'app/center_budget_income.html',
+                  {'budget': budget})
+@center_admin
+def center_budget_stipend(request, center, stipendid):
+    stipend = get_object_or_404(models.CenterStipend, pk=stipendid)
+    form = forms.CenterStipendForm(request.POST, instance=stipend)
+    if form.is_valid():
+        form.save()
+    return render(request, 'app/center_budget_stipend.html',
+                  {'stipend': stipend})
+@center_admin
+def center_budget_fee(request, center, feeid):
+    fee = get_object_or_404(models.CenterFees, pk=feeid)
+    form = forms.CenterFeeForm(request.POST, instance=fee)
+    if form.is_valid():
+        form.save()
+    return render(request, 'app/center_budget_fee.html', {'fee': fee})
+@center_admin
+def center_budget_new_fee(request, center, budgetid):
+    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
+    form = forms.NewCenterFeeForm(request.POST)
+    if form.is_valid():
+        fee = form.save(commit=False)
+        fee.budget = budget
+        fee.save()
+        return render(request, 'app/center_budget_fee.html', {'fee': fee})
+    return render(request, 'app/empty_response.html')
+@center_admin
+def center_budget_new_course(request, center, budgetid):
+    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
+    form = forms.NewExpectedCourseForm(request.POST)
+    if form.is_valid():
+        course = form.save(commit=False)
+        course.budget = budget
+        course.save()
+        return render(request, 'app/center_budget_course.html',
+                      {'course': course})
+    return render(request, 'app/empty_response.html')
+@center_admin
+def center_budget_enrollment(request, center, enrollmentid):
+    enrollment = get_object_or_404(models.ExpectedEnrollment,
+                                   pk=enrollmentid)
+    form = forms.ExpectedEnrollmentForm(request.POST, instance=enrollment)
+    if form.is_valid():
+        form.save()
+    return render(request, 'app/center_budget_enrollment.html',
+                  {'enrollment': enrollment})
+@center_admin
+def center_budget_new_enrollment(request, center, courseid):
+    course = get_object_or_404(models.ExpectedCourse, pk=courseid)
+    form = course.new_country_form(request.POST)
+    if form.is_valid():
+        enrollment = form.save(commit=False)
+        enrollment.course = course
+        enrollment.save()
+        return render(request, 'app/center_budget_enrollment.html',
+                      {'enrollment': enrollment})
+    print(request.POST)
+    print(form.errors)
+    return render(request, 'app/empty_response.html')
 
 ####################
 ### Instructors

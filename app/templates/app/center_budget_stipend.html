@@ -1,0 +1,18 @@
+<tr class="stipend" id="stipend_{{stipend.id}}">
+  <td>
+    {{stipend.staff.person}}
+  </td>
+  <td>
+    {{stipend.staff.get_role_display}}
+  </td>
+  <td>
+    <form hx-trigger="change"
+	        hx-target="#stipend_{{stipend.id}}"
+	        hx-swap="outerHTML"
+	        hx-post="{% url 'app:center_budget_stipend' stipend.budget.center.id stipend.id %}"
+          data-form-id="skip">
+      {% csrf_token %}
+      {{stipend.as_form.stipend}}
+    </form>
+  </td>
+</tr>

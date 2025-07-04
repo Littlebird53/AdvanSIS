@@ -1,0 +1,40 @@
+<tr class="course" data-credits="{{course.course.credits}}">
+  <td>
+    {{course.course.title}}
+  </td>
+  <td>
+    {{course.get_semester_display}}
+  </td>
+  <td>
+    <table id="course_{{course.id}}">
+      <tr>
+	      <th>Country</th>
+	      <th>Students</th>
+      </tr>
+      {% for enrollment in course.iter_enrollments %}
+      {% include 'app/center_budget_enrollment.html' %}
+      {% endfor %}
+    </table>
+    <form hx-target="#course_{{course.id}}" hx-swap="beforeend"
+	        hx-post="{% url 'app:center_budget_new_enrollment' course.budget.center.id course.id %}"
+          data-form-id="skip">
+	    {% csrf_token %}
+	    <table>
+	      {{course.new_country_form.as_table}}
+	    </table>
+	    <button type="submit">Add</button>
+    </form>
+  </td>
+  <td>
+    Delete
+  </td>
+  <td>
+    <span class="center-fee"></span>
+  </td>
+  <td>
+    <span class="gs-fee"></span>
+  </td>
+  <td>
+    <span class="total-fee"></span>
+  </td>
+</tr>

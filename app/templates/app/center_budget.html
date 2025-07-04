@@ -1,0 +1,214 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Center Budget{% endblock %}
+
+{% block content %}
+<h1>{{budget.center}} {{budget.display_year}} Budget</h1>
+
+{% if other_budgets.count > 1 %}
+<details>
+  <summary>Other Years</summary>
+  <ul>
+    {% for budget in other_budgets %}
+    <li><a href="{% url 'app:old_center_budget' budget.center.id budget.year %}">{{budget.display_year}}</a></li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
+
+<h2>Income</h2>
+
+<h3>Hourly Fees</h3>
+
+<table id="hourly-fees">
+  <tr>
+    <th>Country</th>
+    <th>Center Fee</th>
+    <th>Gateway Fee</th>
+    <th>Delete</th>
+  </tr>
+  {% for fee in fees %}
+  {% include 'app/center_budget_fee.html' %}
+  {% endfor %}
+</table>
+
+<form hx-target="#hourly-fees" hx-swap="beforeend"
+      hx-post="{% url 'app:center_budget_new_fee' budget.center.id budget.id %}"
+      data-form-id="skip">
+  {% csrf_token %}
+  <table>
+    {{add_fee.as_table}}
+  </table>
+  <button type="submit">Add</button>
+</form>
+
+<h3>Courses</h3>
+
+<table id="courses">
+  <tr>
+    <th>Course</th>
+    <th>Semester</th>
+    <th>Enrollments</th>
+    <th>Delete</th>
+    <th>Center Fees</th>
+    <th>Gateway Fees</th>
+    <th>Total Fees</th>
+  </tr>
+  {% for course in courses %}
+  {% include 'app/center_budget_course.html' %}
+  {% endfor %}
+  <tr id="courses-total">
+    <th>Total</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>
+      <span class="center-fee"></span>
+    </td>
+    <td>
+      <span class="gs-fee"></span>
+    </td>
+    <td>
+      <span class="total-fee"></span>
+    </td>
+  </tr>
+</table>
+
+<form hx-target="#courses-total" hx-swap="beforebegin"
+      hx-post="{% url 'app:center_budget_new_course' budget.center.id budget.id %}"
+      data-form-id="skip">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th>
+        <label for="{{add_course.course.id_for_label}}">Course</label>
+      </th>
+      <th>
+        <label for="{{add_course.semester.id_for_label}}">Semester</label>
+      </th>
+    </tr>
+    <tr>
+      <td>{{add_course.course}}</td>
+      <td>{{add_course.semester}}</td>
+    </tr>
+  </table>
+  <button type="submit">Add</button>
+</form>
+
+<h3>Other</h3>
+
+{% include 'app/center_budget_income.html' %}
+
+<h2>Expenses</h2>
+
+<h3>Staff Stipends</h3>
+
+<table>
+  <tr>
+    <th>Staff Member</th>
+    <th>Role</th>
+    <th>Stipend</th>
+  </tr>
+  {% for stipend in stipends %}
+  {% include 'app/center_budget_stipend.html' %}
+  {% endfor %}
+</table>
+
+<h3>Other Expenses</h3>
+
+{% include 'app/center_budget_expenses.html' %}
+
+<h2>Totals</h2>
+
+<table>
+  <tr>
+    <th>Total Income</th>
+    <td><span id="total-income"></span></td>
+  </tr>
+  <tr>
+    <th>Expenses</th>
+    <td><span id="total-expenses"></span></td>
+  </tr>
+  <tr>
+    <th>Gateway Fees</th>
+    <td><span id="total-fees"></span></td>
+  </tr>
+  <tr>
+    <th>Projected Balance</th>
+    <td><span id="total-balance"></span></td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  const gateway_fees = {{countries|safe}};
+  function get_local_fees() {
+      let ret = {};
+      $('.fee').each(function(i, el) {
+          let tr = $(el);
+          ret[tr.data('country-id')] = parseFloat(
+              tr.find('input#id_credit_fee').val() || '0');
+      });
+      return ret;
+  }
+
+  function toDollar(n) {
+      return '$' + n.toFixed(2);
+  }
+
+  function update_courses() {
+      const center_fees = get_local_fees();
+      let center_total = 0;
+      let gateway_total = 0;
+      let total = 0;
+      $('.course').each(function(i, el) {
+          let tr = $(el);
+          let credits = parseInt(tr.data('credits'));
+          let center = 0;
+          let gateway = 0;
+          tr.find('.enrollment').each(function(j, el2) {
+              let tr2 = $(el2);
+              let country = tr2.data('country');
+              let students = parseInt(
+                  tr2.find('input#id_students').val() || '0');
+              gateway += gateway_fees[country] * students * credits;
+              if (center_fees.hasOwnProperty(country)) {
+                  center += center_fees[country] * students * credits;
+              }
+          });
+          tr.find('.center-fee').html(toDollar(center));
+          tr.find('.gs-fee').html(toDollar(gateway));
+          tr.find('.total-fee').html(toDollar(center + gateway));
+          center_total += center;
+          gateway_total += gateway;
+      });
+      let tr = $('#courses-total');
+      tr.find('.center-fee').html(toDollar(center_total));
+      tr.find('.gs-fee').html(toDollar(gateway_total));
+      tr.find('.total-fee').html(toDollar(center_total + gateway_total));
+      return {center: center_total, gateway: gateway_total};
+  }
+
+  function update_totals() {
+      let courses = update_courses();
+      let other_income = parseFloat($('#id_other_income').val() || '0');
+      let expenses = 0;
+      $('.stipend input#id_stipend').each(function(i, el) {
+          expenses += parseFloat($(el).val() || '0');
+      });
+      $('#other-expenses input').each(function(i, el) {
+          expenses += parseFloat($(el).val() || '0');
+      });
+      $('#total-income').html(toDollar(courses.center + courses.gateway +
+                                       other_income));
+      $('#total-expenses').html(toDollar(expenses));
+      $('#total-fees').html(toDollar(courses.gateway));
+      $('#total-balance').html(toDollar(courses.center + other_income -
+                                        expenses));
+  }
+
+  $(function() {
+      $(window).bind('htmx:afterSwap', update_totals);
+      update_totals();
+  });
+</script>
+{% endblock %}

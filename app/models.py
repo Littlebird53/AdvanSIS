@@ -207,16 +207,6 @@ class Center(models.Model):
     approved = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     coi_file = models.FileField(blank=True, null=True)
-    credit_fee = models.DecimalField(max_digits=5, decimal_places=2,
-                                     blank=True, null=True)
-    instructor_payment = models.DecimalField(max_digits=5, decimal_places=2,
-                                             blank=True, null=True)
-    instructor_payment_unit = models.CharField(max_length=1, choices=[
-        ('R', 'Per Registration'), ('C', 'Per Course'),
-        ('S', 'Per Semester'), ('Y', 'Per Year')],
-                                              blank=True, null=True)
-    staff_payment = models.DecimalField(max_digits=5, decimal_places=2,
-                                        blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -574,3 +564,73 @@ class PopupMessage(models.Model):
     sender = models.ForeignKey(Person, null=True, on_delete=models.SET_NULL,
                                related_name='+')
     dismissed = models.BooleanField(default=False)
+
+class CenterBudget(models.Model):
+    center = models.ForeignKey(Center, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    other_income = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+    marketing = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+    office = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+    books = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+    other_expense = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+
+    @property
+    def display_year(self):
+        n = self.year % 100
+        return f'{n}-{n+1}'
+
+    def as_income_form(self):
+        from app.forms import CenterBudgetIncomeForm as fcls
+        return fcls(instance=self)
+
+    def as_expense_form(self):
+        from app.forms import CenterBudgetExpenseForm as fcls
+        return fcls(instance=self)
+
+class CenterFees(models.Model):
+    budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    credit_fee = models.DecimalField(max_digits=5, decimal_places=2,
+                                     blank=True, null=True)
+
+    def as_form(self):
+        from app.forms import CenterFeeForm as fcls
+        return fcls(instance=self)
+
+class ExpectedCourse(models.Model):
+    budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
+    course = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
+    semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
+
+    def iter_enrollments(self):
+        yield from self.expectedenrollment_set.all().order_by(
+            'country__name')
+
+    def new_country_form(self, post=None):
+        from app.forms import NewExpectedEnrollmentForm
+        return NewExpectedEnrollmentForm(post,
+                                         prefix=f'new_enrollment_{self.id}')
+
+class ExpectedEnrollment(models.Model):
+    course = models.ForeignKey(ExpectedCourse, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    students = models.IntegerField(default=1)
+
+    def as_form(self):
+        from app.forms import ExpectedEnrollmentForm as fcls
+        return fcls(instance=self)
+
+class CenterStipend(models.Model):
+    budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
+    staff = models.ForeignKey(StaffRecord, on_delete=models.CASCADE)
+    stipend = models.DecimalField(max_digits=5, decimal_places=2,
+                                  blank=True, null=True)
+
+    def as_form(self):
+        from app.forms import CenterStipendForm as fcls
+        return fcls(instance=self)

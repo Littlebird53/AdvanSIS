@@ -1,0 +1,8 @@
+<form hx-trigger="change"
+      hx-post="{% url 'app:center_budget_income' budget.center.id budget.id %}"
+      data-form-id="skip">
+  {% csrf_token %}
+  <table>
+    {{budget.as_income_form.as_table}}
+  </table>
+</form>
