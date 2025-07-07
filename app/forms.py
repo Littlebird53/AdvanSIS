@@ -385,3 +385,22 @@ class NewExpectedEnrollmentForm(RequiredMixin, forms.ModelForm):
     class Meta:
         model = models.ExpectedEnrollment
         fields = ['country']
+
+class StaffStatsForm(RequiredMixin, forms.Form):
+    any_choice = [('', 'Any')]
+    start_year = forms.IntegerField()
+    start_semester = forms.ChoiceField(choices=models.SEMESTERS)
+    end_year = forms.IntegerField()
+    end_semester = forms.ChoiceField(choices=models.SEMESTERS)
+    language = forms.ChoiceField(choices=any_choice+models.LANGUAGES, required=False)
+    country = forms.ModelChoiceField(queryset=models.Country.objects.all(),
+                                     required=False)
+    delivery_format = forms.ChoiceField(choices=any_choice+models.Course.delivery_format.field.choices, required=False)
+    sex = forms.ChoiceField(choices=any_choice+models.Person.sex.field.choices, required=False)
+    ethnicity = forms.ChoiceField(choices=any_choice+models.Person.ethnicity.field.choices, required=False)
+    marital_status = forms.ChoiceField(choices=any_choice+models.Person.marital_status.field.choices, required=False)
+    denomination = forms.ChoiceField(choices=any_choice+models.Person.denomination.field.choices, required=False)
+    center = forms.ModelMultipleChoiceField(queryset=models.Center.objects.all(), required=False)
+    sbc_fundable = forms.NullBooleanField()
+
+    make_filtered = ['language', 'country', 'center']

@@ -1,0 +1,60 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+<h1>Staff Statistics</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    {{form.as_table}}
+  </table>
+  <button type="submit">Calculate</button>
+</form>
+
+{% if stats %}
+<table>
+  <tr>
+    <th>Non-duplicating headcount</th>
+    <td>{{stats.headcount}}</td>
+    <td>Number of students enrolled in at least one course in this range.</td>
+  </tr>
+  <tr>
+    <th>New Students</th>
+    <td>{{stats.new_students}}</td>
+    <td>Number of student applications with acceptance dates in this range.</td>
+  </tr>
+  <tr>
+    <th>New Instructors</th>
+    <td>{{stats.new_instructors}}</td>
+    <td>Number of applications for <i>Instructor</i> and <i>Associate Instructor</i> positions with acceptance dates in this range.</td>
+  </tr>
+  <tr>
+    <th>New Staff</th>
+    <td>{{stats.new_staff}}</td>
+    <td>Number of applications for any staff position with acceptance dates in this range.</td>
+  </tr>
+  <tr>
+    <th>Inactive Students</th>
+    <td>{{stats.inactive_students}}</td>
+    <td>Number of students listed as <i>Current</i> who were accepted before the end of this range and who did not enroll in a class during this range. Students who have since been marked as <i>Former</i> are not included.</td>
+  </tr>
+  <tr>
+    <th>Total Credits Attempted</th>
+    <td>{{stats.total_credits}}</td>
+    <td>This includes in-progress courses but not withdrawn courses.</td>
+  </tr>
+  <tr>
+    <th>Global GPA</th>
+    <td>{{stats.gpa}}</td>
+    <td></td>
+  </tr>
+  <tr>
+    <th>Degrees Awarded</th>
+    <td>{{stats.degree_awards}}</td>
+    <td></td>
+  </tr>
+</table>
+{% endif %}
+{% endblock %}

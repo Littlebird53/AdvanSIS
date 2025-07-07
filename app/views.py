@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.contrib.staticfiles import finders
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q, Max
+from django.db.models import Count, Max, Q
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
@@ -66,6 +66,17 @@ class CreateAccountView(FormView):
         from django.contrib.auth import login
         login(self.request, user)
         return super().form_valid(form)
+
+def get_current_term():
+    seq = ['Sp', 'Su', 'Fa', 'Wi']
+    term_map = [0, # skip
+                0, 0, 0, 0, 0, # Jan-May
+                1, 1, # Jun-Jul
+                2, 2, 2, 2, # Aug-Nov
+                3, # Dec
+                ]
+    month = datetime.date.today().month
+    return seq[term_map[month]]
 
 def sort_courses(courses):
     seq = ['Sp', 'Su', 'Fa', 'Wi']
@@ -1079,3 +1090,111 @@ class MessageAllUsersView(AccessMixin, FormView):
                      models.Person.objects.all(),
                      form.cleaned_data['text'])
         return super().form_valid(form)
+
+class StaffReportView(AccessMixin, FormView):
+    form_class = forms.StaffStatsForm
+    template_name = 'app/staff_stats.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        term = get_current_term()
+        return {
+            'start_year': datetime.date.today().year - 1,
+            'start_semester': term,
+            'end_year': datetime.date.today().year,
+            'end_semester': term,
+        }
+
+    def make_date_query(self, form, prefix, **other):
+        seq = ['Sp', 'Su', 'Fa', 'Wi']
+        s1 = form.cleaned_data['start_semester']
+        s2 = form.cleaned_data['end_semester']
+        si1 = seq.index(s1)
+        si2 = seq.index(s2)
+        y1 = form.cleaned_data['start_year']
+        y2 = form.cleaned_data['end_year']
+        if y1 == y2:
+            sems = [] if si1 > si2 else seq[si1:si2+1]
+            return Q(**{prefix+'year': y1,
+                        prefix+'semester__in': sems}, **other)
+        else:
+            return (Q(**{prefix+'year': y1,
+                         prefix+'semester__in': seq[si1:]}, **other) |
+                    Q(**{prefix+'year__gt': y1,
+                         prefix+'year__lt': y2}, **other) |
+                    Q(**{prefix+'year': y2,
+                         prefix+'semester__in': seq[:si2+1]}, **other))
+
+    def make_date_range(self, form):
+        s1 = form.cleaned_data['start_semester']
+        s2 = form.cleaned_data['end_semester']
+        y1 = form.cleaned_data['start_year']
+        y2 = form.cleaned_data['end_year']
+        start_month = {'Sp': 1, 'Su': 6, 'Fa': 8, 'Wi': 12}
+        end_month = {'Sp': 6, 'Su': 8, 'Fa': 12, 'Wi': 1}
+        return (datetime.date(year=y1, month=start_month[s1], day=1),
+                datetime.date(year=y2 + int(s2 == 'Wi'),
+                              month=end_month[s2], day=1))
+
+    def form_valid(self, form):
+        grades = models.Grade.objects.filter(
+            self.make_date_query(form, 'course__')).exclude(value='W')
+        person_keys = ['sex', 'ethnicity', 'marital_status',
+                       'denomination']
+        for key in person_keys:
+            if form.cleaned_data[key]:
+                grades = grades.filter(
+                    **{'person__'+key: form.cleaned_data[key]})
+        course_keys = ['language', 'country', 'delivery_format']
+        for key in course_keys:
+            if form.cleaned_data[key]:
+                grades = grades.filter(
+                    **{'course__'+key: form.cleaned_data[key]})
+        sbc = form.cleaned_data['sbc_fundable']
+        if sbc is not None:
+            grades = grades.filter(course__center__fte_eligible=sbc)
+        centers = form.cleaned_data['center']
+        if centers:
+            grades = grades.filter(course__center__in=centers)
+
+        students = set()
+        gpa_att = 0
+        gpa_get = 0
+        credits = 0
+        for g in grades:
+            students.add(g.person)
+            cr = g.course.template.credits
+            credits += cr
+            if g.value in GPA_VALUES:
+                gpa_att += cr
+                gpa_get += cr * GPA_VALUES[g.value]
+
+        dates = self.make_date_range(form)
+
+        inactive_students = set(models.StudentRecord.objects.filter(
+            acceptance_date__lte=dates[1], status='C').values_list(
+                'person', flat=True)) - students
+
+        # TODO: new centers
+        # TODO: eligible to graduate
+
+        stats = {
+            'headcount': len(students),
+            'new_students': models.StudentRecord.objects.filter(
+                acceptance_date__range=dates).count(),
+            'new_instructors': models.StaffRecord.objects.filter(
+                acceptance_date__range=dates, role__in=['I', 'A']).count(),
+            'new_staff': models.StaffRecord.objects.filter(
+                acceptance_date__range=dates).count(),
+            'inactive_students': len(inactive_students),
+            'total_credits': credits,
+            'gpa': round(gpa_get/gpa_att, 2),
+            'degree_awards': models.DegreeAward.objects.filter(
+                awarded__range=dates).count(),
+        }
+        return render(self.request, self.template_name,
+                      {'form': form, 'stats': stats})

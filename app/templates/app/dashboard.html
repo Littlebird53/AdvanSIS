@@ -42,6 +42,7 @@
   <p><a href="/admin">Go to database admin</a></p>
   <p><a href="{% url 'app:course_catalog' %}">Manage Course Files</a></p>
   <p>{{stats.staff_applications}} instructor/director applications awaiting approval &mdash; <a href="/admin/app/staffrecord/?advance_approved__exact=0&center_approved__exact=1">view applications</a></p>
+  <p><a href="{% url 'app:staff_reports' %}">Reports</a></p>
 </div>
 {% endif %}
 {% for row in records %}
