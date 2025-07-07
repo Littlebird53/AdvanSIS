@@ -1192,7 +1192,7 @@ class StaffReportView(AccessMixin, FormView):
                 acceptance_date__range=dates).count(),
             'inactive_students': len(inactive_students),
             'total_credits': credits,
-            'gpa': round(gpa_get/gpa_att, 2),
+            'gpa': round(gpa_get/max(gpa_att, 1), 2),
             'degree_awards': models.DegreeAward.objects.filter(
                 awarded__range=dates).count(),
         }
