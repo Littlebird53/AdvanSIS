@@ -1154,12 +1154,15 @@ class StaffReportView(AccessMixin, FormView):
             if form.cleaned_data[key]:
                 grades = grades.filter(
                     **{'course__'+key: form.cleaned_data[key]})
+        center_filter = Q()
         sbc = form.cleaned_data['sbc_fundable']
         if sbc is not None:
             grades = grades.filter(course__center__fte_eligible=sbc)
+            center_filter = center_filter & Q(center__fte_eligible=sbc)
         centers = form.cleaned_data['center']
         if centers:
             grades = grades.filter(course__center__in=centers)
+            center_filter = center_filter & Q(center__in=centers)
 
         students = set()
         gpa_att = 0
@@ -1176,8 +1179,9 @@ class StaffReportView(AccessMixin, FormView):
         dates = self.make_date_range(form)
 
         inactive_students = set(models.StudentRecord.objects.filter(
+            center_filter,
             acceptance_date__lte=dates[1], status='C').values_list(
-                'person', flat=True)) - students
+            'person', flat=True)) - students
 
         # TODO: new centers
         # TODO: eligible to graduate
@@ -1185,16 +1189,20 @@ class StaffReportView(AccessMixin, FormView):
         stats = {
             'headcount': len(students),
             'new_students': models.StudentRecord.objects.filter(
+                center_filter,
                 acceptance_date__range=dates).count(),
             'new_instructors': models.StaffRecord.objects.filter(
+                center_filter,
                 acceptance_date__range=dates, role__in=['I', 'A']).count(),
             'new_staff': models.StaffRecord.objects.filter(
+                center_filter,
                 acceptance_date__range=dates).count(),
             'inactive_students': len(inactive_students),
             'total_credits': credits,
             'gpa': round(gpa_get/max(gpa_att, 1), 2),
             'degree_awards': models.DegreeAward.objects.filter(
-                awarded__range=dates).count(),
+                awarded__range=dates,
+                person__in=students|inactive_students).count(),
         }
         return render(self.request, self.template_name,
                       {'form': form, 'stats': stats})
