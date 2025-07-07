@@ -626,7 +626,7 @@ def center_tally(request, center):
     for g in grades:
         ct[g.person] += g.course.template.credits
     rows = []
-    semester_seq = [None, 'Wi', 'Sp', 'Su', 'Fa']
+    semester_seq = [None, 'Sp', 'Su', 'Fa', 'Wi']
     for person in ct:
         home, known = person.home_country
         charge = ct[person]*home.credit_fee

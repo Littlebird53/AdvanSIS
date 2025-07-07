@@ -322,7 +322,7 @@ class Course(models.Model):
         return person == self.instructor or self.center.is_admin(person)
 
     def sort_key(self):
-        terms = ['Wi', 'Sp', 'Su', 'Fa']
+        terms = ['Sp', 'Su', 'Fa', 'Wi']
         if self.semester in terms:
             order = terms.index(self.semester)
         else:
@@ -541,10 +541,8 @@ class DegreeAward(models.Model):
                  ('PNWC', 'Pacific Northwest')],
         max_length=5, blank=True, null=True)
     year = models.IntegerField(default=2025, blank=False)
-    semester = models.CharField(
-        choices=[('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
-                 ('Wi', 'Winter')],
-        max_length=2, blank=False, null=True)
+    semester = models.CharField(choices=SEMESTERS,
+                                max_length=2, blank=False, null=True)
     shirt_size = models.CharField(
         choices=[('S', 'Small'), ('M', 'Medium'), ('L', 'Large'),
                  ('XL', 'X-Large'), ('XXL', 'XX-Large'),
