@@ -96,9 +96,9 @@ urlpatterns = [
          views.MessageAllUsersView.as_view(), name='message_global'),
 
     # Addresses
-    path('address/email/', views.edit_email_address, name='edit_email'),
-    path('address/phone/', views.edit_phone_address, name='edit_phone'),
-    path('address/mailing/', views.edit_mailing_address, name='edit_mailing'),
+    path('address/email/<int:personid>/', views.edit_email_address, name='edit_email'),
+    path('address/phone/<int:personid>/', views.edit_phone_address, name='edit_phone'),
+    path('address/mailing/<int:personid>/', views.edit_mailing_address, name='edit_mailing'),
 
     # Reports
     path('report/center/<int:centerid>/', views.center_report, name='center_report'),

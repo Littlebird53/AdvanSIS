@@ -157,14 +157,31 @@ def dashboard(request):
                       'stats': stats,
                   })
 
+def can_edit_info(user, person):
+    if user.person == person or user.is_staff:
+        return True
+    s_centers = person.studentrecord_set.values_list('center', flat=True)
+    i_centers = person.staffrecord_set.values_list('center', flat=True)
+    return models.StaffRecord.objects.filter(
+        person=user.person, role__in=['D', 'R'], status='C',
+        center__in=s_centers.union(i_centers)).exists()
+def get_person(request, personid):
+    person = get_object_or_404(models.Person, pk=personid)
+    if not can_edit_info(request.user, person):
+        raise PermissionDenied()
+    return person
+
 @login_required
-def edit_email_address(request):
-    addr = request.user.person.emails.all()
+def edit_email_address(request, personid):
+    print('edit_email_address', personid)
+    person = get_person(request, personid)
+    print(person)
+    addr = person.emails.all()
     if request.method == 'GET':
-        add = forms.NewEmailForm(request.user.person)
+        add = forms.NewEmailForm(person)
     else:
         dl = request.POST.get('delete')
-        add = forms.NewEmailForm(request.user.person, request.POST)
+        add = forms.NewEmailForm(person, request.POST)
         if dl and dl.isdigit():
             obj = get_object_or_404(models.EmailAddress, pk=int(dl))
             if obj in addr:
@@ -175,19 +192,21 @@ def edit_email_address(request):
                 del add.errors[k]
         elif add.is_valid():
             obj = add.save()
-            request.user.person.emails.add(obj)
-            add = forms.NewEmailForm(request.user.person)
+            person.emails.add(obj)
+            add = forms.NewEmailForm(person)
     return render(request, 'app/edit_email_address.html',
-                  {'form': add, 'existing': addr.filter(active=True)})
+                  {'form': add, 'existing': addr.filter(active=True),
+                   'person': person})
 
 @login_required
-def edit_phone_address(request):
-    addr = request.user.person.phones.all()
+def edit_phone_address(request, personid):
+    person = get_person(request, personid)
+    addr = person.phones.all()
     if request.method == 'GET':
-        add = forms.NewPhoneForm(request.user.person)
+        add = forms.NewPhoneForm(person)
     else:
         dl = request.POST.get('delete')
-        add = forms.NewPhoneForm(request.user.person, request.POST)
+        add = forms.NewPhoneForm(person, request.POST)
         if dl and dl.isdigit():
             obj = get_object_or_404(models.PhoneAddress, pk=int(dl))
             if obj in addr:
@@ -198,19 +217,21 @@ def edit_phone_address(request):
                 del add.errors[k]
         elif add.is_valid():
             obj = add.save()
-            request.user.person.phones.add(obj)
-            add = forms.NewPhoneForm(request.user.person)
+            person.phones.add(obj)
+            add = forms.NewPhoneForm(person)
     return render(request, 'app/edit_phone_address.html',
-                  {'form': add, 'existing': addr.filter(active=True)})
+                  {'form': add, 'existing': addr.filter(active=True),
+                   'person': person})
 
 @login_required
-def edit_mailing_address(request):
-    addr = request.user.person.mailings.all()
+def edit_mailing_address(request, personid):
+    person = get_person(request, personid)
+    addr = person.mailings.all()
     if request.method == 'GET':
-        add = forms.NewMailingForm(request.user.person)
+        add = forms.NewMailingForm(person)
     else:
         dl = request.POST.get('delete')
-        add = forms.NewMailingForm(request.user.person, request.POST)
+        add = forms.NewMailingForm(person, request.POST)
         if dl and dl.isdigit():
             obj = get_object_or_404(models.MailingAddress, pk=int(dl))
             if obj in addr:
@@ -221,10 +242,11 @@ def edit_mailing_address(request):
                 del add.errors[k]
         elif add.is_valid():
             obj = add.save()
-            request.user.person.mailings.add(obj)
-            add = forms.NewMailingForm(request.user.person)
+            person.mailings.add(obj)
+            add = forms.NewMailingForm(person)
     return render(request, 'app/edit_mailing_address.html',
-                  {'form': add, 'existing': addr.filter(active=True)})
+                  {'form': add, 'existing': addr.filter(active=True),
+                   'person': person})
 
 @login_required
 def course_details(request, courseid):
@@ -435,20 +457,35 @@ def student_info(request, studentid):
     s_applications = []
     i_applications = []
     transcript = []
+    contact_form = None
+    contact_form_open = False
     if is_director:
         transcript = student.grade_set.all()
         s_applications = student.studentrecord_set.all().filter(
             center__in=director_centers)
         i_applications = student.staffrecord_set.all().filter(
             center__in=director_centers)
+        if request.method == 'POST':
+            contact_form = forms.ContactUpdateForm(request.POST,
+                                                   instance=student)
+            if contact_form.is_valid():
+                contact_form.save()
+            else:
+                contact_form_open = True
+        else:
+            contact_form = forms.ContactUpdateForm(instance=student)
     return render(request, 'app/student_info.html',
                   {'student': student,
                    'emails': student.emails.filter(active=True),
                    'phones': student.phones.filter(active=True),
                    'mailings': student.mailings.filter(active=True),
+                   'is_director': is_director,
                    'transcript': transcript,
                    'student_applications': s_applications,
-                   'instructor_applications': i_applications})
+                   'instructor_applications': i_applications,
+                   'contact_form': contact_form,
+                   'contact_form_open': contact_form_open,
+                   })
 
 @login_required
 def current_popups(request, dismiss=None):

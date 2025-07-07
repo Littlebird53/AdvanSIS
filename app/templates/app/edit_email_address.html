@@ -1,4 +1,4 @@
-<form hx-post="{% url 'app:edit_email' %}" hx-target="#emails"
+<form hx-post="{% url 'app:edit_email' person.id  %}" hx-target="#emails"
       hx-validate="false" novalidate data-form-id="email">
   {% csrf_token %}
   {% if existing %}

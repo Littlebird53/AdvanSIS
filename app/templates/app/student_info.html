@@ -39,6 +39,34 @@
 </p>
 {% endfor %}
 
+{% if is_director %}
+<details {% if contact_form_open %}open{% endif %}>
+  <summary>Update Information</summary>
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      {{contact_form.as_table}}
+    </table>
+    <button type="submit">Update</button>
+  </form>
+  <details>
+    <summary>Emails</summary>
+    <div id="emails" hx-trigger="load" hx-get="{% url 'app:edit_email' student.id %}">
+    </div>
+  </details>
+  <details>
+    <summary>Phone Numbers</summary>
+    <div id="phones" hx-trigger="load" hx-get="{% url 'app:edit_phone' student.id %}">
+    </div>
+  </details>
+  <details>
+    <summary>Addresses</summary>
+    <div id="mailings" hx-trigger="load" hx-get="{% url 'app:edit_mailing' student.id %}">
+    </div>
+  </details>
+</details>
+{% endif %}
+
 {% if transcript %}
 <h2>Transcript</h2>
 <table>

@@ -21,17 +21,17 @@
   </form>
   <details>
     <summary>Emails</summary>
-    <div id="emails" hx-trigger="load" hx-get="{% url 'app:edit_email' %}">
+    <div id="emails" hx-trigger="load" hx-get="{% url 'app:edit_email' user.person.id %}">
     </div>
   </details>
   <details>
     <summary>Phone Numbers</summary>
-    <div id="phones" hx-trigger="load" hx-get="{% url 'app:edit_phone' %}">
+    <div id="phones" hx-trigger="load" hx-get="{% url 'app:edit_phone' user.person.id %}">
     </div>
   </details>
   <details {% if not user.person.has_address %}open{% endif %}>
     <summary>Addresses</summary>
-    <div id="mailings" hx-trigger="load" hx-get="{% url 'app:edit_mailing' %}">
+    <div id="mailings" hx-trigger="load" hx-get="{% url 'app:edit_mailing' user.person.id %}">
     </div>
   </details>
 </details>
