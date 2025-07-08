@@ -80,7 +80,7 @@
     \textbf{\normalsize Achievements} \\
     \multicolumn{1}{c}{\textit{Award}} & \textit{Date Conferred} \\
     {% for ach in achievements %}
-      {{ach.degree.name|latex_escape}} & {{ach.awarded|date("m/d/Y")}} \\
+      {{ach.achievement.name|latex_escape}} & {{ach.awarded|date("m/d/Y")}} \\
     {% endfor %}
   \end{tabular}
 

@@ -176,7 +176,7 @@ class StaffRecordFilterForm(forms.Form):
 
 class CertificateForm(forms.ModelForm):
     class Meta:
-        model = models.DegreeAward
+        model = models.AchievementAward
         fields = ['display_name', 'year', 'semester']
 class DiplomaForm(forms.ModelForm):
     def clean(self):
@@ -186,7 +186,7 @@ class DiplomaForm(forms.ModelForm):
                 if not self.cleaned_data[key]:
                     self.add_error(key, _('This field is required if you are walking for graduation.'))
     class Meta:
-        model = models.DegreeAward
+        model = models.AchievementAward
         fields = ['display_name', 'year', 'semester', 'walking', 'campus',
                   'shirt_size']
 

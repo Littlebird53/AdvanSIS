@@ -443,9 +443,9 @@ def course_resources(request, courseid):
     })
 
 @login_required
-def degree_catalog(request):
-    return render(request, 'app/degree_catalog.html',
-                  {'degrees': models.Degree.objects.filter(
+def achievement_catalog(request):
+    return render(request, 'app/achievement_catalog.html',
+                  {'achievements': models.Achievement.objects.filter(
                       active=True).order_by('name')})
 
 @login_required
@@ -644,10 +644,10 @@ def center_tally(request, center):
                                and (gr_list[0].course.center == center))
             if new_student:
                 charge += home.student_fee
-            degrees = models.DegreeAward.objects.filter(
+            achievements = models.AchievementAward.objects.filter(
                 person=person, year=year, semester=semester, status='A')
-            for degree in degrees:
-                if degree.walking:
+            for achievement in achievements:
+                if achievement.walking:
                     deg_charge += 90
                 else:
                     deg_charge += min(home.student_fee, 10)
@@ -657,7 +657,7 @@ def center_tally(request, center):
     rows.sort(key=lambda r: str(r[0]))
     return render(request, 'app/tally_sheet.html', {
         'rows': rows, 'total_fee': sum(r[6] for r in rows),
-        'total_degree': sum(r[5] for r in rows),
+        'total_achievement': sum(r[5] for r in rows),
         'total_credits': sum(r[3] for r in rows)})
 
 class NewCenterApplyView(AccessMixin, FormView):
@@ -940,11 +940,11 @@ def enroll(request, courseid):
         raise PermissionDenied()
 
 @login_required
-def degree_search(request):
+def achievement_search(request):
     person = request.user.person
-    has_already = person.degreeaward_set.filter(
-        status__in=['S', 'A']).values_list('degree', 'degree__category')
-    qr = models.Degree.objects.order_by('name').filter(active=True).exclude(
+    has_already = person.achievementaward_set.filter(
+        status__in=['S', 'A']).values_list('achievement', 'achievement__category')
+    qr = models.Achievement.objects.order_by('name').filter(active=True).exclude(
         Q(category='C', credits__gt=(person.credits_earned
                                      + person.credits_in_progress
                                      - person.certificate_credits))
@@ -953,42 +953,42 @@ def degree_search(request):
         qr = qr.exclude(category='D')
     if any(h[1] == 'L' for h in has_already):
         qr = qr.exclude(category='L')
-    return render(request, 'app/degree_search.html',
-                  {'degrees': [d for d in qr
+    return render(request, 'app/achievement_search.html',
+                  {'achievements': [d for d in qr
                                if d.check_requirements(person, False)]})
 
-def check_degree(degree, person):
-    cond = Q(degree=degree)
+def check_achievement(achievement, person):
+    cond = Q(achievement=achievement)
     credits = person.credits_earned + person.credits_in_progress
-    if degree.category in ['D', 'L']:
-        cond = cond | Q(degree__category=degree.category)
+    if achievement.category in ['D', 'L']:
+        cond = cond | Q(achievement__category=achievement.category)
     else:
         credits -= person.certificate_credits
-    if credits < degree.credits:
+    if credits < achievement.credits:
         return False
-    return not models.DegreeAward.objects.filter(cond).exclude(status='R').exists()
+    return not models.AchievementAward.objects.filter(cond).exclude(status='R').exists()
 @login_required
-def degree_apply(request, degreeid):
-    degree = get_object_or_404(models.Degree, pk=degreeid)
+def achievement_apply(request, achievementid):
+    achievement = get_object_or_404(models.Achievement, pk=achievementid)
     person = request.user.person
-    if check_degree(degree, person):
-        cls = forms.CertificateForm if degree.category == 'C' else forms.DiplomaForm
+    if check_achievement(achievement, person):
+        cls = forms.CertificateForm if achievement.category == 'C' else forms.DiplomaForm
         if request.method == 'POST':
             form = cls(request.POST)
             if form.is_valid():
                 app = form.save(commit=False)
                 app.person = person
-                app.degree = degree
+                app.achievement = achievement
                 app.save()
-                return render(request, 'app/degree_apply_success.html',
-                              {'degree': degree})
+                return render(request, 'app/achievement_apply_success.html',
+                              {'achievement': achievement})
         else:
             form = cls()
-        return render(request, 'app/degree_apply_form.html',
-                      {'form': form, 'degree': degree})
+        return render(request, 'app/achievement_apply_form.html',
+                      {'form': form, 'achievement': achievement})
     else:
-        return render(request, 'app/degree_apply_reject.html',
-                      {'degree': degree})
+        return render(request, 'app/achievement_apply_reject.html',
+                      {'achievement': achievement})
 
 GPA_VALUES = {
     'A': 4.0,
@@ -1014,7 +1014,7 @@ def transcript(request):
     person = request.user.person
     context = {
         'person': person,
-        'achievements': models.DegreeAward.objects.filter(
+        'achievements': models.AchievementAward.objects.filter(
             person=person, status='A').order_by('awarded'),
         'email': person.emails.all().filter(active=True).first(),
         'address': person.mailings.all().filter(active=True).first(),
@@ -1198,8 +1198,8 @@ class StaffReportView(AccessMixin, FormView):
                 earned=Sum('person__grade__course__template__credits',
                            filter=~Q(person__grade__value__in=['F', 'Au', 'W']),
                            default=0),
-                used=Sum('person__degreeaward__degree__credits',
-                         filter=Q(person__degreeaward__status__in=['S', 'A']),
+                used=Sum('person__achievementaward__achievement__credits',
+                         filter=Q(person__achievementaward__status__in=['S', 'A']),
                          default=0))
 
         stats = {
@@ -1217,10 +1217,10 @@ class StaffReportView(AccessMixin, FormView):
             'inactive_students': len(inactive_students),
             'total_credits': credits,
             'gpa': round(gpa_get/max(gpa_att, 1), 2),
-            'degree_awards': models.DegreeAward.objects.filter(
+            'achievement_awards': models.AchievementAward.objects.filter(
                 awarded__range=dates,
                 person__in=students|inactive_students).count(),
-            'possible_degrees': len([s for s in students_with_credits
+            'possible_achievements': len([s for s in students_with_credits
                                      if s.earned >= s.used + 12]),
         }
         return render(self.request, self.template_name,

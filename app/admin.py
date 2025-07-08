@@ -78,13 +78,13 @@ class CourseAdmin(admin.ModelAdmin):
                     'semester', 'year']
     list_filter = ['semester', 'template__division', 'delivery_format']
 
-class DegreeRequirementInline(M2MMixin, NonrelatedTabularInline):
-    model = models.DegreeRequirement
+class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
+    model = models.AchievementRequirement
     save_to = 'requirements'
-@admin.register(models.Degree)
-class DegreeAdmin(admin.ModelAdmin):
+@admin.register(models.Achievement)
+class AchievementAdmin(admin.ModelAdmin):
     exclude = ['requirements']
-    inlines = [DegreeRequirementInline]
+    inlines = [AchievementRequirementInline]
     list_display = ['name', 'abbreviation', 'credits', 'category']
     list_filter = ['credits', 'category']
 
@@ -164,21 +164,21 @@ class PersonGradeInline(NonrelatedTabularInline):
     def save_new_instance(self, parent, instance):
         instance.person = parent.person
         instance.save()
-class DegreeAwardInline(NonrelatedTabularInline):
-    model = models.DegreeAward
+class AchievementAwardInline(NonrelatedTabularInline):
+    model = models.AchievementAward
     extra = 0
     exclude = ['person']
     def get_form_queryset(self, obj):
-        return obj.person.degreeaward_set.all()
+        return obj.person.achievementaward_set.all()
     def save_new_instance(self, parent, instance):
         instance.person = parent.person
         instance.save()
     readonly_fields = ['satisfy']
 
     def satisfy(self, instance):
-        if instance.degree.check_requirements(instance.person, True):
+        if instance.achievement.check_requirements(instance.person, True):
             return 'Yes'
-        elif instance.degree.check_requirements(instance.person, False):
+        elif instance.achievement.check_requirements(instance.person, False):
             return 'Yes, with in-progress'
         else:
             return 'No'
@@ -186,7 +186,7 @@ class UserAdmin(BaseUserAdmin):
     inlines = [PersonInline, UserEmailAddressInline,
                UserPhoneAddressInline, UserMailingAddressInline,
                StudentRecordInline, StaffRecordInline,
-               PersonGradeInline, DegreeAwardInline]
+               PersonGradeInline, AchievementAwardInline]
     list_display = ['username', 'person__given_name', 'person__family_name']
     search_fields = ['username', 'person__given_name',
                      'person__family_name']

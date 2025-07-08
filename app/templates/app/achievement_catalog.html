@@ -1,0 +1,37 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Achievement Catalog{% endblock %}
+
+{% block content %}
+<div>
+  <div id="toc">
+    <ul>
+      {% for achievement in achievements %}
+      <li><a href="#d{{achievement.id}}">{{achievement.short_name}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div id="contents">
+    <h1>All Achievements</h1>
+    {% for achievement in achievements %}
+    <div class="search-item" id="d{{achievement.id}}xx">
+      <a class="fake-anchor" name="d{{achievement.id}}">null</a>
+      <h2>{{achievement.name}} ({{achievement.abbreviation}})</h2>
+      <p>{{achievement.description|linebreaksbr}}</p>
+      <details>
+        <summary>Requirements</summary>
+        <ul>
+          {% for req in achievement.requirements.all %}
+          {{req.display}}
+          {% endfor %}
+          <li>Total Credits: {{achievement.credits}}</li>
+          {% for req in achievement.prerequisites.all %}
+          <li>Must have already completed {{req}}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

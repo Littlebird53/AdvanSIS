@@ -48,7 +48,7 @@ urlpatterns = [
     path('endorsement/<int:pk>/', views.ChurchEndorsementView.as_view(),
          name='church_endorsement'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
-    path('degree/<int:degreeid>/', views.degree_apply, name='degree_apply'),
+    path('achievement/<int:achievementid>/', views.achievement_apply, name='achievement_apply'),
 
     # Budgets
     path('center/<int:centerid>/budget/', views.center_budget,
@@ -78,8 +78,8 @@ urlpatterns = [
     path('course/catalog/<int:courseid>/', views.course_resources,
          name='course_resources'),
     path('center/', views.list_centers, name='center_search'),
-    path('degree/', views.degree_search, name='degree_search'),
-    path('degree/catalog/', views.degree_catalog, name='degree_catalog'),
+    path('achievement/', views.achievement_search, name='achievement_search'),
+    path('achievement/catalog/', views.achievement_catalog, name='achievement_catalog'),
     path('transcript/', views.transcript, name='transcript'),
 
     # Messages

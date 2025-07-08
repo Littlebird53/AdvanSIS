@@ -146,9 +146,9 @@ class Person(models.Model):
 
     @property
     def certificate_credits(self):
-        return self.degreeaward_set.filter(
-            status__in=['S', 'A'], degree__category='C',
-        ).aggregate(v=models.Sum('degree__credits'))['v'] or 0
+        return self.achievementaward_set.filter(
+            status__in=['S', 'A'], achievement__category='C',
+        ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
 
     @property
     def full_name(self):
@@ -456,7 +456,7 @@ class StaffRecord(models.Model):
     def sort_key(self):
         return (self.center.name, self.role)
 
-class DegreeRequirement(models.Model):
+class AchievementRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)
     count = models.IntegerField(default=1)
 
@@ -483,11 +483,11 @@ class DegreeRequirement(models.Model):
         return self.REQ_TEMPLATE.render(
             Context({'req': self, 'courses': crs, 'count': len(crs)}))
 
-class Degree(models.Model):
+class Achievement(models.Model):
     name = models.CharField(max_length=100)
     abbreviation = models.CharField(max_length=10)
     description = models.TextField()
-    requirements = models.ManyToManyField(DegreeRequirement)
+    requirements = models.ManyToManyField(AchievementRequirement)
     prerequisites = models.ManyToManyField('self', blank=True,
                                            symmetrical=False)
     credits = models.IntegerField()
@@ -517,7 +517,7 @@ class Degree(models.Model):
             if len(cls) < req.count:
                 return False
         for req in self.prerequisites.all():
-            if not DegreeAward.objects.filter(person=student, degree=req).exists():
+            if not AchievementAward.objects.filter(person=student, achievement=req).exists():
                 return False
         return True
 
@@ -525,9 +525,9 @@ class Degree(models.Model):
     def short_name(self):
         return self.name.replace('Leadership Diploma', '').replace('Diploma', '').replace('Certificate', '').strip()
 
-class DegreeAward(models.Model):
+class AchievementAward(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    degree = models.ForeignKey(Degree, on_delete=models.CASCADE)
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     status = models.CharField(
         choices=[('S', 'Submitted'), ('A', 'Approved'), ('R', 'Rejected')],
         default='S', max_length=1)

@@ -1,0 +1,33 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Achievement Search{% endblock %}
+
+{% block content %}
+<h1>Achievement Search</h1>
+{% if achievements|length > 0 %}
+<p>The following are all of the diplomas and certificates that you will be eligible for at the end of the current semester.</p>
+{% else %}
+<p>You are not currently eligible for any diplomas or certificates.</p>
+{% endif %}
+<p>For a list of all diplomas and certificates offered by ADVANCE, see <a href="{% url 'app:achievement_catalog' %}">the achievement catalog</a>.</p>
+
+{% for achievement in achievements %}
+<div class="search-item">
+  <h2>{{achievement.name}} ({{achievement.abbreviation}})</h2>
+  <p>{{achievement.description|linebreaksbr}}</p>
+  <details>
+    <summary>Requirements</summary>
+    <p>Total Credits: {{achievement.credits}}</p>
+    <ul>
+      {% for req in achievement.requirements.all %}
+      {{req.display}}
+      {% endfor %}
+      {% for req in achievement.prerequisites.all %}
+      <li>Must have already completed {{req}}</li>
+      {% endfor %}
+    </ul>
+  </details>
+  <p><a href="{% url 'app:achievement_apply' achievement.id %}">Apply for this achievement</a></p>
+</div>
+{% endfor %}
+{% endblock %}
