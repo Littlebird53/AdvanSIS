@@ -20,7 +20,7 @@ class RequiredMixin:
             self.fields[field].widget.attrs['class'] = 'filter-select'
 
 class NewUserForm(forms.ModelForm):
-    email = forms.EmailField()
+    email = forms.EmailField(required=False)
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 

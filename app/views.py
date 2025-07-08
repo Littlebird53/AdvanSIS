@@ -51,18 +51,19 @@ class CreateAccountView(FormView):
         import uuid
         user = models.User.objects.create_user(
             str(uuid.uuid1()),
-            form.cleaned_data['email'],
+            form.cleaned_data.get('email'),
             form.cleaned_data['password'])
         person = form.save(commit=False)
         person.user = user
-        email = models.EmailAddress()
-        email.email = form.cleaned_data['email']
-        email.category = 'P'
-        email.save()
         person.save()
         user.username = str(person.id)
         user.save()
-        person.emails.add(email)
+        if form.cleaned_data.get('email'):
+            email = models.EmailAddress()
+            email.email = form.cleaned_data['email']
+            email.category = 'P'
+            email.save()
+            person.emails.add(email)
         from django.contrib.auth import login
         login(self.request, user)
         return super().form_valid(form)
