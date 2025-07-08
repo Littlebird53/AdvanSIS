@@ -42,7 +42,7 @@
   <p><a href="/admin">Go to database admin</a></p>
   <p><a href="{% url 'app:course_catalog' %}">Manage Course Files</a></p>
   <p>{{stats.staff_applications}} instructor/director applications awaiting approval &mdash; <a href="/admin/app/staffrecord/?advance_approved__exact=0&center_approved__exact=1">view applications</a></p>
-  <p>{{stats.missed_contacts}} prospects have not been contacted in over a year &mdash; <a href="/admin/app/prospect/?last_contact={{stats.missed_contacts_date}}">view prospects</a></p>
+  <p>{{stats.missed_contacts}} prospects have not been contacted in over six weeks &mdash; <a href="/admin/app/prospect/?last_contact={{stats.missed_contacts_date}}">view prospects</a></p>
   <p><a href="{% url 'app:staff_reports' %}">Reports</a></p>
 </div>
 {% endif %}
