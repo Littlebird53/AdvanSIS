@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.contrib.staticfiles import finders
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Max, Q
+from django.db.models import Count, F, Max, Q, Sum
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
@@ -1183,8 +1183,23 @@ class StaffReportView(AccessMixin, FormView):
             acceptance_date__lte=dates[1], status='C').values_list(
             'person', flat=True)) - students
 
-        # TODO: new centers
-        # TODO: eligible to graduate
+        shift = datetime.timedelta(days=365 * 5 + 1) # roughly 5 years
+        new_centers = models.Center.objects.exclude(
+            mou__expiration__lte=dates[0]+shift).filter(
+                mou__expiration__gte=dates[0]+shift,
+                mou__expiration__lte=dates[1]+shift)
+        if sbc:
+            new_centers = new_centers.filter(fte_eligible=sbc)
+
+        students_with_credits = models.StudentRecord.objects.filter(
+            center_filter, acceptance_date__lte=dates[1],
+            status='C').annotate(
+                earned=Sum('person__grade__course__template__credits',
+                           filter=~Q(person__grade__value__in=['F', 'Au', 'W']),
+                           default=0),
+                used=Sum('person__degreeaward__degree__credits',
+                         filter=Q(person__degreeaward__status__in=['S', 'A']),
+                         default=0))
 
         stats = {
             'headcount': len(students),
@@ -1197,12 +1212,15 @@ class StaffReportView(AccessMixin, FormView):
             'new_staff': models.StaffRecord.objects.filter(
                 center_filter,
                 acceptance_date__range=dates).count(),
+            'new_centers': new_centers.count(),
             'inactive_students': len(inactive_students),
             'total_credits': credits,
             'gpa': round(gpa_get/max(gpa_att, 1), 2),
             'degree_awards': models.DegreeAward.objects.filter(
                 awarded__range=dates,
                 person__in=students|inactive_students).count(),
+            'possible_degrees': len([s for s in students_with_credits
+                                     if s.earned >= s.used + 12]),
         }
         return render(self.request, self.template_name,
                       {'form': form, 'stats': stats})

@@ -36,6 +36,11 @@
     <td>Number of applications for any staff position with acceptance dates in this range.</td>
   </tr>
   <tr>
+    <th>New Centers</th>
+    <td>{{stats.new_centers}}</td>
+    <td>Number of new centers based the earliest listed MOU signing date. This count is not affected by the explicit list of centers.</td>
+  </tr>
+  <tr>
     <th>Inactive Students</th>
     <td>{{stats.inactive_students}}</td>
     <td>Number of students listed as <i>Current</i> who were accepted before the end of this range and who did not enroll in a class during this range. Students who have since been marked as <i>Former</i> are not included.</td>
@@ -54,6 +59,11 @@
     <th>Achievements Awarded</th>
     <td>{{stats.degree_awards}}</td>
     <td></td>
+  </tr>
+  <tr>
+    <th>Potentially Qualified for Achievements</th>
+    <td>{{stats.possible_degrees}}</td>
+    <td>Current students who started before the end of this range and have at least 12 more earned credits than their diploma and certificate total.</td>
   </tr>
 </table>
 {% endif %}
