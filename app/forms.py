@@ -383,6 +383,9 @@ class NewExpectedCourseForm(RequiredMixin, forms.ModelForm):
         fields = ['course', 'semester']
 
 class ExpectedEnrollmentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['students'].widget.attrs['style'] = 'width: 3.5em'
     class Meta:
         model = models.ExpectedEnrollment
         fields = ['students']

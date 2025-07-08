@@ -62,7 +62,7 @@
     <td></td>
     <td></td>
     <td></td>
-    <td>
+    <td style="border-left: 1px solid gray">
       <span class="center-fee"></span>
     </td>
     <td>
@@ -74,6 +74,8 @@
   </tr>
 </table>
 
+<details>
+  <summary>Add Course</summary>
 <form hx-target="#courses-total" hx-swap="beforebegin"
       hx-post="{% url 'app:center_budget_new_course' budget.center.id budget.id %}"
       data-form-id="skip">
@@ -94,6 +96,7 @@
   </table>
   <button type="submit">Add</button>
 </form>
+</details>
 
 <h3>Other</h3>
 

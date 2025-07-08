@@ -16,6 +16,11 @@
     {{fee.country.credit_fee}}
   </td>
   <td>
-    Delete
+    <form hx-post="{% url 'app:center_budget_del_fee' fee.budget.center.id fee.id %}"
+          hx-target="#fee_{{fee.id}}"
+          hx-swap="outerhtml">
+      {% csrf_token %}
+      <button style="width: 100%">Delete</button>
+    </form>
   </td>
 </tr>

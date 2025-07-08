@@ -1,4 +1,5 @@
-<tr class="course" data-credits="{{course.course.credits}}">
+<tr id="course_row_{{course.id}}" class="course"
+    data-credits="{{course.course.credits}}">
   <td>
     {{course.course.title}}
   </td>
@@ -15,20 +16,28 @@
       {% include 'app/center_budget_enrollment.html' %}
       {% endfor %}
     </table>
-    <form hx-target="#course_{{course.id}}" hx-swap="beforeend"
-	        hx-post="{% url 'app:center_budget_new_enrollment' course.budget.center.id course.id %}"
-          data-form-id="skip">
-	    {% csrf_token %}
-	    <table>
-	      {{course.new_country_form.as_table}}
-	    </table>
-	    <button type="submit">Add</button>
+    <details>
+      <summary>Add Country</summary>
+      <form hx-target="#course_{{course.id}}" hx-swap="beforeend"
+	          hx-post="{% url 'app:center_budget_new_enrollment' course.budget.center.id course.id %}"
+            data-form-id="skip">
+	      {% csrf_token %}
+	      <table>
+	        {{course.new_country_form.as_table}}
+	      </table>
+	      <button type="submit">Add</button>
+      </form>
+    </details>
+  </td>
+  <td>
+    <form hx-post="{% url 'app:center_budget_del_course' course.budget.center.id course.id %}"
+          hx-target="#course_row_{{course.id}}"
+          hx-swap="outerhtml">
+      {% csrf_token %}
+      <button style="width: 100%">Delete</button>
     </form>
   </td>
-  <td>
-    Delete
-  </td>
-  <td>
+  <td style="border-left: 1px solid gray">
     <span class="center-fee"></span>
   </td>
   <td>

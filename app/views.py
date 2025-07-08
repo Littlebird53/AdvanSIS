@@ -784,6 +784,11 @@ def center_budget_new_fee(request, center, budgetid):
         return render(request, 'app/center_budget_fee.html', {'fee': fee})
     return render(request, 'app/empty_response.html')
 @center_admin
+def center_budget_delete_fee(request, center, feeid):
+    fee = get_object_or_404(models.CenterFees, pk=feeid)
+    fee.delete()
+    return render(request, 'app/empty_response.html')
+@center_admin
 def center_budget_new_course(request, center, budgetid):
     budget = get_object_or_404(models.CenterBudget, pk=budgetid)
     form = forms.NewExpectedCourseForm(request.POST)
@@ -793,6 +798,12 @@ def center_budget_new_course(request, center, budgetid):
         course.save()
         return render(request, 'app/center_budget_course.html',
                       {'course': course})
+    return render(request, 'app/empty_response.html')
+@center_admin
+def center_budget_delete_course(request, center, courseid):
+    course = get_object_or_404(models.ExpectedCourse, pk=courseid,
+                               budget__center=center)
+    course.delete()
     return render(request, 'app/empty_response.html')
 @center_admin
 def center_budget_enrollment(request, center, enrollmentid):
