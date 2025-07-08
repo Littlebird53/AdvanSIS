@@ -112,6 +112,10 @@ def get_staff_stats():
     ret = {}
     ret['staff_applications'] = models.StaffRecord.objects.filter(
         status='C', center_approved=True, advance_approved=False).count()
+    year_ago = datetime.date.today() - datetime.timedelta(days=365)
+    ret['missed_contacts'] = models.Prospect.objects.exclude(
+        prospectcontact__date__gte=year_ago).count()
+    ret['missed_contacts_date'] = year_ago.isoformat()
     return ret
 
 @login_required

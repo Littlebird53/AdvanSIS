@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
 from app import models
+import datetime
 
 class M2MMixin:
     save_to = None
@@ -213,6 +214,51 @@ admin.site.register(User, UserAdmin)
 @admin.register(models.PopupMessage)
 class PopupAdmin(admin.ModelAdmin):
     autocomplete_fields = ['person', 'sender']
+
+class ProspectDateFilter(admin.SimpleListFilter):
+    # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+    template = 'admin/date_filter.html'
+    parameter_name = 'last_contact'
+    title = 'Last Contact Before'
+
+    def lookups(self, request, model_admin):
+        # Dummy, required to show the filter.
+        return ((),)
+
+    def choices(self, changelist):
+        # Grab only the "all" option.
+        all_choice = next(super().choices(changelist))
+        all_choice['query_parts'] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            try:
+                print(self.value())
+                limit = datetime.date.fromisoformat(self.value())
+                return queryset.exclude(
+                    prospectcontact__date__gte=limit)
+            except:
+                pass
+        return queryset
+
+class ProspectContactInline(admin.TabularInline):
+    model = models.ProspectContact
+    extra = 0
+@admin.register(models.Prospect)
+class ProspectAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['center']
+    search_fields = ['given_name', 'middle_name', 'family_name']
+    list_display = ['given_name', 'middle_name', 'family_name', 'role',
+                    'last_contact']
+    list_filter = ['role', ProspectDateFilter]
+    exclude = ['emails', 'phones', 'mailings']
+    inlines = [CenterEmailAddressInline, CenterPhoneAddressInline,
+               CenterMailingAddressInline, ProspectContactInline]
 
 @admin.register(models.StaffRecord)
 class StaffAdmin(admin.ModelAdmin):

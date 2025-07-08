@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.template import Context, Template
 from app.languages import LANGUAGES
+import datetime
 from functools import cached_property
 
 class EmailAddress(models.Model):
@@ -632,3 +633,30 @@ class CenterStipend(models.Model):
     def as_form(self):
         from app.forms import CenterStipendForm as fcls
         return fcls(instance=self)
+
+class Prospect(models.Model):
+    given_name = models.CharField(max_length=100, null=True,
+                                  verbose_name='Given (First) Name')
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    family_name = models.CharField(max_length=100,
+                                   verbose_name='Family (Last) Name')
+    center = models.ForeignKey(Center, blank=True, null=True,
+                               on_delete=models.SET_NULL)
+    emails = models.ManyToManyField(EmailAddress)
+    phones = models.ManyToManyField(PhoneAddress)
+    mailings = models.ManyToManyField(MailingAddress)
+    role = models.CharField(max_length=1, default='S', choices=[
+        ('S', 'Student'), ('I', 'Instructor'), ('D', 'Director')])
+
+    @property
+    def last_contact(self):
+        ret = self.prospectcontact_set.all().order_by('date').last()
+        if ret:
+            return ret.date
+
+class ProspectContact(models.Model):
+    prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE)
+    date = models.DateField()
+    method = models.CharField(max_length=1, choices=[
+        ('E', 'Email'), ('P', 'Phone'), ('I', 'In-Person')])
+    notes = models.TextField(blank=True, null=True)
