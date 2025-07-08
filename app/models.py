@@ -567,21 +567,21 @@ class PopupMessage(models.Model):
 class CenterBudget(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     year = models.IntegerField()
-    other_income = models.DecimalField(max_digits=5, decimal_places=2,
+    other_income = models.DecimalField(max_digits=8, decimal_places=2,
                                      blank=True, null=True)
-    marketing = models.DecimalField(max_digits=5, decimal_places=2,
+    marketing = models.DecimalField(max_digits=7, decimal_places=2,
                                      blank=True, null=True)
-    office = models.DecimalField(max_digits=5, decimal_places=2,
+    office = models.DecimalField(max_digits=7, decimal_places=2,
                                      blank=True, null=True)
-    books = models.DecimalField(max_digits=5, decimal_places=2,
+    books = models.DecimalField(max_digits=7, decimal_places=2,
                                      blank=True, null=True)
-    other_expense = models.DecimalField(max_digits=5, decimal_places=2,
+    other_expense = models.DecimalField(max_digits=7, decimal_places=2,
                                      blank=True, null=True)
 
     @property
     def display_year(self):
-        n = self.year % 100
-        return f'{n}-{n+1}'
+        n = (self.year + 1) % 100
+        return f'{self.year}-{n}'
 
     def as_income_form(self):
         from app.forms import CenterBudgetIncomeForm as fcls
@@ -627,7 +627,7 @@ class ExpectedEnrollment(models.Model):
 class CenterStipend(models.Model):
     budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
     staff = models.ForeignKey(StaffRecord, on_delete=models.CASCADE)
-    stipend = models.DecimalField(max_digits=5, decimal_places=2,
+    stipend = models.DecimalField(max_digits=7, decimal_places=2,
                                   blank=True, null=True)
 
     def as_form(self):
