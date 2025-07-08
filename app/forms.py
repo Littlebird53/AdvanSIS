@@ -212,8 +212,15 @@ class AddFileForm(forms.ModelForm):
         model = models.SharedFile
         fields = ['title', 'content']
 
+class NewInstructorPopupForm(forms.Form):
+    text = forms.CharField(label='Message Body', widget=forms.Textarea)
+
 class NewPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)
+    roles = forms.MultipleChoiceField(initial='S', choices=[
+        ('S', 'Students'), ('I', 'Instructors'), ('D', 'Staff')])
+    status = forms.MultipleChoiceField(initial='C', choices=[
+        ('C', 'Current'), ('F', 'Former'), ('A', 'Applied')])
 
 class CalendarForm(forms.Form):
     days = forms.MultipleChoiceField(

@@ -600,11 +600,22 @@ class MessageCenterStudentsView(CenterAdminMixin, FormView):
     success_url = '/dashboard' # TODO
 
     def form_valid(self, form):
-        send_message(self.request.user.person,
-                     [sr.person
-                      for sr in models.StudentRecord.objects.filter(
-                              center=self.center, status='C')],
-                     form.cleaned_data['text'])
+        to = set()
+        status = form.cleaned_data['status']
+        if 'S' in form.cleaned_data['roles']:
+            qr = models.StudentRecord.objects.filter(
+                center=self.center, status__in=status)
+            to.update([sr.person for sr in qr])
+        roles = []
+        if 'D' in roles:
+            roles += ['D', 'R']
+        if 'I' in roles:
+            roles += ['I', 'A']
+        if roles:
+            qr = models.StaffRecord.objects.filter(
+                center=self.center, status__in=status, role__in=roles)
+            to.update([sr.person for sr in qr])
+        send_message(self.request.user.person, to, form.cleaned_data['text'])
         return super().form_valid(form)
 
 @center_admin
@@ -835,7 +846,7 @@ class StaffApplyView(AccessMixin, FormView):
                       {'sr': sr})
 
 class MessageCourseStudentsView(AccessMixin, FormView):
-    form_class = forms.NewPopupForm
+    form_class = forms.NewInstructorPopupForm
     template_name = 'app/message_center_students.html' # TOOD?
     success_url = '/dashboard' # TODO
 
@@ -1087,9 +1098,22 @@ class MessageAllUsersView(AccessMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        send_message(self.request.user.person,
-                     models.Person.objects.all(),
-                     form.cleaned_data['text'])
+        to = set()
+        print(form.cleaned_data)
+        status = form.cleaned_data['status']
+        if 'S' in form.cleaned_data['roles']:
+            qr = models.StudentRecord.objects.filter(status__in=status)
+            to.update([sr.person for sr in qr])
+        roles = []
+        if 'D' in form.cleaned_data['roles']:
+            roles += ['D', 'R']
+        if 'I' in form.cleaned_data['roles']:
+            roles += ['I', 'A']
+        if roles:
+            qr = models.StaffRecord.objects.filter(
+                status__in=status, role__in=roles)
+            to.update([sr.person for sr in qr])
+        send_message(self.request.user.person, to, form.cleaned_data['text'])
         return super().form_valid(form)
 
 class StaffReportView(AccessMixin, FormView):
