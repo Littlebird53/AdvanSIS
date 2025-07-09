@@ -49,6 +49,10 @@ urlpatterns = [
          name='church_endorsement'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
     path('achievement/<int:achievementid>/', views.achievement_apply, name='achievement_apply'),
+    path('center/<int:centerid>/mou/director_signature/',
+         views.sign_mou, {'role': 'director'}, name='mou_director_sig'),
+    path('center/<int:centerid>/mou/sponsor_signature/',
+         views.sign_mou, {'role': 'sponsor'}, name='mou_sponsor_sig'),
 
     # Budgets
     path('center/<int:centerid>/budget/', views.center_budget,

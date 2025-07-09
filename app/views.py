@@ -116,6 +116,9 @@ def get_staff_stats():
     ret['missed_contacts'] = models.Prospect.objects.exclude(
         prospectcontact__date__gte=weeks_ago).count()
     ret['missed_contacts_date'] = weeks_ago.isoformat()
+    ret['pending_mous'] = models.MOU.objects.filter(
+        Q(advance_sig__isnull=True) | Q(gs_dean_sig__isnull=True),
+        status='P').count()
     return ret
 
 @login_required
@@ -189,15 +192,14 @@ def get_person(request, personid):
 
 @login_required
 def edit_email_address(request, personid):
-    print('edit_email_address', personid)
     person = get_person(request, personid)
-    print(person)
     addr = person.emails.all()
+    initial = {'make_default': not person.user.email}
     if request.method == 'GET':
-        add = forms.NewEmailForm(person)
+        add = forms.NewEmailForm(person, initial=initial)
     else:
         dl = request.POST.get('delete')
-        add = forms.NewEmailForm(person, request.POST)
+        add = forms.NewEmailForm(person, request.POST, initial=initial)
         if dl and dl.isdigit():
             obj = get_object_or_404(models.EmailAddress, pk=int(dl))
             if obj in addr:
@@ -209,7 +211,11 @@ def edit_email_address(request, personid):
         elif add.is_valid():
             obj = add.save()
             person.emails.add(obj)
-            add = forms.NewEmailForm(person)
+            if add.cleaned_data['make_default']:
+                person.user.email = obj.email
+                person.user.save()
+                initial['make_default'] = False
+            add = forms.NewEmailForm(person, initial=initial)
     return render(request, 'app/edit_email_address.html',
                   {'form': add, 'existing': addr.filter(active=True),
                    'person': person})
@@ -824,9 +830,19 @@ def center_budget_new_enrollment(request, center, courseid):
         enrollment.save()
         return render(request, 'app/center_budget_enrollment.html',
                       {'enrollment': enrollment})
-    print(request.POST)
-    print(form.errors)
     return render(request, 'app/empty_response.html')
+
+@center_admin
+def sign_mou(request, center, role):
+    mou = center.current_mou
+    if mou.status == 'P':
+        if role == 'director' and not mou.director_sig:
+            mou.director_sig = datetime.date.today()
+            mou.save()
+        elif role == 'sponsor' and not mou.sponsor_sig:
+            mou.sponsor_sig = datetime.date.today()
+            mou.save()
+    return redirect('app:dashboard')
 
 ####################
 ### Instructors

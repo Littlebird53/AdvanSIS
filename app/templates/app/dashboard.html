@@ -43,20 +43,49 @@
   <p><a href="{% url 'app:course_catalog' %}">Manage Course Files</a></p>
   <p>{{stats.staff_applications}} instructor/director applications awaiting approval &mdash; <a href="/admin/app/staffrecord/?advance_approved__exact=0&center_approved__exact=1">view applications</a></p>
   <p>{{stats.missed_contacts}} prospects have not been contacted in over six weeks &mdash; <a href="/admin/app/prospect/?last_contact={{stats.missed_contacts_date}}">view prospects</a></p>
+  <p>{{stats.pending_mous}} MOUs are missing at least one signature &mdash; <a href="/admin/app/mou/?status__exact=P">view pending MOUs</a></p>
   <p><a href="{% url 'app:staff_reports' %}">Reports</a></p>
 </div>
 {% endif %}
 {% for row in records %}
 <div class="search-item">
-  <h2>{{row.0.center.name}} ({{row.0.status_line}})</h2>
+  {% with center=row.0.center %}
+  <h2>{{center.name}} ({{row.0.status_line}})</h2>
   {% if not row.2 %}
   {% if row.0.role == 'D' or row.0.role == 'R' %}
-  <p><a href="{% url 'app:new_course' row.0.center.id %}">Add Course</a></p>
-  <p><a href="{% url 'app:center_students' row.0.center.id %}">Manage Students</a></p>
-  <p><a href="{% url 'app:center_instructors' row.0.center.id %}">Manage Instructors</a></p>
-  <p><a href="{% url 'app:message_center_students' row.0.center.id %}">Message All Students</a></p>
-  <p><a href="{% url 'app:center_report' row.0.center.id %}">Reports</a></p>
-  <p><a href="{% url 'app:center_budget' row.0.center.id %}">Center Budget</a></p>
+  {% if row.0.role == 'D' and row.0.status == 'C' %}
+  {% with mou=center.current_mou %}
+  {% if mou.status == 'P' %}
+  <p>
+    Your Memorandum of Understanding is awaiting some signatures.
+    {% if mou.director_sig %}
+    Director has signed.
+    {% else %}
+    <form action="{% url 'app:mou_director_sig' center.id %}">
+      <button type="submit">Add director signature.</button>
+    </form>
+    {% endif %}
+    {% if mou.sponsor_sig %}
+    Sponsor has signed.
+    {% else %}
+    <form action="{% url 'app:mou_sponsor_sig' center.id %}">
+      <button type="submit">Add sponsor signature.</button>
+    </form>
+    {% endif %}
+  </p>
+  {% elif mou.has_expired %}
+  <p>Your Memorandum of Understanding has expired. Please contact the ADVANCE office to renew it.</p>
+  {% elif mou.expires_soon %}
+  <p>Your Memorandum of Understanding will expire in the next six weeks. Please contact the ADVANCE office to renew it.</p>
+  {% endif %}
+  {% endwith %}
+  {% endif %}
+  <p><a href="{% url 'app:new_course' center.id %}">Add Course</a></p>
+  <p><a href="{% url 'app:center_students' center.id %}">Manage Students</a></p>
+  <p><a href="{% url 'app:center_instructors' center.id %}">Manage Instructors</a></p>
+  <p><a href="{% url 'app:message_center_students' center.id %}">Message All Students</a></p>
+  <p><a href="{% url 'app:center_report' center.id %}">Reports</a></p>
+  <p><a href="{% url 'app:center_budget' center.id %}">Center Budget</a></p>
   {% endif %}
   <p><a href="{% url 'app:course_catalog' %}">Prepare to Teach</a></p>
   {% endif %}
@@ -101,6 +130,7 @@
     </ul>
   </details>
   {% endif %}
+  {% endwith %}
 </div>
 {% empty %}
 <h2>You are not currently associated with any centers.</h2>

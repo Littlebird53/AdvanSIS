@@ -47,6 +47,10 @@ class CenterStaffRecords(admin.TabularInline):
     autocomplete_fields = ['person']
     fields = ['person', 'status']
     extra = 0
+class CenterMOUInline(admin.TabularInline):
+    model = models.MOU
+    extra = 0
+    readonly_fields = ['start_date', 'expiration']
 @admin.register(models.Center)
 class CenterAdmin(admin.ModelAdmin):
     exclude = ['emails', 'phones', 'mailings',
@@ -57,7 +61,7 @@ class CenterAdmin(admin.ModelAdmin):
                CenterSponsorEmailAddressInline,
                CenterSponsorPhoneAddressInline,
                CenterSponsorMailingAddressInline,
-               CenterStudentRecords, CenterStaffRecords]
+               CenterStudentRecords, CenterStaffRecords, CenterMOUInline]
     search_fields = ['name', 'code']
     list_display = ['name', 'code', 'fte_eligible', 'active']
     list_filter = ['fte_eligible', 'active']
@@ -113,6 +117,12 @@ class CourseTemplateAdmin(admin.ModelAdmin):
     list_filter = ['division', 'credits', 'active']
     search_fields = ['title']
     list_display = ['title', 'code', 'credits']
+
+@admin.register(models.MOU)
+class MOUAdmin(admin.ModelAdmin):
+    list_display = ['center', 'status', 'start_date', 'expiration']
+    readonly_fields = ['start_date', 'expiration']
+    list_filter = ['status']
 
 @admin.register(models.Person)
 class PersonAdmin(admin.ModelAdmin):
@@ -193,7 +203,7 @@ class UserAdmin(BaseUserAdmin):
                      'person__family_name']
     readonly_fields = ['credits_earned', 'credits_in_progress']
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
+        (None, {'fields': ('username', 'email', 'password')}),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'groups', 'user_permissions'),

@@ -49,6 +49,7 @@ class ContactUpdateForm(forms.ModelForm):
 
 class NewEmailForm(forms.ModelForm):
     prefix = 'email'
+    make_default = forms.BooleanField(required=False, label='Set as account email (e.g. for password resets)')
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person

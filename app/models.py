@@ -228,13 +228,23 @@ class Center(models.Model):
         if addr:
             return addr.country
 
+    @property
+    def current_mou(self):
+        ret = self.mou_set.all().filter(status='P').first()
+        if ret is None:
+            ret = self.mou_set.all().filter(status='A').first()
+        if ret is None:
+            ret = self.mou_set.all().order_by('expiration').last()
+        return ret
+
 class MOU(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     director_sig = models.DateField(blank=True, null=True)
     sponsor_sig = models.DateField(blank=True, null=True)
     advance_sig = models.DateField(blank=True, null=True)
     gs_dean_sig = models.DateField(blank=True, null=True)
-    expiration = models.DateField()
+    start_date = models.DateField(blank=True, null=True)
+    expiration = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=1, choices=[
         ('P', 'Pending'), ('A', 'Active'), ('E', 'Expired'),
         ('R', 'Renewed')], default='P')
@@ -242,13 +252,14 @@ class MOU(models.Model):
                                      default='latex/mou_2025.tex')
 
     @property
-    def start_date(self):
-        dates = [self.director_sig, self.sponsor_sig, self.advance_sig,
-                 self.gs_dean_sig]
-        if any(dates):
-            return max([d for d in dates if d])
-        else:
-            return datetime.date.today()
+    def expires_soon(self):
+        return (self.expiration and
+                (datetime.date.today() + datetime.timedelta(days=42) >
+                 self.expiration))
+
+    @property
+    def has_expired(self):
+        return self.expiration and self.expiration < datetime.date.today()
 
 class LearningObjective(models.Model):
     name = models.CharField(max_length=50)
