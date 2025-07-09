@@ -126,6 +126,8 @@ class Person(models.Model):
                  ('3', 'Asian or Pacific Islander'), ('4', 'Hispanic'),
                  ('5', 'Caucasian'), ('6', 'Other')],
         max_length=1, null=True)
+    preferred_language = models.CharField(choices=LANGUAGES, max_length=3,
+                                          blank=True, null=True)
     deceased = models.BooleanField(default=False)
     emails = models.ManyToManyField(EmailAddress)
     phones = models.ManyToManyField(PhoneAddress)

@@ -16,6 +16,9 @@
 <p><b>Preferred Name:</b> {{student.preferred_name}}</p>
 {% endif %}
 <p><b>Gender:</b> {{student.get_sex_display}}</p>
+{% if student.perferred_language %}
+<p><b>Language:</b> {{student.get_preferred_language_display}}</p>
+{% endif %}
 
 {% for e in emails %}
 <p><b>{{e.get_category_display}} Email Address:</b> {{e.email}}</p>

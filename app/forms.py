@@ -36,7 +36,8 @@ class NewUserForm(forms.ModelForm):
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
-                  'sex', 'marital_status', 'denomination']
+                  'sex', 'marital_status', 'denomination',
+                  'preferred_language']
         widgets = {'date_of_birth': DateWidget}
 
 class ContactUpdateForm(forms.ModelForm):
@@ -44,7 +45,8 @@ class ContactUpdateForm(forms.ModelForm):
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
-                  'sex', 'marital_status', 'denomination']
+                  'sex', 'marital_status', 'denomination',
+                  'preferred_language']
         widgets = {'date_of_birth': DateWidget}
 
 class NewEmailForm(forms.ModelForm):
