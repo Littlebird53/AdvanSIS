@@ -274,8 +274,10 @@ class ProspectAdmin(admin.ModelAdmin):
 class StaffAdmin(admin.ModelAdmin):
     readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status', 'role', 'center_approved', 'advance_approved']
+    list_display = ['person', 'center', 'role', 'status']
 
 @admin.register(models.StudentRecord)
 class StudentAdmin(admin.ModelAdmin):
     readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status']
+    list_display = ['person', 'center', 'status']
