@@ -308,15 +308,6 @@ class StaffApplicationForm(RequiredMixin, forms.ModelForm):
     ordained = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
-    email_transcript = forms.TypedChoiceField(
-        choices=[(False, 'No'), (True, 'Yes')],
-        widget=forms.RadioSelect)
-    alum_transcript = forms.TypedChoiceField(
-        choices=[(False, 'No'), (True, 'Yes')],
-        widget=forms.RadioSelect)
-    no_transcript = forms.TypedChoiceField(
-        choices=[(False, 'No'), (True, 'Yes')],
-        widget=forms.RadioSelect)
     accept_bfm = forms.TypedChoiceField(
         choices=[(False, 'No'), (True, 'Yes')],
         widget=forms.RadioSelect)
@@ -325,16 +316,14 @@ class StaffApplicationForm(RequiredMixin, forms.ModelForm):
 
     def clean_upload_transcript(self):
         val = self.cleaned_data.get('upload_transcript')
-        if val is None:
-            other = ['email_transcript', 'alum_transcript',
-                     'no_transcript']
-            if not any(self.data.get(t) == 'True' for t in other):
-                raise forms.ValidationError(_('You must select at least one transcript option.'), code='no-transcript')
+        if val is None and self.data.get('transcript_mode') == 'U':
+            raise forms.ValidationError(_('Please upload your transcript.'),
+                                        code='no-transcript')
         return val
 
-    def clean_no_transcript(self):
-        val = self.cleaned_data.get('no_transcript')
-        if val == 'True' and self.data.get('role') in ['I', 'D']:
+    def clean_transcript_mode(self):
+        val = self.cleaned_data.get('transcript_mode')
+        if val == 'N' and self.data.get('role') in ['I', 'D']:
             raise forms.ValidationError(_('Transcripts are required for instructors and directors.'), code='instructor-no-transcript')
         return val
 
@@ -343,8 +332,8 @@ class StaffApplicationForm(RequiredMixin, forms.ModelForm):
         fields = ['role', 'church', 'denomination', 'accept_bfm',
                   'reference1_name', 'reference1_email', 'reference1_phone',
                   'reference2_name', 'reference2_email', 'reference2_phone',
-                  'email_transcript', 'alum_transcript',
-                  'upload_transcript', 'no_transcript']
+                  'transcript_mode', 'upload_transcript']
+        widgets = {'transcript_mode': forms.RadioSelect}
 
 class NewCenterApplicationForm(forms.ModelForm):
     sponsor_email = forms.EmailField()

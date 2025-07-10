@@ -452,10 +452,12 @@ class StaffRecord(models.Model):
     ordained = models.BooleanField(null=True)
     church = models.CharField(max_length=100, blank=True, null=True)
     denomination = models.CharField(max_length=100, blank=True, null=True)
-    email_transcript = models.BooleanField(default=False)
-    alum_transcript = models.BooleanField(default=False)
+    transcript_mode = models.CharField(max_length=1, choices=[
+        ('E', 'I will request official or unofficial transcripts from all relevant theological/ministerial education and email them to advance@gs.edu'),
+        ('A', 'As a Gateway student/alum, I authorize the use of my transcripts for this purpose.'),
+        ('U', 'I will upload my transcript now.'),
+        ('N', 'I am an assistant instructor/registrar and do not have relevant transcripts.')], default='N')
     upload_transcript = models.FileField(blank=True, null=True)
-    no_transcript = models.BooleanField(default=False)
     accept_bfm = models.BooleanField(null=True)
     acceptance_date = models.DateField(blank=True, null=True,
                                        help_text='Date welcome letter was sent')

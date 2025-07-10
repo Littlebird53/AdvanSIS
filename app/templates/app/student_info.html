@@ -202,11 +202,11 @@
   <tr>
     <th>Transcript</th>
     <td>
-      {% if app.upload_transcript %}
+      {% if app.transcript_mode == 'U' %}
       <a href="{{app.upload_transcript.url}}">Download</a>
-      {% elif app.email_transcript %}
+      {% elif app.transcript_mode == 'E' %}
       Sent by email
-      {% elif app.alum_transcript %}
+      {% elif app.transcript_mode == 'A' %}
       Use Gateway transcript
       {% else %}
       No transcript provided

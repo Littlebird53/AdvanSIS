@@ -26,7 +26,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference1.id_for_label}}">Reference 1 Name</label>
+	      <label for="{{form.reference1_name.id_for_label}}">Reference 1 Name</label>
       </th>
       <td>
 	      {{form.reference1_name.errors}}
@@ -35,7 +35,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference1.id_for_label}}">Reference 1 Email</label>
+	      <label for="{{form.reference1_email.id_for_label}}">Reference 1 Email</label>
       </th>
       <td>
 	      {{form.reference1_email.errors}}
@@ -44,7 +44,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference1.id_for_label}}">Reference 1 Phone Number</label>
+	      <label for="{{form.reference1_phone.id_for_label}}">Reference 1 Phone Number</label>
       </th>
       <td>
 	      {{form.reference1_phone.errors}}
@@ -53,7 +53,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference2.id_for_label}}">Reference 2 Name</label>
+	      <label for="{{form.reference2_name.id_for_label}}">Reference 2 Name</label>
       </th>
       <td>
 	      {{form.reference2_name.errors}}
@@ -62,7 +62,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference2.id_for_label}}">Reference 2 Email</label>
+	      <label for="{{form.reference2_email.id_for_label}}">Reference 2 Email</label>
       </th>
       <td>
 	      {{form.reference2_email.errors}}
@@ -71,7 +71,7 @@
     </tr>
     <tr>
       <th>
-	      <label for="{{form.reference2.id_for_label}}">Reference 2 Phone Number</label>
+	      <label for="{{form.reference2_phone.id_for_label}}">Reference 2 Phone Number</label>
       </th>
       <td>
 	      {{form.reference2_phone.errors}}
@@ -115,33 +115,19 @@
     <tr>
       <td colspan="2">
 	      To be approved as an instructor, the ADVANCE Office requires a copy of your transcript (either official or unofficial) to verify your highest or most relevant degree in theological or ministerial education.
-	      Assistant Instructors and Registrars are encouraged, but not required to submit transcripts. How will you submit your transcripts?
+	      Assistant Instructors and Registrars are encouraged, but not required to submit transcripts.
       </td>
     </tr>
     <tr>
       <th>
-	      I will request official or unofficial transcripts from all relevant theological/ministerial education and email to <a href="mailto:advance@gs.edu">advance@gs.edu</a>.
+        How will you submit your transcripts?
       </th>
       <td>
-	      {{form.email_transcript.errors}}
+	      {{form.transcript_mode.errors}}
 	      <fieldset class="radio-row">
-	        <legend style="display: none">I will send transcripts by email.</legend>
-	        {% for radio in form.email_transcript %}
-	        <span class="radio-block">{{radio}}</span>
-	        {% endfor %}
-	      </fieldset>
-      </td>
-    </tr>
-    <tr>
-      <th>
-	      As a Gateway student/alumni, I authorize use of my transcripts for this purpose.
-      </th>
-      <td>
-	      {{form.alum_transcript.errors}}
-	      <fieldset class="radio-row">
-	        <legend style="display: none">I am an alum.</legend>
-	        {% for radio in form.alum_transcript %}
-	        <span class="radio-block">{{radio}}</span>
+	        <legend style="display: none">How will you submit your transcripts?</legend>
+	        {% for radio in form.transcript_mode %}
+	        <p class="radio-block">{{radio}}</p>
 	        {% endfor %}
 	      </fieldset>
       </td>
@@ -149,26 +135,12 @@
     <tr>
       <th>
 	      <label for="{{form.upload_transcript.id_for_label}}">
-	        I will upload my transcript now.
+	        Transcript Upload
 	      </label>
       </th>
       <td>
 	      {{form.upload_transcript.errors}}
 	      {{form.upload_transcript}}
-      </td>
-    </tr>
-    <tr>
-      <th>
-	      I am an assistant instructor/registrar and do not have relevant transcripts.
-      </th>
-      <td>
-	      {{form.no_transcript.errors}}
-	      <fieldset class="radio-row">
-	        <legend style="display: none">I have no transcripts.</legend>
-	        {% for radio in form.no_transcript %}
-	        <span class="radio-block">{{radio}}</span>
-	        {% endfor %}
-	      </fieldset>
       </td>
     </tr>
     <tr><th colspan="2">Statement of Faith</th></tr>

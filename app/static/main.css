@@ -213,7 +213,7 @@ fieldset.radio-row {
 span.radio-block {
   padding: 5px;
 }
-span.radio-block:has(input:checked) {
+.radio-block:has(input:checked) {
   background: #6f8ea3;
 }
 
