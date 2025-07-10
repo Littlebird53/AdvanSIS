@@ -11,23 +11,27 @@
 {% endif %}
 <p>For a list of all diplomas and certificates offered by ADVANCE, see <a href="{% url 'app:achievement_catalog' %}">the achievement catalog</a>.</p>
 
-{% for achievement in achievements %}
-<div class="search-item">
-  <h2>{{achievement.name}} ({{achievement.abbreviation}})</h2>
-  <p>{{achievement.description|linebreaksbr}}</p>
-  <details>
-    <summary>Requirements</summary>
-    <p>Total Credits: {{achievement.credits}}</p>
-    <ul>
-      {% for req in achievement.requirements.all %}
-      {{req.display}}
-      {% endfor %}
-      {% for req in achievement.prerequisites.all %}
-      <li>Must have already completed {{req}}</li>
-      {% endfor %}
-    </ul>
-  </details>
-  <p><a href="{% url 'app:achievement_apply' achievement.id %}">Apply for this achievement</a></p>
-</div>
-{% endfor %}
+<ul>
+  {% for achievement in achievements %}
+  <li class="header-bullet">
+    <div class="search-item">
+      <h2>{{achievement.name}} ({{achievement.abbreviation}})</h2>
+      <p>{{achievement.description|linebreaksbr}}</p>
+      <details>
+        <summary>Requirements</summary>
+        <p>Total Credits: {{achievement.credits}}</p>
+        <ul>
+          {% for req in achievement.requirements.all %}
+          {{req.display}}
+          {% endfor %}
+          {% for req in achievement.prerequisites.all %}
+          <li>Must have already completed {{req}}</li>
+          {% endfor %}
+        </ul>
+      </details>
+      <p><a href="{% url 'app:achievement_apply' achievement.id %}">Apply for this achievement</a></p>
+    </div>
+  </li>
+  {% endfor %}
+  </ul>
 {% endblock %}

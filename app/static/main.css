@@ -80,7 +80,7 @@ li.menu-item a.multiline, li.menu-item span.multiline {
   line-height: normal;
 }
 
-body, button, select, input {
+body, button, select, input, li > div {
   font-family: "Lato", sans-serif;
   font-size: 16pt;
 }
@@ -90,7 +90,7 @@ h1 {
   text-align: center;
 }
 
-h2 {
+h2, li.header-bullet {
   font-family: "Lato", sans-serif;
   font-size: 24pt;
 }
