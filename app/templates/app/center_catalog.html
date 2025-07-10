@@ -11,6 +11,17 @@
   {# TODO: contact info #}
   <p><a href="{% url 'app:student_apply' center.id %}">Apply to be a student at this center</a></p>
   <p><a href="{% url 'app:instructor_apply' center.id %}">Apply to be an instructor at this center</a></p>
+  {% if user.is_staff %}
+  <h3>Staff Links</h3>
+  <p><a href="{% url 'app:center_students' center.id %}">Manage Students</a></p>
+  <p><a href="{% url 'app:center_instructors' center.id %}">Manage Instructors</a></p>
+  <p><a href="{% url 'app:center_report' center.id %}">Tally Sheet</a></p>
+  <p><a href="{% url 'app:center_budget' center.id %}">Center Budget</a></p>
+  {% endif %}
 </div>
 {% endfor %}
+<div class="search-item">
+  <h2>Apply to Start a New Center</h2>
+  <p>To apply to be the director of a new center, <a href="{% url 'app:new_center' %}">click here</a>.</p>
+</div>
 {% endblock %}

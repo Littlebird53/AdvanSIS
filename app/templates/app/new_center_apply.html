@@ -75,6 +75,24 @@
 	{{form.coi_file}}
       </td>
     </tr>
+    <tr>
+      <th>
+	<label for="{{form.director_sig.id_for_label}}">Sign MOU as director</label>
+      </th>
+      <td>
+	{{form.director_sig.errors}}
+	{{form.director_sig}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+	<label for="{{form.sponsor_sig.id_for_label}}">Sign MOU as sponsor</label>
+      </th>
+      <td>
+	{{form.sponsor_sig.errors}}
+	{{form.sponsor_sig}}
+      </td>
+    </tr>
   </table>
   <button type="submit">Submit</button>
 </form>

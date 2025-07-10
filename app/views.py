@@ -119,6 +119,8 @@ def get_staff_stats():
     ret['pending_mous'] = models.MOU.objects.filter(
         Q(advance_sig__isnull=True) | Q(gs_dean_sig__isnull=True),
         status='P').count()
+    ret['pending_centers'] = models.Center.objects.filter(
+        approved=False, active=True).count()
     return ret
 
 @login_required
@@ -145,7 +147,7 @@ def dashboard(request):
             current.append((record, courses, True))
         else:
             other.append((record, courses, True))
-    for record in request.user.person.staffrecord_set.all():
+    for record in request.user.person.staffrecord_set.all().filter(center__active=True):
         courses = sort_courses(models.Course.objects.filter(
             (Q(instructor=request.user.person) |
              Q(associate_instructors=request.user.person)),
@@ -1198,7 +1200,7 @@ class StaffReportView(AccessMixin, FormView):
 
     def form_valid(self, form):
         grades = models.Grade.objects.filter(
-            self.make_date_query(form, 'course__')).exclude(value='W')
+            self.make_date_query(form, 'course__'))
         person_keys = ['sex', 'ethnicity', 'marital_status',
                        'denomination']
         for key in person_keys:
@@ -1235,8 +1237,7 @@ class StaffReportView(AccessMixin, FormView):
         dates = self.make_date_range(form)
 
         inactive_students = set(models.StudentRecord.objects.filter(
-            center_filter,
-            acceptance_date__lte=dates[1], status='C').values_list(
+            center_filter, acceptance_date__lte=dates[1]).values_list(
             'person', flat=True)) - students
 
         shift = datetime.timedelta(days=365 * 5 + 1) # roughly 5 years
@@ -1248,8 +1249,7 @@ class StaffReportView(AccessMixin, FormView):
             new_centers = new_centers.filter(fte_eligible=sbc)
 
         students_with_credits = models.StudentRecord.objects.filter(
-            center_filter, acceptance_date__lte=dates[1],
-            status='C').annotate(
+            center_filter, acceptance_date__lte=dates[1]).annotate(
                 earned=Sum('person__grade__course__template__credits',
                            filter=~Q(person__grade__value__in=['F', 'Au', 'W']),
                            default=0),

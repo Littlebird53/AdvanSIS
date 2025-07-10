@@ -207,7 +207,7 @@ class Center(models.Model):
     sponsor_phones = models.ManyToManyField(PhoneAddress, related_name='+')
     sponsor_mailings = models.ManyToManyField(MailingAddress,
                                               related_name='+')
-    approved = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False, help_text='Not approved + not active = rejected')
     active = models.BooleanField(default=True)
     coi_file = models.FileField(blank=True, null=True)
 
@@ -215,6 +215,8 @@ class Center(models.Model):
         return self.name
 
     def is_admin(self, person):
+        if person.user.is_staff:
+            return True
         return self.staffrecord_set.filter(
             person=person, role__in=['D', 'R'], status='C').exists()
 

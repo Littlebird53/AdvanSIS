@@ -12,12 +12,15 @@ class TimeWidget(forms.TimeInput):
 class RequiredMixin:
     make_required = []
     make_filtered = []
+    widget_attrs = {}
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.make_required:
             self.fields[field].required = True
         for field in self.make_filtered:
             self.fields[field].widget.attrs['class'] = 'filter-select'
+        for field, attrs in self.widget_attrs.items():
+            self.fields[field].widget.attrs.update(attrs)
 
 class NewUserForm(forms.ModelForm):
     email = forms.EmailField(required=False)
@@ -156,6 +159,7 @@ class StaffRecordForm(forms.ModelForm):
     class Meta:
         model = models.StaffRecord
         fields = ['person', 'status', 'role']
+        widgets = {'person': DisplayPersonWidget}
 StaffRecordFormset = forms.modelformset_factory(
     models.StaffRecord, form=StaffRecordForm,
     extra=0, edit_only=True)
@@ -345,27 +349,36 @@ class StaffApplicationForm(RequiredMixin, forms.ModelForm):
 class NewCenterApplicationForm(forms.ModelForm):
     sponsor_email = forms.EmailField()
     sponsor_phone = forms.CharField(max_length=30)
+    director_sig = forms.BooleanField()
+    sponsor_sig = forms.BooleanField()
     class Meta:
         model = models.Center
         fields = ['name', 'sponsor', 'sponsor_rep', 'sponsor_rep_title',
                   'coi_file']
 
-class CenterBudgetExpenseForm(forms.ModelForm):
+class CenterBudgetExpenseForm(RequiredMixin, forms.ModelForm):
+    widget_attrs = {'marketing': {'placeholder': '$'},
+                    'office': {'placeholder': '$'},
+                    'books': {'placeholder': '$'},
+                    'other_expense': {'placeholder': '$'}}
     class Meta:
         model = models.CenterBudget
         fields = ['marketing', 'office', 'books', 'other_expense']
 
-class CenterBudgetIncomeForm(forms.ModelForm):
+class CenterBudgetIncomeForm(RequiredMixin, forms.ModelForm):
+    widget_attrs = {'other_income': {'placeholder': '$'}}
     class Meta:
         model = models.CenterBudget
         fields = ['other_income']
 
-class CenterStipendForm(forms.ModelForm):
+class CenterStipendForm(RequiredMixin, forms.ModelForm):
+    widget_attrs = {'stipend': {'placeholder': '$'}}
     class Meta:
         model = models.CenterStipend
         fields = ['stipend']
 
-class CenterFeeForm(forms.ModelForm):
+class CenterFeeForm(RequiredMixin, forms.ModelForm):
+    widget_attrs = {'credit_fee': {'placeholder': '$'}}
     class Meta:
         model = models.CenterFees
         fields = ['credit_fee']
@@ -385,10 +398,8 @@ class NewExpectedCourseForm(RequiredMixin, forms.ModelForm):
         model = models.ExpectedCourse
         fields = ['course', 'semester']
 
-class ExpectedEnrollmentForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['students'].widget.attrs['style'] = 'width: 3.5em'
+class ExpectedEnrollmentForm(RequiredMixin, forms.ModelForm):
+    widget_attrs = {'students': {'style': 'width: 3.5em'}}
     class Meta:
         model = models.ExpectedEnrollment
         fields = ['students']

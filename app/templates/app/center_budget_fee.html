@@ -13,12 +13,13 @@
     </form>
   </td>
   <td>
-    {{fee.country.credit_fee}}
+    ${{fee.country.credit_fee}}
   </td>
   <td>
     <form hx-post="{% url 'app:center_budget_del_fee' fee.budget.center.id fee.id %}"
           hx-target="#fee_{{fee.id}}"
-          hx-swap="outerhtml">
+          hx-swap="outerhtml"
+          style="margin-top: 15%">
       {% csrf_token %}
       <button style="width: 100%">Delete</button>
     </form>

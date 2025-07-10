@@ -63,8 +63,8 @@ class CenterAdmin(admin.ModelAdmin):
                CenterSponsorMailingAddressInline,
                CenterStudentRecords, CenterStaffRecords, CenterMOUInline]
     search_fields = ['name', 'code']
-    list_display = ['name', 'code', 'fte_eligible', 'active']
-    list_filter = ['fte_eligible', 'active']
+    list_display = ['name', 'code', 'fte_eligible', 'active', 'approved']
+    list_filter = ['fte_eligible', 'active', 'approved']
 
 class CourseGradeAdmin(admin.TabularInline):
     model = models.Grade
@@ -281,3 +281,35 @@ class StudentAdmin(admin.ModelAdmin):
     readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status']
     list_display = ['person', 'center', 'status']
+
+class AwardYearFilter(admin.SimpleListFilter):
+    # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+    template = 'admin/int_filter.html'
+    parameter_name = 'year'
+    title = 'Year'
+
+    def lookups(self, request, model_admin):
+        # Dummy, required to show the filter.
+        return ((),)
+
+    def choices(self, changelist):
+        # Grab only the "all" option.
+        all_choice = next(super().choices(changelist))
+        all_choice['query_parts'] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+    def queryset(self, request, queryset):
+        if isinstance(self.value(), str) and self.value().isdigit():
+            return queryset.filter(year=int(self.value()))
+        return queryset
+
+@admin.register(models.AchievementAward)
+class AchievementAwardAdmin(admin.ModelAdmin):
+    list_filter = ['status', 'campus', 'walking',
+                   AwardYearFilter, 'semester']
+    list_display = ['person', 'status', 'campus', 'walking', 'year', 'semester']
+    readonly_fields = ['person']
