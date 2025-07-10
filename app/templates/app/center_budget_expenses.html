@@ -1,5 +1,6 @@
 <form hx-trigger="change"
       hx-post="{% url 'app:center_budget_expenses' budget.center.id budget.id %}"
+      hx-swap="outerHTML"
       data-form-id="skip">
   {% csrf_token %}
   <table id="other-expenses">
