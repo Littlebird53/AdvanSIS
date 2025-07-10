@@ -29,14 +29,6 @@
       </form>
     </details>
   </td>
-  <td>
-    <form hx-post="{% url 'app:center_budget_del_course' course.budget.center.id course.id %}"
-          hx-target="#course_row_{{course.id}}"
-          hx-swap="outerhtml">
-      {% csrf_token %}
-      <button style="width: 100%">Delete</button>
-    </form>
-  </td>
   <td style="border-left: 1px solid gray">
     <span class="center-fee"></span>
   </td>
@@ -45,5 +37,13 @@
   </td>
   <td>
     <span class="total-fee"></span>
+  </td>
+  <td>
+    <form hx-post="{% url 'app:center_budget_del_course' course.budget.center.id course.id %}"
+          hx-target="#course_row_{{course.id}}"
+          hx-swap="outerhtml">
+      {% csrf_token %}
+      <button style="width: 100%">Delete</button>
+    </form>
   </td>
 </tr>

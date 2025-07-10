@@ -12,8 +12,11 @@
       {{fee.as_form.credit_fee}}
     </form>
   </td>
-  <td>
+  <td style="border-left: 1px solid gray">
     ${{fee.country.credit_fee}}
+  </td>
+  <td>
+    <span class="total-country-fee"></span>
   </td>
   <td>
     <form hx-post="{% url 'app:center_budget_del_fee' fee.budget.center.id fee.id %}"

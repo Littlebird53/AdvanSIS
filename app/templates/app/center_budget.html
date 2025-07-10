@@ -25,6 +25,7 @@
     <th>Country</th>
     <th>Center Fee</th>
     <th>Gateway Fee</th>
+    <th>Total per Hour</th>
     <th>Delete</th>
   </tr>
   {% for fee in fees %}
@@ -49,17 +50,16 @@
     <th>Course</th>
     <th>Semester</th>
     <th>Enrollments (3cr)</th>
-    <th>Delete</th>
     <th>Center Fees</th>
     <th>Gateway Fees</th>
     <th>Total Fees</th>
+    <th>Delete</th>
   </tr>
   {% for course in courses %}
   {% include 'app/center_budget_course.html' %}
   {% endfor %}
   <tr id="courses-total">
     <th>Total</th>
-    <td></td>
     <td></td>
     <td></td>
     <td style="border-left: 1px solid gray">
@@ -71,6 +71,7 @@
     <td>
       <span class="total-fee"></span>
     </td>
+    <td></td>
   </tr>
 </table>
 
@@ -144,18 +145,22 @@
 
 <script type="text/javascript">
   const gateway_fees = {{countries|safe}};
+
+  function toDollar(n) {
+      return '$' + n.toFixed(2);
+  }
+
   function get_local_fees() {
       let ret = {};
       $('.fee').each(function(i, el) {
           let tr = $(el);
-          ret[tr.data('country-id')] = parseFloat(
+          let country = tr.data('country-id');
+          ret[country] = parseFloat(
               tr.find('input#id_credit_fee').val() || '0');
+          tr.find('.total-country-fee').html(toDollar(
+              gateway_fees[country] + ret[country]));
       });
       return ret;
-  }
-
-  function toDollar(n) {
-      return '$' + n.toFixed(2);
   }
 
   function update_courses() {
