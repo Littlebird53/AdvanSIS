@@ -1,0 +1,13 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Add Instructor{% endblock %}
+
+{% block content %}
+{% if created %}
+<h1>Instructor Added</h1>
+<p>{{sr.person}} is now listed as an instructor for your center. They will be notified shortly.</p>
+{% else %}
+<h1>Already an Instructor</h1>
+<p>{{sr.person}} is already an instructor for your center.</p>
+{% endif %}
+{% endblock %}

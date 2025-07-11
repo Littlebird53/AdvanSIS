@@ -6,8 +6,12 @@
 <p>Welcome to the ADVANCE team!</p>
 <br/>
 <p>
+  {% if sr.center %}
   Your application as an instructor with the {{sr.center}} has been approved!
-  Please see the attached letter for your official notice and the body of this email for next steps. 
+  {% else %}
+  Your application as an instructor-at-large has been approved!
+  {% endif %}
+  Please see the attached letter for your official notice and the body of this email for next steps.
 </p>
 <br/>
 <p>

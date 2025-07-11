@@ -4,5 +4,8 @@
 
 {% block content %}
 <h1>Successfully Applied</h1>
-<p>Your application to {{sr.center.name}} has been submitted successfully. You will be notified once it has been reviewed.</p>
+<p>Your application to {{sr.center.name|default_if_none:"be an Instructor-at-Large"}} has been submitted successfully. You will be notified once it has been reviewed.</p>
+{% if sr.center is None %}
+<p>Please be sure to <a href="{% url 'app:instructor_at_large_profile' %}">update your availability an course interests</a>.</p>
+{% endif %}
 {% endblock %}

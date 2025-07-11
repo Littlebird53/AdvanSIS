@@ -1,0 +1,41 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Find Instructors{% endblock %}
+
+{% block content %}
+<h1>Find Instructors</h1>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Bio</th>
+    <th>Interested Courses</th>
+    <th>Add</th>
+  </tr>
+  {% for instructor in instructors %}
+  <tr>
+    <td>
+      <a href="{% url 'app:student_info' instructor.person.id %}">
+	{{instructor.person}}
+      </a>
+    </td>
+    <td>{{instructor.profile.bio|linebreaksbr}}</td>
+    <td>
+      <ul>
+	{% for course in instructor.interested_courses %}
+	<li>{{course.title}}</li>
+	{% endfor %}
+      </ul>
+    </td>
+    <td>
+      <form action="{% url 'app:add_instructor' center.id instructor.id %}"
+	    method="POST">
+	{% csrf_token %}
+	<button type="submit" style="display: block; margin: auto">
+	  Add Instructor
+	</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

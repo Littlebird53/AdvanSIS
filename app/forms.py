@@ -329,6 +329,35 @@ class StaffApplicationForm(RequiredMixin, forms.ModelForm):
                   'transcript_mode', 'upload_transcript']
         widgets = {'transcript_mode': forms.RadioSelect}
 
+class InstructorAtLargeApplicationForm(RequiredMixin, forms.ModelForm):
+    ordained = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+    accept_bfm = forms.TypedChoiceField(
+        choices=[(False, 'No'), (True, 'Yes')],
+        widget=forms.RadioSelect)
+
+    make_required = ['church', 'denomination']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['transcript_mode'].choices = [c for c in self.fields['transcript_mode'].choices if c[0] != 'N']
+
+    def clean_upload_transcript(self):
+        val = self.cleaned_data.get('upload_transcript')
+        if val is None and self.data.get('transcript_mode') == 'U':
+            raise forms.ValidationError(_('Please upload your transcript.'),
+                                        code='no-transcript')
+        return val
+
+    class Meta:
+        model = models.StaffRecord
+        fields = ['church', 'denomination', 'accept_bfm',
+                  'reference1_name', 'reference1_email', 'reference1_phone',
+                  'reference2_name', 'reference2_email', 'reference2_phone',
+                  'transcript_mode', 'upload_transcript']
+        widgets = {'transcript_mode': forms.RadioSelect}
+
 class NewCenterApplicationForm(forms.ModelForm):
     sponsor_email = forms.EmailField()
     sponsor_phone = forms.CharField(max_length=30)
@@ -419,3 +448,25 @@ class LockCoursesForm(RequiredMixin, forms.Form):
     prior = forms.BooleanField(required=False, label='Include prior terms?')
 
     make_filtered = ['centers']
+
+class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
+    courses = forms.TypedMultipleChoiceField(choices=[], coerce=int)
+    terms = forms.MultipleChoiceField(choices=[])
+    time_of_day = forms.MultipleChoiceField(choices=[
+        ('M', 'Morning'), ('D', 'Midday'), ('A', 'Afternoon'),
+        ('E', 'Evening')])
+    timezone = forms.CharField(max_length=20)
+    bio = forms.CharField(max_length=2000, widget=forms.Textarea)
+
+    make_filtered = ['courses', 'terms']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['courses'].choices = models.CourseTemplate.objects.filter(active=True).values_list('id', 'title')
+        import datetime
+        cur_year = datetime.date.today().year
+        self.fields['terms'].choices = [
+            (f'{abbr}-{y}', f'{name} {y}')
+            for y in range(cur_year, cur_year+5)
+            for abbr, name in models.SEMESTERS
+        ]

@@ -3,11 +3,16 @@
 {% block title %}Staff Application{% endblock %}
 
 {% block content %}
+{% if center %}
 <h1>Apply to be a staff member at {{center.name}}</h1>
+{% else %}
+<h1>Apply to be an Instructor-at-Large</h1>
+{% endif %}
 
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>
+    {% if form.role %}
     <tr>
       <th><label for="{{form.role.id_for_label}}">Role</label></th>
       <td>
@@ -15,6 +20,7 @@
 	      {{form.role}}
       </td>
     </tr>
+    {% endif %}
     <tr>
       <th colspan="2">References</th>
     </tr>

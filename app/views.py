@@ -147,11 +147,15 @@ def dashboard(request):
             current.append((record, courses, True))
         else:
             other.append((record, courses, True))
-    for record in request.user.person.staffrecord_set.all().filter(center__active=True):
-        courses = sort_courses(models.Course.objects.filter(
-            (Q(instructor=request.user.person) |
-             Q(associate_instructors=request.user.person)),
-            center=record.center))
+    center_filter = Q(center__active=True) | Q(center__isnull=True)
+    for record in request.user.person.staffrecord_set.all().filter(center_filter):
+        if record.center is None:
+            courses = {}
+        else:
+            courses = sort_courses(models.Course.objects.filter(
+                (Q(instructor=request.user.person) |
+                 Q(associate_instructors=request.user.person)),
+                center=record.center))
         if record.status == 'C':
             current.append((record, courses, False))
         else:
@@ -489,7 +493,7 @@ def student_info(request, studentid):
         s_applications = student.studentrecord_set.all().filter(
             center__in=director_centers)
         i_applications = student.staffrecord_set.all().filter(
-            center__in=director_centers)
+            Q(center__isnull=True) | Q(center__in=director_centers))
         if request.method == 'POST':
             contact_form = forms.ContactUpdateForm(request.POST,
                                                    instance=student)
@@ -846,6 +850,29 @@ def sign_mou(request, center, role):
             mou.save()
     return redirect('app:dashboard')
 
+@center_admin
+def find_instructors(request, center):
+    instructors = models.StaffRecord.objects.filter(
+        center__isnull=True, status='C').order_by(
+            'person__family_name', 'person__given_name')
+    return render(request, 'app/find_instructors.html',
+                  {'center': center, 'instructors': instructors})
+
+@center_admin
+def add_instructor(request, center, staffid):
+    oldsr = get_object_or_404(models.StaffRecord, pk=staffid,
+                              center__isnull=True, status='C')
+    newsr, created = models.StaffRecord.objects.get_or_create(
+        center=center, person=oldsr.person)
+    if created:
+        newsr.role = 'I'
+        newsr.status = 'C'
+        newsr.center_approved = True
+        newsr.advance_approved = True
+        newsr.save()
+    return render(request, 'app/add_instructor.html',
+                  {'sr': newsr, 'created': created})
+
 ####################
 ### Instructors
 ####################
@@ -877,6 +904,51 @@ class StaffApplyView(AccessMixin, FormView):
         # TODO: notify director?
         return render(self.request, 'app/student_apply_success.html',
                       {'sr': sr})
+
+class InstructorAtLargeApplyView(AccessMixin, FormView):
+    form_class = forms.InstructorAtLargeApplicationForm
+    template_name = 'app/staff_apply.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.person = request.user.person
+        if models.StaffRecord.objects.filter(
+                center__isnull=True, person=self.person).exists():
+            # TODO: explain?
+            return redirect('app:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.center = None
+        form.instance.person = self.person
+        form.instance.center_approved = True
+        sr = form.save()
+        return render(self.request, 'app/student_apply_success.html',
+                      {'sr': sr})
+
+class InstructorAtLargeProfileView(AccessMixin, FormView):
+    form_class = forms.InstructorAtLargeProfileForm
+    template_name = 'app/instructor_at_large_profile.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        self.person = request.user.person
+        self.sr = models.StaffRecord.objects.filter(
+            center__isnull=True, person=self.person).first()
+        if self.sr is None:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        return self.sr.profile
+
+    def form_valid(self, form):
+        self.sr.profile = form.cleaned_data
+        self.sr.save()
+        return render(self.request,
+                      'app/instructor_at_large_profile_success.html')
 
 class MessageCourseStudentsView(AccessMixin, FormView):
     form_class = forms.NewInstructorPopupForm

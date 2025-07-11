@@ -177,7 +177,11 @@
 {% endfor %}
 
 {% for app in instructor_applications %}
+{% if app.center %}
 <h2>Application to {{app.center.name}} ({{app.get_role_display}})</h2>
+{% else %}
+<h2>Application to be an Instructor-at-Large</h2>
+{% endif %}
 <table>
   <tr>
     <th>Reference 1</th>

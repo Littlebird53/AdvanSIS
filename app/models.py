@@ -438,7 +438,8 @@ class CourseFile(models.Model):
     order = models.IntegerField(blank=True, null=True)
 
 class StaffRecord(models.Model):
-    center = models.ForeignKey(Center, on_delete=models.CASCADE)
+    center = models.ForeignKey(Center, on_delete=models.CASCADE,
+                               blank=True, null=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
         choices=[('C', 'Current'), ('F', 'Former'),
@@ -468,6 +469,7 @@ class StaffRecord(models.Model):
                                        help_text='Date welcome letter was sent')
     center_approved = models.BooleanField(default=False)
     advance_approved = models.BooleanField(default=False)
+    profile = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return f'{self.person} {self.center}'
@@ -477,7 +479,13 @@ class StaffRecord(models.Model):
         return self.get_status_display() + ' ' + self.get_role_display()
 
     def sort_key(self):
-        return (self.center.name, self.role)
+        return (self.center.name if self.center else '', self.role)
+
+    def interested_courses(self):
+        ls = (self.profile or {}).get('courses')
+        if ls:
+            return CourseTemplate.objects.filter(pk__in=ls, active=True).order_by('title')
+        return []
 
 class AchievementRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)

@@ -53,7 +53,10 @@
 {% for row in records %}
 <div class="search-item">
   {% with center=row.0.center %}
-  {% if center.approved %}
+  {% if center is None %}
+  <h2>Instructor-at-Large ({{row.0.status_line}})</h2>
+  <p><a href="{% url 'app:instructor_at_large_profile' %}">Update availability</a></p>
+  {% elif center.approved %}
   <h2>{{center.name}} ({{row.0.status_line}})</h2>
   {% if not row.2 %}
   {% if row.0.role == 'D' or row.0.role == 'R' %}
@@ -90,6 +93,9 @@
   <p><a href="{% url 'app:message_center_students' center.id %}">Message All Students</a></p>
   <p><a href="{% url 'app:center_report' center.id %}">Reports</a></p>
   <p><a href="{% url 'app:center_budget' center.id %}">Center Budget</a></p>
+  {% if row.0.role == 'D' and row.0.status == 'C' %}
+  <p><a href="{% url 'app:find_instructors' center.id %}">Find Instructors</a></p>
+  {% endif %}
   {% endif %}
   <p><a href="{% url 'app:course_catalog' %}">Prepare to Teach</a></p>
   {% endif %}
