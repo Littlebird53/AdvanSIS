@@ -294,20 +294,6 @@ def manage_course(request, courseid):
     if request.method == 'POST':
         mode = request.POST.get('mode')
 
-    message = ''
-    qr = models.Grade.objects.filter(course=course).order_by(
-        'person__family_name', 'person__given_name')
-    if mode == 'grades':
-        students = forms.GradeFormset(request.POST, queryset=qr)
-        if students.is_valid():
-            students.save()
-            if students.changed_objects:
-                message = 'grades updated'
-        else:
-            print(students.errors, students.non_form_errors)
-    else:
-        students = forms.GradeFormset(queryset=qr)
-
     file_query = models.SharedFile.objects.filter(
         course=course.template).filter(
             Q(owner__isnull=True) | Q(owner=request.user.person))
@@ -339,26 +325,55 @@ def manage_course(request, courseid):
     return render(request, 'app/manage_course.html',
                   {
                       'course': course,
-                      'grades': students,
-                      'message': message,
+                      'grades': models.Grade.objects.filter(
+                          course=course).order_by(
+                              'person__family_name', 'person__given_name'),
                       'files': files,
                       'all_files': file_query,
                       'add_file': add,
                   })
 @login_required
+def edit_grade(request, courseid, gradeid):
+    grade = get_object_or_404(models.Grade, pk=gradeid, course=courseid)
+    if not grade.course.can_edit(request.user.person):
+        raise PermissionDenied()
+    form = forms.GradeForm(request.POST, instance=grade)
+    grade_saved = False
+    if form.is_valid():
+        form.save()
+        grade_saved = True
+    return render(request, 'app/manage_course_grade.html',
+                  {'grade': grade, 'grade_saved': grade_saved})
+@login_required
+def delete_grade(request, courseid, gradeid):
+    grade = get_object_or_404(models.Grade, pk=gradeid, course=courseid)
+    if not grade.course.can_edit(request.user.person):
+        raise PermissionDenied()
+    if grade.course.locked:
+        raise PermissionDenied()
+    grade.delete()
+    return render(request, 'app/empty_response.html')
+@login_required
 def add_student(request, courseid, studentid):
     course = get_object_or_404(models.Course, pk=courseid)
     student = get_object_or_404(models.Person, pk=studentid)
-    if not course.can_edit(request.user.person):
-        return redirect('app:course', courseid)
+    if not course.can_edit(request.user.person) or course.locked:
+        raise PermissionDenied()
 
-    models.Grade.objects.get_or_create(course=course, person=student)
-    return redirect('app:add_student_list', courseid)
+    grade, created = models.Grade.objects.get_or_create(
+        course=course, person=student)
+    if created:
+        return render(request, 'app/manage_course_grade.html',
+                      {'grade': grade})
+    else:
+        return render(request, 'app/empty_response.html')
 @login_required
 def add_student_query(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     if not course.can_edit(request.user.person):
-        return redirect('app:course', courseid)
+        raise PermissionDenied()
+    if course.locked:
+        raise PermissionDenied()
 
     qr = models.Person.objects.exclude(grade__course=course).filter(
         studentrecord__status='C').order_by('family_name', 'given_name')
@@ -366,8 +381,7 @@ def add_student_query(request, courseid):
                                    initial={'include': course.multi_center})
     form.is_valid()
     if not form.cleaned_data.get('include'):
-        qr = qr.filter(studentrecord__center=course.center,
-                       studentrecord__status='C')
+        qr = qr.filter(studentrecord__center=course.center)
     if form.cleaned_data.get('query'):
         q1 = Q()
         for sec in form.cleaned_data['query'].split(';'):
@@ -378,24 +392,11 @@ def add_student_query(request, courseid):
                            Q(user__username__icontains=w))
             q1 = q1 | q2
         qr = qr.filter(q1)
-    if form.cleaned_data.get('courses'):
-        qr = qr.filter(grade__course__template__in=form.cleaned_data['courses'])
+    prev = form.cleaned_data.get('courses')
+    if prev:
+        qr = qr.filter(grade__course__template__in=prev)
     return render(request, 'app/add_student_query.html',
                   {'form': form, 'students': qr, 'course': course})
-@login_required
-def add_student_list(request, courseid):
-    return render(request, 'app/add_student_list.html',
-                  {'grades': models.Grade.objects.filter(
-                      course=courseid).order_by('person__family_name',
-                                                'person__given_name')})
-@login_required
-def add_student_search(request, courseid):
-    course = get_object_or_404(models.Course, pk=courseid)
-    if not course.can_edit(request.user.person):
-        return redirect('app:course', courseid)
-
-    return render(request, 'app/add_student_search.html',
-                  {'course': course})
 @login_required
 def edit_schedule(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
@@ -644,8 +645,7 @@ def center_tally(request, center):
     semester = semester=form.cleaned_data.get('semester')
     courses = models.Course.objects.filter(year=year, semester=semester,
                                            center=center)
-    grades = models.Grade.objects.filter(course__in=courses).exclude(
-        value='W')
+    grades = models.Grade.objects.filter(course__in=courses)
     ct = collections.Counter()
     for g in grades:
         ct[g.person] += g.course.template.credits

@@ -330,6 +330,7 @@ class Course(models.Model):
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(default=False)
     section = models.CharField(max_length=10, blank=True, null=True)
+    locked = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.template} {self.semester}{self.year}'
@@ -367,6 +368,10 @@ class Grade(models.Model):
 
     def __str__(self):
         return f'{self.person} {self.course}'
+
+    def as_form(self):
+        from app.forms import GradeForm as fcls
+        return fcls(instance=self)
 
 class StudentRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)

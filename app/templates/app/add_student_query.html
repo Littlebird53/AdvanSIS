@@ -1,12 +1,29 @@
-<form hx-get="{% url 'app:add_student_query' course.id %}" hx-target="#query">
+<form hx-get="{% url 'app:add_student' course.id %}"
+      hx-target="#add-student"
+      data-form-id="skip">
   {{form}}
   <button type="submit">Search</button>
 </form>
 
-<ul>
-  {% for student in students %}
-  <li>
-    {{student}} <button hx-get="{% url 'app:add_student_confirm' course.id student.id %}" hx-target="#list">Add</button>
-  </li>
-  {% endfor %}
-</ul>
+<div style="max-height: 50vh; overflow-y: scroll">
+  <table>
+    <tr>
+      <th>Student</th>
+      <th>Add</th>
+    </tr>
+    {% for student in students %}
+    <tr>
+      <td>
+        <a href="{% url 'app:student_info' student.id %}">
+          {{student}}
+        </a>
+      </td>
+      <td>
+        <button hx-get="{% url 'app:add_student_confirm' course.id student.id %}"
+                hx-target="#grade_list"
+                hx-swap="beforeend">Add</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

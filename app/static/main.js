@@ -33,5 +33,10 @@ $(function() {
       $(e.target).find('form').each((i, f) => update_form(f, initial_form_data));
       $(e.target).find('.filter-select').select2();
     });
-    $('.filter-select').select2();
+  $('.filter-select').select2();
+  $(window).on('animationend', function(e) {
+    if (e.target.className == 'status') {
+      e.target.style.display = 'none';
+    }
+  });
 });

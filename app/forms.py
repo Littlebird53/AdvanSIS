@@ -120,15 +120,9 @@ class DisplayPersonWidget(forms.widgets.Widget):
         return self.DISPLAY_TEMPLATE.render(Context({'value': person}))
 
 class GradeForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['person'].disabled = True
     class Meta:
         model = models.Grade
-        fields = ['person', 'value']
-        widgets = {'person': DisplayPersonWidget}
-GradeFormset = forms.modelformset_factory(
-    models.Grade, form=GradeForm, edit_only=True, extra=0)
+        fields = ['value']
 
 class StudentSearchForm(forms.Form):
     query = forms.CharField(max_length=100, required=False)
