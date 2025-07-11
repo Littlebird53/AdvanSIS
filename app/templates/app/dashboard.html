@@ -47,6 +47,7 @@
   <p>{{stats.pending_centers}} center applications are pending &mdash; <a href="/admin/app/center/?active__exact=1&approved__exact=0">view center applications</a></p>
   <p><a href="{% url 'app:staff_reports' %}">Historical Reports</a></p>
   <p><a href="{% url 'app:center_search' %}">Manage Centers</a></p>
+  <p><a href="{% url 'app:lock_courses' %}">Lock Courses</a></p>
 </div>
 {% endif %}
 {% for row in records %}

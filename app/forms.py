@@ -411,3 +411,11 @@ class StaffStatsForm(RequiredMixin, forms.Form):
     sbc_fundable = forms.NullBooleanField()
 
     make_filtered = ['language', 'country', 'center']
+
+class LockCoursesForm(RequiredMixin, forms.Form):
+    centers = forms.ModelMultipleChoiceField(queryset=models.Center.objects.all())
+    year = forms.IntegerField()
+    semester = forms.ChoiceField(choices=models.SEMESTERS)
+    prior = forms.BooleanField(required=False, label='Include prior terms?')
+
+    make_filtered = ['centers']

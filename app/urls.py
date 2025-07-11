@@ -22,7 +22,10 @@ urlpatterns = [
          name='edit_schedule'),
     path('center/<int:centerid>/add_course/', views.new_course,
          name='new_course'),
-    path('person/<int:studentid>/', views.student_info, name='student_info'),
+    path('person/<int:studentid>/', views.student_info,
+         name='student_info'),
+    path('lock_courses/', views.LockCoursesView.as_view(),
+         name='lock_courses'),
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,

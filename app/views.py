@@ -1280,3 +1280,27 @@ class StaffReportView(AccessMixin, FormView):
         }
         return render(self.request, self.template_name,
                       {'form': form, 'stats': stats})
+
+class LockCoursesView(AccessMixin, FormView):
+    form_class = forms.LockCoursesForm
+    template_name = 'app/lock_courses.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        seq = ['Sp', 'Su', 'Fa', 'Wi']
+        year = form.cleaned_data['year']
+        sem = form.cleaned_data['semester']
+        if form.cleaned_data['prior']:
+            dt = (Q(year__lt=year) |
+                  Q(year=year, semester__in=seq[:seq.index(sem)+1]))
+        else:
+            dt = Q(year=year, semester=sem)
+        courses = models.Course.objects.filter(
+            dt, center__in=form.cleaned_data['centers'], locked=False)
+        num = courses.update(locked=True)
+        return render(self.request, 'app/lock_courses_success.html',
+                      {'count': num})
