@@ -856,7 +856,10 @@ def find_instructors(request, center):
         center__isnull=True, status='C').order_by(
             'person__family_name', 'person__given_name')
     return render(request, 'app/find_instructors.html',
-                  {'center': center, 'instructors': instructors})
+                  {'center': center, 'instructors': instructors,
+                   'courses': models.CourseTemplate.objects.filter(
+                       active=True).order_by('title'),
+                   'languages': models.Language.objects.all()})
 
 @center_admin
 def add_instructor(request, center, staffid):

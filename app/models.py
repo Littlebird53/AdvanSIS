@@ -137,6 +137,12 @@ class Person(models.Model):
                  ('5', 'Caucasian'), ('6', 'Other')],
         max_length=1, null=True)
     languages_spoken = models.ManyToManyField(Language, blank=True)
+    ed_level = models.CharField(max_length=3, choices=[
+        ('N', 'No formal education'), ('J', 'Middle/Junior High School'),
+        ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
+        ('B', 'Bachelors'), ('M', 'Masters'),
+        ('D', 'Doctoral/Professional Degree')],
+                                blank=True, null=True)
     deceased = models.BooleanField(default=False)
     emails = models.ManyToManyField(EmailAddress)
     phones = models.ManyToManyField(PhoneAddress)
@@ -181,6 +187,21 @@ class Person(models.Model):
             return addr.country, True
 
     @property
+    def main_email(self):
+        e = self.emails.all().filter(active=True, category='P').first()
+        if e is None:
+            e = self.emails.all().filter(active=True).first()
+        return e
+
+    @property
+    def main_phone(self):
+        p = self.phones.all().filter(active=True,
+                                     category__in=['H', 'M']).first()
+        if p is None:
+            p = self.phones.all().filter(active=True).first()
+        return p
+
+    @property
     def has_profile(self):
         return self.date_of_birth is not None
 
@@ -201,6 +222,18 @@ class Person(models.Model):
             return self.home_address.last_line
         else:
             return '~'
+
+    @property
+    def age(self):
+        if not self.date_of_birth:
+            return None
+        today = datetime.date.today()
+        years = today.year - self.date_of_birth.year
+        if today.month < self.date_of_birth.month:
+            years -= 1
+        elif today.month == self.date_of_birth.month and today.day < self.date_of_birth.day:
+            years -= 1
+        return years
 
 class Center(models.Model):
     name = models.CharField(max_length=400)
@@ -405,12 +438,6 @@ class StudentRecord(models.Model):
                                          null=True)
     prev_gateway = models.BooleanField(null=True)
     gateway_id = models.IntegerField(blank=True, null=True)
-    ed_level = models.CharField(max_length=3, choices=[
-        ('N', 'No formal education'), ('J', 'Middle/Junior High School'),
-        ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
-        ('B', 'Bachelors'), ('M', 'Masters'),
-        ('D', 'Doctoral/Professional Degree')],
-                                blank=True, null=True)
     called_to_ministry = models.BooleanField(null=True)
     christian_year = models.BooleanField(null=True)
     conduct_standard = models.BooleanField(null=True)
@@ -480,6 +507,9 @@ class StaffRecord(models.Model):
     advance_approved = models.BooleanField(default=False)
     profile = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
+    TIME_OF_DAY = [('M', 'Morning'), ('D', 'Midday'), ('A', 'Afternoon'),
+                   ('E', 'Evening')]
+
     def __str__(self):
         return f'{self.person} {self.center}'
 
@@ -495,6 +525,15 @@ class StaffRecord(models.Model):
         if ls:
             return CourseTemplate.objects.filter(pk__in=ls, active=True).order_by('title')
         return []
+
+    @property
+    def get_time_of_day_display(self):
+        ls = (self.profile or {}).get('time_of_day', [])
+        return ', '.join([l for a, l in StaffRecord.TIME_OF_DAY if a in ls])
+
+    @property
+    def get_semester_display(self):
+        return ', '.join((self.profile or {}).get('terms', []))
 
 class AchievementRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)

@@ -6,17 +6,94 @@
 <h1>Find Instructors</h1>
 <table>
   <tr>
+    <th><label for="courses">Courses:</label></th>
+    <td>
+      <select id="courses" class="filter-select" multiple>
+	{% for course in courses %}
+	<option value="{{course.id}}">{{course}}</option>
+	{% endfor %}
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="ed_level">Education Level</label></th>
+    <td>
+      <select id="ed_level" multiple>
+	<option value="N">No formal education</option>
+	<option value="J">Middle/Junior High School</option>
+        <option value="H">High School</option>
+	<option value="C">Some College</option>
+	<option value="A">Associates</option>
+        <option value="B">Bachelors</option>
+	<option value="M">Masters</option>
+        <option value="D">Doctoral/Professional Degree</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="year">Year</label></th>
+    <td><input id="year" type="number"></input></td>
+  </tr>
+  <tr>
+    <th><label for="semester">Semester</label></th>
+    <td>
+      <select id="semester" multiple>
+	<option value="Sp">Spring</option>
+	<option value="Su">Summer</option>
+	<option value="Fa">Fall</option>
+	<option value="Wi">Winter</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="time_of_day">Time of Day</label></th>
+    <td>
+      <select id="time_of_day" multiple>
+	<option value="M">Morning</option>
+	<option value="D">Midday</option>
+	<option value="A">Afternoon</option>
+	<option value="E">Evening</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="language">Language</label></th>
+    <td>
+      <select id="language" class="filter-select" multiple>
+	{% for lang in languages %}
+	<option value="{{lang.id}}">{{lang.name}}</option>
+	{% endfor %}
+      </select>
+    </td>
+  </tr>
+</table>
+<table>
+  <tr>
     <th>Name</th>
+    <th>Education Level</th>
+    <th>Age</th>
+    <th>Terms Available</th>
     <th>Interested Courses</th>
-    <th>Languages Spoken</th>
     <th>Add</th>
   </tr>
   {% for instructor in instructors %}
-  <tr>
+  <tr class="filter-row"
+      data-courses="{{instructor.profile.courses}}"
+      data-edlevel="{{instructor.person.ed_level}}"
+      data-terms="{{instructor.profile.terms}}"
+      data-time="{{instructor.profile.time_of_day}}"
+      data-language="[{% for lg in instructor.person.languages_spoken.all %}
+		     {{lg.id}}{% if not forloop.last %},{% endif %}
+		     {% endfor %}]">
     <td>
       <a href="{% url 'app:student_info' instructor.person.id %}">
 	{{instructor.person}}
       </a>
+    </td>
+    <td>{{instructor.person.get_ed_level_display}}</td>
+    <td>{{instructor.person.age}}</td>
+    <td>
+      {{instructor.get_semester_display}}
     </td>
     <td>
       <ul style="max-height: 5lh; overflow-y: scroll">
@@ -26,15 +103,9 @@
       </ul>
     </td>
     <td>
-      <ul>
-	{% for lg in instructor.person.languages_spoken.all %}
-	<li>{{lg}}</li>
-	{% endfor %}
-      </ul>
-    </td>
-    <td>
       <form action="{% url 'app:add_instructor' center.id instructor.id %}"
-	    method="POST">
+	    method="POST"
+	    data-form-id="skip">
 	{% csrf_token %}
 	<button type="submit" style="width: 100%; display: block; margin: auto">
 	  Add Instructor
@@ -42,14 +113,83 @@
       </form>
     </td>
   </tr>
-  <tr>
-    <td colspan="4">
+  <tr class="filter-row"
+      data-courses="{{instructor.profile.courses}}"
+      data-edlevel="{{instructor.person.ed_level}}"
+      data-terms="{{instructor.profile.terms}}"
+      data-time="{{instructor.profile.time_of_day}}"
+      data-language="[{% for lg in instructor.person.languages_spoken.all %}
+		     {{lg.id}}{% if not forloop.last %},{% endif %}
+		     {% endfor %}]">
+    <td colspan="6">
       <details>
 	<summary>View Bio</summary>
+	<p>
+	  <b>Languages Spoken:</b>
+	  {% for lg in instructor.person.languages_spoken.all %}
+	  {{lg}}{% if not forloop.last %},{% endif %}
+	  {% endfor %}
+	</p>
+	<p><b>Available At:</b> {{instructor.get_time_of_day_display}}</p>
+	<p><b>Timezone:</b> {{instructor.profile.timezone}}</p>
+	<p>
+	  <b>Preferred Concat Method:</b>
+	  {% if instructor.profile.preferred_contact_method == 'phone' %}
+	  {{instructor.person.main_phone.phone}}
+	  {% else %}
+	  {{instructor.person.main_email.email|urlize}}
+	  {% endif %}
+	</p>
 	{{instructor.profile.bio|linebreaks}}
       </details>
     </td>
   </tr>
   {% endfor %}
 </table>
+
+<script type="text/javascript">
+  function do_search() {
+      let courses = $('#courses').val().map(s => parseInt(s));
+      let ed_level = $('#ed_level').val();
+      let year = parseInt($('#year').val() || '0');
+      let semesters = $('#semester').val();
+      let times = $('#time_of_day').val();
+      let langs = $('#language').val().map(l => parseInt(l));
+      $('tr.filter-row').each(function(i, _tr) {
+	  let tr = $(_tr);
+	  let terms = JSON.parse(tr.data('terms').replaceAll("'", '"'));
+	  let time = JSON.parse(tr.data('time').replaceAll("'", '"'));
+	  tr.show();
+	  if (courses.length && tr.data('courses').every(
+	      x => !courses.includes(x))) {
+	      tr.hide();
+	  } else if (ed_level.length &&
+		     !ed_level.includes(tr.data('edlevel'))) {
+	      tr.hide();
+	  } else if ((year > 0 || semesters.length) &&
+		     !terms.some(function(t) {
+			 let s = t.slice(0, 2);
+			 let y = parseInt(t.slice(3));
+			 return ((!semesters.length ||
+				  semesters.includes(s)) &&
+				 (year == 0 || year == y));
+		     })) {
+	      tr.hide();
+	  } else if (times.length && !time.some(t => times.includes(t))) {
+	      tr.hide();
+	  } else if (langs.length && !tr.data('language').some(
+	      l => langs.includes(l))) {
+	      tr.hide();
+	  }
+      });
+  }
+  $(document).ready(function() {
+      $('#courses').change(do_search);
+      $('#ed_level').change(do_search);
+      $('#year').change(do_search);
+      $('#semester').change(do_search);
+      $('#time_of_day').change(do_search);
+      $('#language').change(do_search);
+  });
+</script>
 {% endblock %}

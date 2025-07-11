@@ -28,6 +28,7 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
     make_filtered = ['languages_spoken']
+    make_required = ['ed_level']
 
     def clean_confirm_password(self):
         p1 = self.cleaned_data.get('password')
@@ -41,17 +42,18 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
-                  'sex', 'marital_status', 'denomination',
+                  'sex', 'marital_status', 'denomination', 'ed_level',
                   'languages_spoken']
         widgets = {'date_of_birth': DateWidget}
 
 class ContactUpdateForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['languages_spoken']
+    make_required = ['ed_level']
     class Meta:
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
-                  'sex', 'marital_status', 'denomination',
+                  'sex', 'marital_status', 'denomination', 'ed_level',
                   'languages_spoken']
         widgets = {'date_of_birth': DateWidget}
 
@@ -266,17 +268,15 @@ class StudentApplicationForm(RequiredMixin, forms.ModelForm):
     make_required = ['church', 'church_rec_name', 'church_rec_email',
                      'reference1_name', 'reference1_email',
                      'reference1_phone', 'reference2_name',
-                     'reference2_email', 'reference2_phone',
-                     'ed_level']
+                     'reference2_email', 'reference2_phone']
     class Meta:
         model = models.StudentRecord
         fields = ['church', 'church_sbc',
                   'reference1_name', 'reference1_email', 'reference1_phone',
                   'reference2_name', 'reference2_email', 'reference2_phone',
                   'church_rec_name', 'church_rec_email',
-                  'prev_gateway', 'gateway_id', 'ed_level',
-                  'called_to_ministry', 'christian_year',
-                  'conduct_standard']
+                  'prev_gateway', 'gateway_id', 'called_to_ministry',
+                  'christian_year', 'conduct_standard']
 
 class ChurchEndorsementForm(forms.ModelForm):
     good_character = forms.TypedChoiceField(
@@ -456,11 +456,12 @@ class LockCoursesForm(RequiredMixin, forms.Form):
 class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
     courses = forms.TypedMultipleChoiceField(choices=[], coerce=int)
     terms = forms.MultipleChoiceField(choices=[])
-    time_of_day = forms.MultipleChoiceField(choices=[
-        ('M', 'Morning'), ('D', 'Midday'), ('A', 'Afternoon'),
-        ('E', 'Evening')])
+    time_of_day = forms.MultipleChoiceField(
+        choices=models.StaffRecord.TIME_OF_DAY)
     timezone = forms.CharField(max_length=20)
     bio = forms.CharField(max_length=2000, widget=forms.Textarea)
+    preferred_contact_method = forms.ChoiceField(choices=[
+        ('phone', 'phone'), ('email', 'email')])
 
     make_filtered = ['courses', 'terms']
 
