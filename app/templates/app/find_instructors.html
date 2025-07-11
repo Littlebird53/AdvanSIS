@@ -7,8 +7,8 @@
 <table>
   <tr>
     <th>Name</th>
-    <th>Bio</th>
     <th>Interested Courses</th>
+    <th>Languages Spoken</th>
     <th>Add</th>
   </tr>
   {% for instructor in instructors %}
@@ -18,11 +18,17 @@
 	{{instructor.person}}
       </a>
     </td>
-    <td>{{instructor.profile.bio|linebreaksbr}}</td>
     <td>
-      <ul>
+      <ul style="max-height: 5lh; overflow-y: scroll">
 	{% for course in instructor.interested_courses %}
 	<li>{{course.title}}</li>
+	{% endfor %}
+      </ul>
+    </td>
+    <td>
+      <ul>
+	{% for lg in instructor.person.languages_spoken.all %}
+	<li>{{lg}}</li>
 	{% endfor %}
       </ul>
     </td>
@@ -30,10 +36,18 @@
       <form action="{% url 'app:add_instructor' center.id instructor.id %}"
 	    method="POST">
 	{% csrf_token %}
-	<button type="submit" style="display: block; margin: auto">
+	<button type="submit" style="width: 100%; display: block; margin: auto">
 	  Add Instructor
 	</button>
       </form>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4">
+      <details>
+	<summary>View Bio</summary>
+	{{instructor.profile.bio|linebreaks}}
+      </details>
     </td>
   </tr>
   {% endfor %}
