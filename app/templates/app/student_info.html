@@ -16,8 +16,13 @@
 <p><b>Preferred Name:</b> {{student.preferred_name}}</p>
 {% endif %}
 <p><b>Gender:</b> {{student.get_sex_display}}</p>
-{% if student.perferred_language %}
-<p><b>Language:</b> {{student.get_preferred_language_display}}</p>
+{% if student.languages_spoken.first %}
+<p>
+  <b>Language:</b>
+  {% for lg in student.languages_spoken.all %}
+  {{lg}}{% if not forloop.last %},{% endif %}
+  {% endfor %}
+</p>
 {% endif %}
 
 {% for e in emails %}

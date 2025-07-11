@@ -2,9 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.template import Context, Template
-from app.languages import LANGUAGES
 import datetime
 from functools import cached_property
+
+class Language(models.Model):
+    code = models.CharField(max_length=3)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_english(cls):
+        return cls.objects.filter(code='eng').first()
 
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -126,8 +136,7 @@ class Person(models.Model):
                  ('3', 'Asian or Pacific Islander'), ('4', 'Hispanic'),
                  ('5', 'Caucasian'), ('6', 'Other')],
         max_length=1, null=True)
-    preferred_language = models.CharField(choices=LANGUAGES, max_length=3,
-                                          blank=True, null=True)
+    languages_spoken = models.ManyToManyField(Language, blank=True)
     deceased = models.BooleanField(default=False)
     emails = models.ManyToManyField(EmailAddress)
     phones = models.ManyToManyField(PhoneAddress)
@@ -323,8 +332,8 @@ class Course(models.Model):
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
         max_length=1, null=True)
-    language = models.CharField(max_length=50, null=True,
-                                choices=LANGUAGES, default='eng')
+    language = models.ForeignKey(Language, on_delete=models.SET_NULL,
+                                 null=True, default=Language.get_english)
     country = models.ForeignKey(Country, null=True,
                                 on_delete=models.SET_NULL)
     accepting_enrollments = models.BooleanField(default=True)

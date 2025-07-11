@@ -22,10 +22,12 @@ class RequiredMixin:
         for field, attrs in self.widget_attrs.items():
             self.fields[field].widget.attrs.update(attrs)
 
-class NewUserForm(forms.ModelForm):
+class NewUserForm(RequiredMixin, forms.ModelForm):
     email = forms.EmailField(required=False)
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
+
+    make_filtered = ['languages_spoken']
 
     def clean_confirm_password(self):
         p1 = self.cleaned_data.get('password')
@@ -40,16 +42,17 @@ class NewUserForm(forms.ModelForm):
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
                   'sex', 'marital_status', 'denomination',
-                  'preferred_language']
+                  'languages_spoken']
         widgets = {'date_of_birth': DateWidget}
 
-class ContactUpdateForm(forms.ModelForm):
+class ContactUpdateForm(RequiredMixin, forms.ModelForm):
+    make_filtered = ['languages_spoken']
     class Meta:
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
                   'title', 'suffix', 'preferred_name', 'date_of_birth',
                   'sex', 'marital_status', 'denomination',
-                  'preferred_language']
+                  'languages_spoken']
         widgets = {'date_of_birth': DateWidget}
 
 class NewEmailForm(forms.ModelForm):
@@ -428,7 +431,8 @@ class StaffStatsForm(RequiredMixin, forms.Form):
     start_semester = forms.ChoiceField(choices=models.SEMESTERS)
     end_year = forms.IntegerField()
     end_semester = forms.ChoiceField(choices=models.SEMESTERS)
-    language = forms.ChoiceField(choices=any_choice+models.LANGUAGES, required=False)
+    language = forms.ModelChoiceField(queryset=models.Language.objects.all(),
+                                      required=False)
     country = forms.ModelChoiceField(queryset=models.Country.objects.all(),
                                      required=False)
     delivery_format = forms.ChoiceField(choices=any_choice+models.Course.delivery_format.field.choices, required=False)
