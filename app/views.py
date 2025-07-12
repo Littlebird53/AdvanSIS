@@ -93,7 +93,6 @@ def sort_courses(courses):
     dct = {'present': [], 'past': [], 'future': []}
     for course in courses:
         key = course.sort_key()
-        print(course, key, year, term)
         if key[0] < year:
             dct['past'].append(course)
         elif key[0] > year:
@@ -1186,7 +1185,6 @@ def transcript(request):
         context['gpa'] = round(gpa_get/gpa_att, 2)
     else:
         context['gpa'] = 0
-    print(context)
     PDF = compile_template_to_pdf('app/transcript.tex', context)
     buf = io.BytesIO(PDF)
     return FileResponse(buf, as_attachment=True, filename="transcript.pdf")
@@ -1207,7 +1205,6 @@ class MessageAllUsersView(AccessMixin, FormView):
 
     def form_valid(self, form):
         to = set()
-        print(form.cleaned_data)
         status = form.cleaned_data['status']
         if 'S' in form.cleaned_data['roles']:
             qr = models.StudentRecord.objects.filter(status__in=status)
@@ -1379,3 +1376,42 @@ class LockCoursesView(AccessMixin, FormView):
         num = courses.update(locked=True)
         return render(self.request, 'app/lock_courses_success.html',
                       {'count': num})
+
+@login_required
+def staff_stats_spreadsheet(request):
+    if not request.user.is_staff:
+        raise PermissionDenied()
+    centers = collections.defaultdict(set)
+    instructors = collections.defaultdict(set)
+    courses = collections.Counter()
+    credits = collections.Counter()
+    registrations = collections.Counter()
+    students = collections.defaultdict(set)
+    keys = {}
+    sem_map = {'Wi': 0, 'Sp': 0.25, 'Su': 0.5, 'Fa': 0.75}
+    for course in models.Course.objects.prefetch_related('grade_set', 'template'):
+        num = (course.year or 0) + sem_map.get(course.semester, 0)
+        keys[num] = (course.year, course.semester)
+        centers[num].add(course.center_id)
+        instructors[num].add(course.instructor_id)
+        courses[num] += 1
+        cred = course.template.credits
+        for grade in course.grade_set.all():
+            credits[num] += cred
+            registrations[num] += 1
+            students[num].add(grade.person_id)
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="stats.csv"'},
+    )
+    writer = csv.writer(response)
+    writer.writerow(['Sort Key', 'Year', 'Semester', 'Centers',
+                     'Instructors', 'Courses', 'Credits', 'Registrations',
+                     'Students'])
+    for num, (year, semester) in sorted(keys.items()):
+        writer.writerow([num, year, semester, len(centers[num]),
+                         len(instructors[num]), courses[num], credits[num],
+                         registrations[num], len(students[num])])
+    return response
