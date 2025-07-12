@@ -1453,7 +1453,7 @@ def staff_tally_sheet(request):
         if sr is not None and start_date <= sr.acceptance_date:
             totals[sr.center] += home.student_fee
         records = student.studentrecord_set.all().filter(
-            acceptance_date__isnull=False)
+            acceptance_date__isnull=False, acceptance_date__lt=end_date)
         centers = [r.center for r in records if r.center]
         for ach in student.achievementaward_set.all().filter(
                 year=year, semester=semester, status='A'):
