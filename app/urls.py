@@ -129,4 +129,6 @@ urlpatterns = [
     path('report/staff/', views.StaffReportView.as_view(), name='staff_reports'),
     path('report/staff/spreadsheet/', views.staff_stats_spreadsheet,
          name='staff_stats_spreadsheet'),
+    path('report/staff/tally/', views.staff_tally_sheet,
+         name='staff_tally_sheet'),
 ]

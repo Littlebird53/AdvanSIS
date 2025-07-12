@@ -1,0 +1,25 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Global Tally Sheet ({{semester}}{{year}}){% endblock %}
+
+{% block content %}
+<h1>Global Tally Sheet for {{semester}}{{year}}</h1>
+<form>
+  <table>{{form.as_table}}</table>
+  <button type="submit">View</button>
+</form>
+<table>
+  <tr>
+    <th>Center</th>
+    <th>Total</th>
+    <th>Tally Sheet</th>
+  </tr>
+  {% for row in totals %}
+  <tr>
+    <td>{{row.0}}</td>
+    <td style="text-align: right">${{row.1}}</td>
+    <td><a href="{% url 'app:center_report' row.0.id %}">View Tally Sheet</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -79,6 +79,12 @@ def get_current_term():
     month = datetime.date.today().month
     return seq[term_map[month]]
 
+def get_date_range(year, semester):
+    start = {'Sp': 1, 'Su': 6, 'Fa': 8, 'Wi': 12}
+    end = {'Sp': 6, 'Su': 8, 'Fa': 12, 'Wi': 1}
+    return (datetime.date(year, start[semester], 1),
+            datetime.date(year + int(semester == 'Wi'), end[semester], 1))
+
 def sort_courses(courses):
     seq = ['Sp', 'Su', 'Fa', 'Wi']
     term_map = [0, # skip
@@ -645,7 +651,8 @@ def center_tally(request, center):
     form = forms.TallySheetForm(request.GET)
     form.is_valid()
     year = form.cleaned_data.get('year', datetime.date.today().year)
-    semester = semester=form.cleaned_data.get('semester')
+    semester = form.cleaned_data.get('semester') or get_current_term()
+    start_date, end_date = get_date_range(year, semester)
     courses = models.Course.objects.filter(year=year, semester=semester,
                                            center=center)
     grades = models.Grade.objects.filter(course__in=courses)
@@ -661,14 +668,13 @@ def center_tally(request, center):
         graduating = False
         deg_charge = 0
         if models.StudentRecord.objects.filter(
-                person=person, center=center, status='C').exists():
-            if not models.Grade.objects.filter(person=person, course__year__lt=year).exists():
-                gr_list = sorted(models.Grade.objects.filter(
-                    person=person, course__year=year),
-                                 key=lambda g: g.course.sort_key())
-                new_student = ((gr_list[0].course.semester == semester)
-                               and (gr_list[0].course.center == center))
-            if new_student:
+                person=person, center=center,
+                status__in=['C', 'F']).exists():
+            sr = models.StudentRecord.objects.filter(
+                person=person,
+                acceptance_date__isnull=False).order_by('acceptance_date').first()
+            if sr and sr.center == center and start_date <= sr.acceptance_date <= end_date:
+                new_student = True
                 charge += home.student_fee
             achievements = models.AchievementAward.objects.filter(
                 person=person, year=year, semester=semester, status='A')
@@ -1415,3 +1421,56 @@ def staff_stats_spreadsheet(request):
                          len(instructors[num]), courses[num], credits[num],
                          registrations[num], len(students[num])])
     return response
+
+@login_required
+def staff_tally_sheet(request):
+    if not request.user.is_staff:
+        raise PermissionDenied()
+    form = forms.TallySheetForm(request.GET)
+    form.is_valid()
+    error_keys = list(form.errors.keys())
+    for ek in error_keys:
+        del form.errors[ek]
+    year = form.cleaned_data.get('year', datetime.date.today().year)
+    semester = form.cleaned_data.get('semester') or get_current_term()
+    start_date, end_date = get_date_range(year, semester)
+    totals = collections.Counter()
+    double_count = set()
+    credits = collections.defaultdict(collections.Counter)
+    for g in models.Grade.objects.filter(
+            course__year=year, course__semester=semester):
+        if g.course.center is None:
+            continue
+        print(g)
+        credits[g.person][g.course.center] += g.course.template.credits
+    for student, dct in credits.items():
+        home, _ = student.home_country
+        for center, count in dct.items():
+            totals[center] += count * home.credit_fee
+        sr = student.studentrecord_set.all().filter(
+            acceptance_date__isnull=False,
+            acceptance_date__lt=end_date).order_by('acceptance_date').first()
+        if sr is not None and start_date <= sr.acceptance_date:
+            totals[sr.center] += home.student_fee
+        records = student.studentrecord_set.all().filter(
+            acceptance_date__isnull=False)
+        centers = [r.center for r in records if r.center]
+        for ach in student.achievementaward_set.all().filter(
+                year=year, semester=semester, status='A'):
+            if len(centers) > 1:
+                double_count.update(centers)
+            for c in centers:
+                if ach.walking:
+                    totals[c] += 90
+                else:
+                    totals[c] += min(home.student_fee, 10)
+    return render(request, 'app/staff_tally_sheet.html',
+                  {
+                      'year': year,
+                      'semester': semester,
+                      'form': form,
+                      'totals': sorted(totals.items(),
+                                       key=lambda c: c[0].name),
+                      'double_count': sorted(double_count,
+                                             key=lambda c: c.name),
+                  })
