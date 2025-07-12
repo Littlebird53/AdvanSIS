@@ -22,4 +22,11 @@
   </tr>
   {% endfor %}
 </table>
+{% if double_count %}
+<h2>Potentially Double-Counted Centers</h2>
+<p>Some graduation fees may have been double counted, affecing the following centers:</p>
+<ul>
+  {% for c in double_count %}{{c}}{% endfor %}
+</ul>
+{% endif %}
 {% endblock %}
