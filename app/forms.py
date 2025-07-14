@@ -1,8 +1,11 @@
 from django import forms
-from app import models
+from django.contrib.admin import widgets as admin_widgets
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
-from django.contrib.admin import widgets as admin_widgets
+from app import models
+import datetime
+from functools import cache
+import zoneinfo
 
 class DateWidget(forms.DateInput):
     input_type = 'date'
@@ -457,17 +460,26 @@ class LockCoursesForm(RequiredMixin, forms.Form):
 
     make_filtered = ['centers']
 
+@cache
+def timezone_values():
+    now = datetime.datetime.now()
+    ret = [('', '---')]
+    for name in zoneinfo.available_timezones():
+        offset = now.astimezone(zoneinfo.ZoneInfo(name)).strftime('%z')
+        ret.append((name, f'{name} (UTC{offset})'))
+    return sorted(ret)
+
 class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
     courses = forms.TypedMultipleChoiceField(choices=[], coerce=int)
     terms = forms.MultipleChoiceField(choices=[])
     time_of_day = forms.MultipleChoiceField(
         choices=models.StaffRecord.TIME_OF_DAY)
-    timezone = forms.CharField(max_length=20)
+    timezone = forms.ChoiceField(choices=timezone_values)
     bio = forms.CharField(max_length=2000, widget=forms.Textarea)
     preferred_contact_method = forms.ChoiceField(choices=[
         ('phone', 'phone'), ('email', 'email')])
 
-    make_filtered = ['courses', 'terms']
+    make_filtered = ['courses', 'terms', 'time_of_day', 'timezone']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

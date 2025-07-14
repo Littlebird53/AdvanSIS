@@ -507,7 +507,8 @@ class StaffRecord(models.Model):
                                        help_text='Date welcome letter was sent')
     center_approved = models.BooleanField(default=False)
     advance_approved = models.BooleanField(default=False)
-    profile = models.JSONField(null=True, encoder=DjangoJSONEncoder)
+    profile = models.JSONField(blank=True, null=True,
+                               encoder=DjangoJSONEncoder)
 
     TIME_OF_DAY = [('M', 'Morning'), ('D', 'Midday'), ('A', 'Afternoon'),
                    ('E', 'Evening')]
