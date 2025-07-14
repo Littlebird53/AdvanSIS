@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Global Tally Sheet for {{semester}}{{year}}</h1>
-<form>
+<form data-form-id="skip">
   <table>{{form.as_table}}</table>
   <button type="submit">View</button>
 </form>
@@ -26,7 +26,8 @@
       {% else %}
       <form hx-target="#center_{{row.center.id}}"
 	    hx-post="{% url 'app:lock_courses' row.center.id year semester %}"
-	    style="width: 100%">
+	    style="width: 100%"
+	    data-form-id="skip">
 	{% csrf_token %}
 	<button type="submit">Lock Courses</button>
       </form>

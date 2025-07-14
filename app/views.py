@@ -364,8 +364,10 @@ def manage_course(request, courseid):
                   {
                       'course': course,
                       'grades': models.Grade.objects.filter(
-                          course=course).order_by(
-                              'person__family_name', 'person__given_name'),
+                          course=course).prefetch_related(
+                              'person').order_by(
+                                  'person__family_name',
+                                  'person__given_name'),
                       'files': files,
                       'all_files': file_query,
                       'add_file': add,
