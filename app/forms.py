@@ -91,6 +91,8 @@ class NewMailingForm(forms.ModelForm):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person
+        self.fields['address'].widget.attrs['rows'] = '3'
+        self.fields['country'].widget.attrs['class'] = 'filter-select'
     def clean_category(self):
         cat = self.cleaned_data['category']
         if self.person.mailings.all().filter(active=True, category=cat).exists():
@@ -98,8 +100,8 @@ class NewMailingForm(forms.ModelForm):
         return cat
     class Meta:
         model = models.MailingAddress
-        fields = ['address', 'attention', 'city', 'state', 'zip_code',
-                  'country', 'category']
+        fields = ['address', 'attention', 'city', 'country', 'state',
+                  'zip_code', 'category']
 
 class NewCourseForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['template', 'language', 'country']
@@ -221,12 +223,14 @@ class AddFileForm(forms.ModelForm):
 class NewInstructorPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)
 
-class NewPopupForm(forms.Form):
+class NewPopupForm(RequiredMixin, forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)
     roles = forms.MultipleChoiceField(initial='S', choices=[
         ('S', 'Students'), ('I', 'Instructors'), ('D', 'Staff')])
     status = forms.MultipleChoiceField(initial='C', choices=[
         ('C', 'Current'), ('F', 'Former'), ('A', 'Applied')])
+
+    make_filtered = ['roles', 'status']
 
 class CalendarForm(forms.Form):
     days = forms.MultipleChoiceField(
