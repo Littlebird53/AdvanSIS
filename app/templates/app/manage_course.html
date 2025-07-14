@@ -25,7 +25,7 @@
   <tr>
     <th>Person</th>
     <th>Grade</th>
-    {% if not course.locked %}
+    {% if course.status != 'L' %}
     <th>Unenroll</th>
     {% endif %}
   </tr>
@@ -33,7 +33,7 @@
   {% include 'app/manage_course_grade.html' %}
   {% endfor %}
 </table>
-{% if not course.locked %}
+{% if course.status != 'L' %}
 <div id="add-student">
   <button hx-get="{% url 'app:add_student' course.id %}"
           hx-target="#add-student">

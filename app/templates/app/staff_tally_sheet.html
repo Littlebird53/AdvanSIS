@@ -13,12 +13,25 @@
     <th>Center</th>
     <th>Total</th>
     <th>Tally Sheet</th>
+    <th>Status</th>
   </tr>
   {% for row in totals %}
   <tr>
-    <td>{{row.0}}</td>
-    <td style="text-align: right">${{row.1}}</td>
-    <td><a href="{% url 'app:center_report' row.0.id %}">View Tally Sheet</a></td>
+    <td>{{row.center}}</td>
+    <td style="text-align: right">${{row.total}}</td>
+    <td><a href="{% url 'app:center_report' row.center.id %}">View Tally Sheet</a></td>
+    <td id="center_{{row.center.id}}">
+      {% if row.locked %}
+      Locked
+      {% else %}
+      <form hx-target="#center_{{row.center.id}}"
+	    hx-post="{% url 'app:lock_courses' row.center.id year semester %}"
+	    style="width: 100%">
+	{% csrf_token %}
+	<button type="submit">Lock Courses</button>
+      </form>
+      {% endif %}
+    </td>
   </tr>
   {% endfor %}
 </table>

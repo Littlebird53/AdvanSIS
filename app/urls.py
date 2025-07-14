@@ -24,8 +24,8 @@ urlpatterns = [
          name='new_course'),
     path('person/<int:studentid>/', views.student_info,
          name='student_info'),
-    path('lock_courses/', views.LockCoursesView.as_view(),
-         name='lock_courses'),
+    path('lock_courses/<int:centerid>/<int:year>/<slug:semester>/',
+         views.lock_courses, name='lock_courses'),
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,

@@ -72,6 +72,7 @@ class CourseGradeAdmin(admin.TabularInline):
 class CourseFileAdmin(admin.TabularInline):
     model = models.CourseFile
     extra = 0
+    autocomplete_fields = ['course', 'shared_file']
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
@@ -80,8 +81,9 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['template__title', 'instructor__given_name',
                      'instructor__family_name', 'center__name']
     list_display = ['template__title', 'center', 'instructor',
-                    'semester', 'year']
-    list_filter = ['semester', 'template__division', 'delivery_format']
+                    'semester', 'year', 'status']
+    list_filter = ['semester', 'template__division', 'delivery_format',
+                   'status']
 
 class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
     model = models.AchievementRequirement
@@ -97,7 +99,7 @@ class AchievementAdmin(admin.ModelAdmin):
 class FileAdmin(admin.ModelAdmin):
     list_display = ['title', 'course__title']
     search_fields = ['title', 'course__title']
-    autocomplete_fields = ['owner']
+    autocomplete_fields = ['owner', 'course']
     inlines = [CourseFileAdmin]
 
 class CourseTemplateInline(admin.TabularInline):

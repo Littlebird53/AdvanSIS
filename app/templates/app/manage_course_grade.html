@@ -14,7 +14,7 @@
       {{grade.as_form.value}}
     </form>
   </td>
-  {% if not grade.course.locked %}
+  {% if grade.course.status != 'L' %}
   <td>
     <form hx-post="{% url 'app:delete_grade' grade.course.id grade.id %}"
           hx-target="#grade_{{grade.id}}"

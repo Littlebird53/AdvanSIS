@@ -372,7 +372,9 @@ class Course(models.Model):
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(default=False)
     section = models.CharField(max_length=10, blank=True, null=True)
-    locked = models.BooleanField(default=False)
+    status = models.CharField(max_length=1, default='P', choices=[
+        ('P', 'Pending'), ('R', 'Rejected'), ('A', 'Approved'),
+        ('L', 'Locked')])
 
     def __str__(self):
         return f'{self.template} {self.semester}{self.year}'

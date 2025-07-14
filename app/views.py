@@ -79,6 +79,17 @@ def get_current_term():
     month = datetime.date.today().month
     return seq[term_map[month]]
 
+def get_previous_term():
+    seq = ['Sp', 'Su', 'Fa', 'Wi']
+    sem = get_current_term()
+    year = datetime.date.today().year
+    if sem == 'Sp':
+        year -= 1
+        sem = 'Wi'
+    else:
+        sem = seq[seq.index(sem)-1]
+    return (year, sem)
+
 def get_date_range(year, semester):
     start = {'Sp': 1, 'Su': 6, 'Fa': 8, 'Wi': 12}
     end = {'Sp': 6, 'Su': 8, 'Fa': 12, 'Wi': 1}
@@ -126,6 +137,24 @@ def get_staff_stats():
         status='P').count()
     ret['pending_centers'] = models.Center.objects.filter(
         approved=False, active=True).count()
+    ret['pending_courses'] = models.Course.objects.filter(
+        status='P').count()
+    grades = models.Grade.objects.filter(
+        course__year=datetime.date.today().year,
+        course__semester=get_current_term())
+    ret['grade_total'] = grades.count()
+    ret['grade_input'] = grades.exclude(value='IP').count()
+    ret['grade_percent'] = 100
+    if ret['grade_total'] > 0:
+        ret['grade_percent'] = round(100 * ret['grade_input'] / ret['grade_total'], 2)
+    prev_year, prev_sem = get_previous_term()
+    grades = models.Grade.objects.filter(
+        course__year=prev_year, course__semester=prev_sem)
+    ret['prev_grade_total'] = grades.count()
+    ret['prev_grade_input'] = grades.exclude(value='IP').count()
+    ret['prev_grade_percent'] = 100
+    if ret['prev_grade_total'] > 0:
+        ret['prev_grade_percent'] = round(100 * ret['prev_grade_input'] / ret['prev_grade_total'], 2)
     return ret
 
 @login_required
@@ -358,7 +387,7 @@ def delete_grade(request, courseid, gradeid):
     grade = get_object_or_404(models.Grade, pk=gradeid, course=courseid)
     if not grade.course.can_edit(request.user.person):
         raise PermissionDenied()
-    if grade.course.locked:
+    if grade.course.status != 'A':
         raise PermissionDenied()
     grade.delete()
     return render(request, 'app/empty_response.html')
@@ -366,7 +395,7 @@ def delete_grade(request, courseid, gradeid):
 def add_student(request, courseid, studentid):
     course = get_object_or_404(models.Course, pk=courseid)
     student = get_object_or_404(models.Person, pk=studentid)
-    if not course.can_edit(request.user.person) or course.locked:
+    if not course.can_edit(request.user.person) or course.status != 'A':
         raise PermissionDenied()
 
     grade, created = models.Grade.objects.get_or_create(
@@ -381,7 +410,7 @@ def add_student_query(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     if not course.can_edit(request.user.person):
         raise PermissionDenied()
-    if course.locked:
+    if course.status != 'A':
         raise PermissionDenied()
 
     qr = models.Person.objects.exclude(grade__course=course).filter(
@@ -1040,7 +1069,7 @@ def course_search(request):
         person=request.user.person, status='C').values_list(
             'center', flat=True)
     courses = models.Course.objects.filter(
-        Q(center__in=centers) | Q(multi_center=True),
+        Q(center__in=centers) | Q(multi_center=True), status='A',
         accepting_enrollments=True).exclude(
             grade__person=request.user.person).order_by(
                 'center__name', 'template__title')
@@ -1054,7 +1083,7 @@ def enroll(request, courseid):
         person=request.user.person, status='C')
     if not course.multi_center:
         qr = qr.filter(center=course.center)
-    if qr.exists():
+    if course.status == 'A' and qr.exists():
         grade = models.Grade.objects.get_or_create(
             course=course, person=request.user.person,
             defaults={'value': 'IP'})[0]
@@ -1359,29 +1388,15 @@ class StaffReportView(AccessMixin, FormView):
         return render(self.request, self.template_name,
                       {'form': form, 'stats': stats})
 
-class LockCoursesView(AccessMixin, FormView):
-    form_class = forms.LockCoursesForm
-    template_name = 'app/lock_courses.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_staff:
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        seq = ['Sp', 'Su', 'Fa', 'Wi']
-        year = form.cleaned_data['year']
-        sem = form.cleaned_data['semester']
-        if form.cleaned_data['prior']:
-            dt = (Q(year__lt=year) |
-                  Q(year=year, semester__in=seq[:seq.index(sem)+1]))
-        else:
-            dt = Q(year=year, semester=sem)
-        courses = models.Course.objects.filter(
-            dt, center__in=form.cleaned_data['centers'], locked=False)
-        num = courses.update(locked=True)
-        return render(self.request, 'app/lock_courses_success.html',
-                      {'count': num})
+@login_required
+def lock_courses(request, centerid, year, semester):
+    if not request.user.is_staff:
+        raise PermissionDenied()
+    models.Course.objects.filter(year=year, semester=semester,
+                                 center=centerid, status='A').update(
+                                     status='L')
+    from django.http import HttpResponse
+    return HttpResponse('Locked', content_type='text/plain')
 
 @login_required
 def staff_stats_spreadsheet(request):
@@ -1467,13 +1482,21 @@ def staff_tally_sheet(request):
                     totals[c] += 90
                 else:
                     totals[c] += min(home.student_fee, 10)
+    rows = []
+    for c, n in sorted(totals.items(), key=lambda p: p[0].name):
+        rows.append({
+            'center': c,
+            'total': n,
+            'locked': not models.Course.objects.filter(
+                center=c, year=year, semester=semester,
+                status='A').exists(),
+        })
     return render(request, 'app/staff_tally_sheet.html',
                   {
                       'year': year,
                       'semester': semester,
                       'form': form,
-                      'totals': sorted(totals.items(),
-                                       key=lambda c: c[0].name),
+                      'totals': rows,
                       'double_count': sorted(double_count,
                                              key=lambda c: c.name),
                   })

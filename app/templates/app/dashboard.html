@@ -45,11 +45,13 @@
   <p>{{stats.missed_contacts}} prospects have not been contacted in over six weeks &mdash; <a href="/admin/app/prospect/?last_contact={{stats.missed_contacts_date}}">view prospects</a></p>
   <p>{{stats.pending_mous}} MOUs are missing at least one signature &mdash; <a href="/admin/app/mou/?status__exact=P">view pending MOUs</a></p>
   <p>{{stats.pending_centers}} center applications are pending &mdash; <a href="/admin/app/center/?active__exact=1&approved__exact=0">view center applications</a></p>
+  <p>{{stats.pending_courses}} courses pending approval &mdash; <a href="/admin/app/course/?status__exact=P">view courses</a></p>
+  <p>{{stats.grade_input}} / {{stats.grade_total}} = {{stats.grade_percent}}% grades input for the current semester</p>
+  <p>{{stats.prev_grade_input}} / {{stats.prev_grade_total}} = {{stats.prev_grade_percent}}% grades input for the previous semester</p>
   <p><a href="{% url 'app:staff_reports' %}">Historical Reports</a></p>
   <p><a href="{% url 'app:staff_stats_spreadsheet' %}">Spreadsheet of Statistics</a></p>
   <p><a href="{% url 'app:staff_tally_sheet' %}">Global Tally Sheet</a></p>
   <p><a href="{% url 'app:center_search' %}">Manage Centers</a></p>
-  <p><a href="{% url 'app:lock_courses' %}">Lock Courses</a></p>
 </div>
 {% endif %}
 {% for row in records %}
