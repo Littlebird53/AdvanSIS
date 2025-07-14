@@ -1426,13 +1426,17 @@ def staff_stats_spreadsheet(request):
 def staff_tally_sheet(request):
     if not request.user.is_staff:
         raise PermissionDenied()
-    form = forms.TallySheetForm(request.GET)
-    form.is_valid()
-    error_keys = list(form.errors.keys())
-    for ek in error_keys:
-        del form.errors[ek]
-    year = form.cleaned_data.get('year', datetime.date.today().year)
-    semester = form.cleaned_data.get('semester') or get_current_term()
+    year = datetime.date.today().year
+    semester = get_current_term()
+    if 'year' in request.GET:
+        form = forms.TallySheetForm(request.GET)
+        if form.is_valid():
+            year = form.cleaned_data['year']
+            semester = form.cleaned_data['semester']
+    else:
+        initial = {'year': datetime.date.today().year,
+                   'semester': get_current_term}
+        form = forms.TallySheetForm(initial=initial)
     start_date, end_date = get_date_range(year, semester)
     totals = collections.Counter()
     double_count = set()
@@ -1441,7 +1445,6 @@ def staff_tally_sheet(request):
             course__year=year, course__semester=semester):
         if g.course.center is None:
             continue
-        print(g)
         credits[g.person][g.course.center] += g.course.template.credits
     for student, dct in credits.items():
         home, _ = student.home_country
