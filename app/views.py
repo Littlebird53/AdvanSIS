@@ -520,10 +520,14 @@ def student_info(request, studentid):
     s_applications = []
     i_applications = []
     transcript = []
+    resume = []
     contact_form = None
     contact_form_open = False
     if is_director:
         transcript = student.grade_set.all()
+        resume = models.Course.objects.filter(
+            (Q(instructor=student) | Q(associate_instructors=student)),
+            status__in=['P', 'A', 'L'])
         s_applications = student.studentrecord_set.all().filter(
             center__in=director_centers)
         i_applications = student.staffrecord_set.all().filter(
@@ -544,6 +548,8 @@ def student_info(request, studentid):
                    'mailings': student.mailings.filter(active=True),
                    'is_director': is_director,
                    'transcript': transcript,
+                   'resume': resume,
+                   'director_centers': list(director_centers),
                    'student_applications': s_applications,
                    'instructor_applications': i_applications,
                    'contact_form': contact_form,
@@ -623,7 +629,8 @@ def view_instructors(request, center):
 
 @center_admin
 def view_students(request, center, status):
-    qs = models.StudentRecord.objects.filter(center=center)
+    qs = models.StudentRecord.objects.filter(
+        center=center).prefetch_related('person__grade_set')
     if status is not None:
         qs = qs.filter(status=status)
     if request.method == 'POST':
@@ -670,17 +677,18 @@ class MessageCenterStudentsView(CenterAdminMixin, FormView):
         return super().form_valid(form)
 
 @center_admin
-def center_report(request, center):
-    return render(request, 'app/reports.html',
-                  {'center': center, 'form': forms.TallySheetForm(
-                      initial={'year': datetime.date.today().year})})
-
-@center_admin
 def center_tally(request, center):
-    form = forms.TallySheetForm(request.GET)
-    form.is_valid()
-    year = form.cleaned_data.get('year', datetime.date.today().year)
-    semester = form.cleaned_data.get('semester') or get_current_term()
+    year = datetime.date.today().year
+    semester = get_current_term()
+    if 'year' in request.GET:
+        form = forms.TallySheetForm(request.GET)
+        if form.is_valid():
+            year = form.cleaned_data['year']
+            semester = form.cleaned_data['semester']
+    else:
+        initial = {'year': datetime.date.today().year,
+                   'semester': get_current_term}
+        form = forms.TallySheetForm(initial=initial)
     start_date, end_date = get_date_range(year, semester)
     courses = models.Course.objects.filter(year=year, semester=semester,
                                            center=center)
@@ -717,6 +725,7 @@ def center_tally(request, center):
                      deg_charge, charge))
     rows.sort(key=lambda r: str(r[0]))
     return render(request, 'app/tally_sheet.html', {
+        'year': year, 'semester': semester, 'form': form,
         'rows': rows, 'total_fee': sum(r[6] for r in rows),
         'total_achievement': sum(r[5] for r in rows),
         'total_credits': sum(r[3] for r in rows)})
@@ -909,6 +918,25 @@ def add_instructor(request, center, staffid):
         newsr.save()
     return render(request, 'app/add_instructor.html',
                   {'sr': newsr, 'created': created})
+
+@center_admin
+def manage_courses(request, center):
+    year = datetime.date.today().year
+    semester = get_current_term()
+    if 'year' in request.GET:
+        form = forms.TallySheetForm(request.GET)
+        if form.is_valid():
+            year = form.cleaned_data['year']
+            semester = form.cleaned_data['semester']
+    else:
+        initial = {'year': datetime.date.today().year,
+                   'semester': get_current_term}
+        form = forms.TallySheetForm(initial=initial)
+    return render(request, 'app/manage_center_courses.html', {
+        'form': form, 'year': year, 'semester': semester,
+        'courses': models.Course.objects.filter(
+            center=center, year=year, semester=semester).select_related(
+                'template').order_by('template__title')})
 
 ####################
 ### Instructors

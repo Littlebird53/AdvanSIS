@@ -21,18 +21,31 @@
   <table>
     <tr>
       <th>Person</th>
+      <th>Courses</th>
+      <th>Semesters</th>
+      <th>Avg. Courses/Semester</th>
+      <th>Avg. Enrollment</th>
+      <th>Avg. GPA</th>
+      <th>All Grades In</th>
       <th>Status</th>
       <th>Role</th>
     </tr>
     {% for form in instructors %}
     <tr>
-      {% for field in form %}
       <td>
-	      {{field}}
+        {{form.person.errors}}
+        {{form.person}}
       </td>
+      {% for stat in form.instance.stats %}
+      <td style="text-align: right">{{stat}}</td>
       {% endfor %}
       <td>
-	      {{form.person.errors}}
+        {{form.status.errors}}
+        {{form.status}}
+      </td>
+      <td>
+        {{form.role.errors}}
+        {{form.role}}
       </td>
     </tr>
     {% endfor %}

@@ -1,3 +1,13 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{center}} Tally Sheet{% endblock %}
+
+{% block content %}
+<h1>{{center}} Tally Sheet for {{semester}}{{year}}</h1>
+<form>
+  <table>{{form.as_table}}</table>
+  <button type="submit">View</button>
+</form>
 <table>
   <tr>
     <th>Student</th>
@@ -46,3 +56,4 @@
     <td>{{total_fee}}</td>
   </tr>
 </table>
+{% endblock %}

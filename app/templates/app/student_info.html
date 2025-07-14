@@ -101,6 +101,40 @@
 </table>
 {% endif %}
 
+{% if resume %}
+<h2>Courses Taught</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Year</th>
+      <th>Semester</th>
+      <th>Role</th>
+      <th>Manage Course</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for course in resume %}
+    <td>{{course.template.title}}</td>
+    <td>{{course.year}}</td>
+    <td>{{course.get_semester_display}}</td>
+    <td>
+      {% if course.instructor == student %}
+      Instructor
+      {% else %}
+      Associate Instructor
+      {% endif %}
+    </td>
+    <td>
+      {% if course.center_id in director_centers %}
+      <a href="{% url 'app:manage_course' course.id %}">Manage</a>
+      {% endif %}
+    </td>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 {% for app in student_applications %}
 <h2>Application to {{app.center.name}} (Student)</h2>
 <table>

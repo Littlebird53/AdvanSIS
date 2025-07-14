@@ -44,6 +44,8 @@ urlpatterns = [
          views.find_instructors, name='find_instructors'),
     path('center/<int:centerid>/add_instructor/<int:staffid>/',
          views.add_instructor, name='add_instructor'),
+    path('center/<int:centerid>/courses/', views.manage_courses,
+         name='center_courses'),
 
     # Applications
     path('center/<int:centerid>/instructor_apply/',
@@ -124,7 +126,6 @@ urlpatterns = [
     path('address/mailing/<int:personid>/', views.edit_mailing_address, name='edit_mailing'),
 
     # Reports
-    path('report/center/<int:centerid>/', views.center_report, name='center_report'),
     path('report/center/<int:centerid>/tally/', views.center_tally, name='center_tally'),
     path('report/staff/', views.StaffReportView.as_view(), name='staff_reports'),
     path('report/staff/spreadsheet/', views.staff_stats_spreadsheet,

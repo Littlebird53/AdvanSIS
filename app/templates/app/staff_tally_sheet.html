@@ -19,7 +19,7 @@
   <tr>
     <td>{{row.center}}</td>
     <td style="text-align: right">${{row.total}}</td>
-    <td><a href="{% url 'app:center_report' row.center.id %}">View Tally Sheet</a></td>
+    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View Tally Sheet</a></td>
     <td id="center_{{row.center.id}}">
       {% if row.locked %}
       Locked

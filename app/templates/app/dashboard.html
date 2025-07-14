@@ -65,6 +65,10 @@
   {% if not row.2 %}
   {% if row.0.role == 'D' or row.0.role == 'R' %}
   {% if row.0.role == 'D' and row.0.status == 'C' %}
+  {% with stats=center.director_stats %}
+  <p>{{stats.approve_count}} / {{stats.course_count}} = {{stats.approve_percent}}% courses approved for the current semester</p>
+  <p>{{stats.enter_count}} / {{stats.grade_count}} = {{stats.enter_percent}}% grades entered for the current semester</p>
+  {% endwith %}
   {% with mou=center.current_mou %}
   {% if mou.status == 'P' %}
   <p>
@@ -94,8 +98,9 @@
   <p><a href="{% url 'app:new_course' center.id %}">Add Course</a></p>
   <p><a href="{% url 'app:center_students' center.id %}">Manage Students</a></p>
   <p><a href="{% url 'app:center_instructors' center.id %}">Manage Instructors</a></p>
+  <p><a href="{% url 'app:center_courses' center.id %}">Manage Courses</a></p>
   <p><a href="{% url 'app:message_center_students' center.id %}">Message All Students</a></p>
-  <p><a href="{% url 'app:center_report' center.id %}">Reports</a></p>
+  <p><a href="{% url 'app:center_tally' center.id %}">Tally Sheet</a></p>
   <p><a href="{% url 'app:center_budget' center.id %}">Center Budget</a></p>
   {% if row.0.role == 'D' and row.0.status == 'C' %}
   <p><a href="{% url 'app:find_instructors' center.id %}">Find Instructors</a></p>

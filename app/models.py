@@ -5,6 +5,42 @@ from django.template import Context, Template
 import datetime
 from functools import cached_property
 
+GPA_VALUES = {
+    'A': 4.0,
+    'A-': 3.7,
+    'B+': 3.3,
+    'B': 3.0,
+    'B-': 2.7,
+    'C+': 2.3,
+    'C': 2.0,
+    'C-': 1.7,
+    'D+': 1.3,
+    'D': 1.0,
+    'D-': 0.7,
+    'F': 0.0,
+}
+
+def calc_gpa(grades):
+    att = 0
+    get = 0
+    for g in grades:
+        if g.value in GPA_VALUES:
+            cr = g.course.template.credits
+            att += cr
+            get += cr * GPA_VALUES[g.value]
+    return round(get / max(att, 1), 2)
+
+def get_current_term():
+    seq = ['Sp', 'Su', 'Fa', 'Wi']
+    term_map = [0, # skip
+                0, 0, 0, 0, 0, # Jan-May
+                1, 1, # Jun-Jul
+                2, 2, 2, 2, # Aug-Nov
+                3, # Dec
+                ]
+    month = datetime.date.today().month
+    return seq[term_map[month]]
+
 class Language(models.Model):
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=100)
@@ -235,6 +271,10 @@ class Person(models.Model):
             years -= 1
         return years
 
+    @property
+    def gpa(self):
+        return calc_gpa(self.grade_set.all())
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5, null=True)
@@ -281,6 +321,25 @@ class Center(models.Model):
             ret = self.mou_set.all().filter(status='A').first()
         if ret is None:
             ret = self.mou_set.all().order_by('expiration').last()
+        return ret
+
+    def director_stats(self):
+        courses = Course.objects.filter(
+            center=self, year=datetime.date.today().year,
+            semester=get_current_term())
+        grades = Grade.objects.filter(course__in=courses)
+        ret = {
+            'course_count': courses.count(),
+            'approve_count': courses.filter(status__in=['A', 'L']).count(),
+            'approve_percent': 0,
+            'grade_count': grades.count(),
+            'enter_count': grades.exclude(value='IP').count(),
+            'enter_percent': 0,
+        }
+        if ret['course_count'] > 0:
+            ret['approve_percent'] = round(100*ret['approve_count']/ret['course_count'], 2)
+        if ret['grade_count'] > 0:
+            ret['enter_percent'] = round(100*ret['enter_count']/ret['grade_count'], 2)
         return ret
 
 class MOU(models.Model):
@@ -460,6 +519,20 @@ class StudentRecord(models.Model):
     def status_line(self):
         return self.get_status_display()
 
+    def stats(self):
+        courses = self.person.grade_set.all().count()
+        avg = 0
+        if courses > 0:
+            semesters = len(set(self.person.grade_set.all().values_list(
+                'course__year', 'course__semester')))
+            avg = round(courses / semesters, 2)
+        qs = self.person.grade_set.all()
+        if self.center is None:
+            qs = qs.filter(course__center__isnull=False)
+        else:
+            qs = qs.exclude(course__center=self.center)
+        return [courses, avg, self.person.gpa, qs.count]
+
 class SharedFile(models.Model):
     owner = models.ForeignKey(Person, on_delete=models.SET_NULL,
                               null=True, blank=True)
@@ -537,6 +610,22 @@ class StaffRecord(models.Model):
     @property
     def get_semester_display(self):
         return ', '.join((self.profile or {}).get('terms', []))
+
+    def stats(self):
+        courses = Course.objects.filter(
+            (models.Q(instructor=self.person) |
+             models.Q(associate_instructors=self.person)),
+            status__in=['A', 'L'])
+        course_count = courses.count()
+        semester_count = len(set(courses.values_list('year', 'semester')))
+        cps = 0
+        if semester_count > 0:
+            cps = round(course_count / semester_count, 2)
+        grades = Grade.objects.filter(course__in=courses)
+        spc = round(grades.count() / max(course_count, 1), 2)
+        gpa = calc_gpa(grades)
+        return [course_count, semester_count, cps,
+                spc, gpa, not grades.filter(value='IP').exists()]
 
 class AchievementRequirement(models.Model):
     courses = models.ManyToManyField(CourseTemplate)
