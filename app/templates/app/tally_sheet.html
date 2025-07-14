@@ -10,7 +10,7 @@
   </tr>
   {% for row in rows %}
   <tr>
-    <td>{{row.0}}</td>
+    <td><a href="{% url 'app:student_info' row.0.id %}">{{row.0}}</a></td>
     {% if row.2 %}
     <td>{{row.1}}</td>
     <td>${{row.1.credit_fee}}</td>
