@@ -87,6 +87,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
     model = models.AchievementRequirement
+    autocomplete_fields = ['courses']
     save_to = 'requirements'
 @admin.register(models.Achievement)
 class AchievementAdmin(admin.ModelAdmin):

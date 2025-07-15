@@ -971,6 +971,7 @@ def course_reports(request, center):
         achievement__active=True).prefetch_related('courses'))
     base_requirements = {r: set(t.id for t in r.courses.all())
                          for r in reqs}
+    course_set = set([t.id for t in templates])
     for sr in models.StudentRecord.objects.filter(
             center=center, status='C').order_by(
                 'person__family_name', 'person__given_name'):
@@ -999,7 +1000,7 @@ def course_reports(request, center):
                 continue
             if not all(pr in have for pr in ach.prerequisites.all()):
                 continue
-            need = courses
+            need = course_set
             met = True
             for r in ach.requirements.all():
                 s, n = req_need[r]
