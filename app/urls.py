@@ -127,6 +127,7 @@ urlpatterns = [
 
     # Reports
     path('report/center/<int:centerid>/tally/', views.center_tally, name='center_tally'),
+    path('report/center/<int:centerid>/courses/', views.course_reports, name='center_course_report'),
     path('report/staff/', views.StaffReportView.as_view(), name='staff_reports'),
     path('report/staff/spreadsheet/', views.staff_stats_spreadsheet,
          name='staff_stats_spreadsheet'),

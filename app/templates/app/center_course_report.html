@@ -1,0 +1,89 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{center}} Course Reports{% endblock %}
+
+{% block content %}
+<h1>{{center}} Course Reports</h1>
+
+<h2>Courses</h2>
+<table>
+  <tr>
+    <th>Course</th>
+    <th>Times Offered</th>
+    <th>GPA</th>
+    <th>Total Enrollment</th>
+  </tr>
+  {% for course, stats in courses %}
+  <tr>
+    <td>{{course}}</td>
+    <td style="text-align: right">{{stats.offered}}</td>
+    <td style="text-align: right">{{stats.gpa}}</td>
+    <td style="text-align: right">{{stats.enrollment}}</td>
+  </tr>
+  <tr>
+    <td colspan="4">
+      <details>
+	<summary>Instances</summary>
+	<table>
+	  <tr>
+	    <th>Year</th>
+	    <th>Semester</th>
+	    <th>Instructor</th>
+	    <th>Enrollment</th>
+	    <th>Manage</th>
+	  </tr>
+	  {% for course in stats.courses %}
+	  <tr>
+	    <td>{{course.year}}</td>
+	    <td>{{course.get_semester_display}}</td>
+	    <td>{{course.instructor}}</td>
+	    <td>{{course.enrollment}}</td>
+	    <td>
+	      <a href="{% url 'app:manage_course' course.id %}">Manage</a>
+	    </td>
+	  </tr>
+	  {% endfor %}
+	</table>
+      </details>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Achievements</h2>
+
+{% for student, plain, courses in students %}
+<h3>{{student}}</h3>
+
+{% if plain %}
+<p>This student is eligible for the following achievements, but has not applied for any of them:</p>
+<ul>
+  {% for p in plain %}
+  <li>{{p}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if courses %}
+<p>This student would be eligible for the following achievements if they took one of the listed courses:</p>
+<table>
+  <tr>
+    <th>Achievement</th>
+    <th>Courses</th>
+  </tr>
+  {% for ach, cs in courses %}
+  <tr>
+    <td>{{ach}}</td>
+    <td>
+      <ul>
+	{% for c in cs %}<li>{{c}}</li>{% endfor %}
+      </ul>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% endfor %}
+
+{% endblock %}

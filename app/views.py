@@ -940,6 +940,88 @@ def manage_courses(request, center):
             center=center, year=year, semester=semester).select_related(
                 'template').order_by('template__title')})
 
+def template_stats(template, center):
+    courses = models.Course.objects.filter(template=template,
+                                           center=center)
+    ct = courses.count()
+    if ct == 0:
+        return None
+    grades = models.Grade.objects.filter(course__in=courses)
+    return {
+        'offered': ct,
+        'gpa': models.calc_gpa(grades),
+        'enrollment': grades.count(),
+        'courses': courses.order_by('year'),
+    }
+
+@center_admin
+def course_reports(request, center):
+    templates = list(models.CourseTemplate.objects.filter(
+        active=True).order_by('title'))
+    tmpl_map = {t.id: t for t in templates}
+    stats = []
+    for tmpl in templates:
+        ts = template_stats(tmpl, center)
+        if ts is not None:
+            stats.append((tmpl, ts))
+    students = []
+    achievements = list(models.Achievement.objects.filter(
+        active=True).order_by('name').prefetch_related('requirements'))
+    reqs = list(models.AchievementRequirement.objects.filter(
+        achievement__active=True).prefetch_related('courses'))
+    base_requirements = {r: set(t.id for t in r.courses.all())
+                         for r in reqs}
+    for sr in models.StudentRecord.objects.filter(
+            center=center, status='C').order_by(
+                'person__family_name', 'person__given_name'):
+        pac = sr.person.potential_achievement_credits
+        courses = set([g.course.template_id
+                       for g in sr.person.grade_set.all().exclude(
+                               value__in=['F', 'Au', 'W']).select_related(
+                                   'course')])
+        req_need = {}
+        for r in reqs:
+            cs = base_requirements[r]
+            m = len(cs & courses)
+            if m >= r.count:
+                req_need[r] = (set(), 0)
+            else:
+                req_need[r] = (cs - courses, r.count - m)
+        have = set([aa.achievement
+                    for aa in models.AchievementAward.objects.filter(
+                            person=sr.person, status__in=['S', 'A'])])
+        plain = []
+        need_course = []
+        for ach in achievements:
+            if ach in have:
+                continue
+            if ach.credits > pac + 3:
+                continue
+            if not all(pr in have for pr in ach.prerequisites.all()):
+                continue
+            need = courses
+            met = True
+            for r in ach.requirements.all():
+                s, n = req_need[r]
+                if n == 0:
+                    continue
+                elif n == 1:
+                    need = need & s
+                    met = False
+                else:
+                    need = set()
+                    met = False
+                    break
+            if met:
+                plain.append(ach)
+            elif need:
+                need_course.append((ach, [tmpl_map[i] for i in need]))
+        if plain or need_course:
+            students.append((sr.person, plain, need_course))
+    return render(request, 'app/center_course_report.html',
+                  {'courses': stats, 'students': students,
+                   'center': center})
+
 ####################
 ### Instructors
 ####################

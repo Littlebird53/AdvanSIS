@@ -205,6 +205,16 @@ class Person(models.Model):
         ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
 
     @property
+    def potential_achievement_credits(self):
+        has = self.grade_set.exclude(
+            value__in=['F', 'Au', 'W']).aggregate(
+                v=models.Sum('course__template__credits'))['v'] or 0
+        use = self.achievementaward_set.filter(
+            status__in=['S', 'A'], achievement__category='C',
+        ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
+        return has - use
+
+    @property
     def full_name(self):
         ls = [n for n in [self.given_name, self.middle_name,
                           self.family_name] if n]
@@ -454,6 +464,10 @@ class Course(models.Model):
         tmpl = get_template('app/display_schedule.html')
         return tmpl.render(self.schedule or {'mode': 'none'})
 
+    @property
+    def enrollment(self):
+        return self.grade_set.all().count()
+
 class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,
                                null=True)
@@ -674,13 +688,12 @@ class Achievement(models.Model):
     def check_requirements(self, student, completed_only):
         courses = []
         credits = 0
-        ok = set(['A', 'B', 'C', 'D'])
-        if not completed_only:
-            ok.add('IP')
-        for grade in student.grade_set.all():
-            if grade.value in ok:
-                courses.append(grade.course.template)
-                credits += grade.course.template.credits
+        exclude = ['F', 'Au', 'W']
+        if completed_only:
+            exclude.append('IP')
+        for grade in student.grade_set.all().exclude(value=exclude):
+            courses.append(grade.course.template)
+            credits += grade.course.template.credits
         if credits < self.credits:
             return False
         for req in self.requirements.all():
@@ -688,7 +701,7 @@ class Achievement(models.Model):
             if len(cls) < req.count:
                 return False
         for req in self.prerequisites.all():
-            if not AchievementAward.objects.filter(person=student, achievement=req).exists():
+            if not AchievementAward.objects.filter(person=student, achievement=req, status='A').exists():
                 return False
         return True
 
