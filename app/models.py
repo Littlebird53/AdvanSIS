@@ -176,9 +176,11 @@ class Person(models.Model):
     ed_level = models.CharField(max_length=3, choices=[
         ('N', 'No formal education'), ('J', 'Middle/Junior High School'),
         ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
-        ('B', 'Bachelors'), ('M', 'Masters'),
+        ('B', 'Bachelors'), ('m', 'Current Masters Student'),
+        ('M', 'Masters'), ('d', 'Current Doctoral Student'),
         ('D', 'Doctoral/Professional Degree')],
-                                blank=True, null=True)
+                                blank=True, null=True,
+                                verbose_name='Education Level')
     deceased = models.BooleanField(default=False)
     emails = models.ManyToManyField(EmailAddress)
     phones = models.ManyToManyField(PhoneAddress)

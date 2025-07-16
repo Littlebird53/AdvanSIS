@@ -16,44 +16,80 @@
     </td>
   </tr>
   <tr>
-    <th><label for="ed_level">Education Level</label></th>
+    <th>Education Level</th>
     <td>
-      <select id="ed_level" multiple>
-	<option value="N">No formal education</option>
-	<option value="J">Middle/Junior High School</option>
-        <option value="H">High School</option>
-	<option value="C">Some College</option>
-	<option value="A">Associates</option>
-        <option value="B">Bachelors</option>
-	<option value="M">Masters</option>
-        <option value="D">Doctoral/Professional Degree</option>
-      </select>
+      <fieldset id="ed_level" class="radio-row">
+	<legend style="display: none">Education Level</legend>
+	<span class="radio-block">
+	  <label for="ed_level0">Masters Student</label>
+	  <input id="ed_level0" type="checkbox" value="m"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="ed_level1">Masters Graduate</label>
+	  <input id="ed_level1" type="checkbox" value="M"></input>
+	</span>
+	<br/>
+	<span class="radio-block">
+	  <label for="ed_level2">Doctoral Student</label>
+	  <input id="ed_level2" type="checkbox" value="d"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="ed_level3">Doctoral Graduate</label>
+	  <input id="ed_level3" type="checkbox" value="D"></input>
+	</span>
+      </fieldset>
     </td>
   </tr>
   <tr>
     <th><label for="year">Year</label></th>
-    <td><input id="year" type="number"></input></td>
+    <td><input id="year" type="number" value="{{year}}"></input></td>
   </tr>
   <tr>
-    <th><label for="semester">Semester</label></th>
+    <th>Semester</th>
     <td>
-      <select id="semester" multiple>
-	<option value="Sp">Spring</option>
-	<option value="Su">Summer</option>
-	<option value="Fa">Fall</option>
-	<option value="Wi">Winter</option>
-      </select>
+      <fieldset id="semester" class="radio-row">
+	<legend style="display: none">Semester</legend>
+	<span class="radio-block">
+	  <label for="semester0">Spring</label>
+	  <input id="semester0" type="checkbox" value="Sp"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="semester1">Summer</label>
+	  <input id="semester1" type="checkbox" value="Su"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="semester2">Fall</label>
+	  <input id="semester2" type="checkbox" value="Fa"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="semester3">Winter</label>
+	  <input id="semester3" type="checkbox" value="Wi"></input>
+	</span>
+      </fieldset>
     </td>
   </tr>
   <tr>
-    <th><label for="time_of_day">Time of Day</label></th>
+    <th>Time of Day</th>
     <td>
-      <select id="time_of_day" multiple>
-	<option value="M">Morning</option>
-	<option value="D">Midday</option>
-	<option value="A">Afternoon</option>
-	<option value="E">Evening</option>
-      </select>
+      <fieldset id="time_of_day" class="radio-row">
+	<legend style="display: none">Time of Day</legend>
+	<span class="radio-block">
+	  <label for="time_of_day0">Morning</label>
+	  <input id="time_of_day0" type="checkbox" value="M"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="time_of_day1">Midday</label>
+	  <input id="time_of_day1" type="checkbox" value="D"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="time_of_day2">Afternoon</label>
+	  <input id="time_of_day2" type="checkbox" value="A"></input>
+	</span>
+	<span class="radio-block">
+	  <label for="time_of_day3">Evening</label>
+	  <input id="time_of_day3" type="checkbox" value="E"></input>
+	</span>
+      </fieldset>
     </td>
   </tr>
   <tr>
@@ -150,10 +186,13 @@
 <script type="text/javascript">
   function do_search() {
       let courses = $('#courses').val().map(s => parseInt(s));
-      let ed_level = $('#ed_level').val();
+      let ed_level = Array.from($('#ed_level').find(':checked')
+				.map((_, e) => $(e).val()));
       let year = parseInt($('#year').val() || '0');
-      let semesters = $('#semester').val();
-      let times = $('#time_of_day').val();
+      let semesters = Array.from($('#semester').find(':checked')
+				 .map((_, e) => $(e).val()));
+      let times = Array.from($('#time_of_day').find(':checked')
+			     .map((_, e) => $(e).val()));
       let langs = $('#language').val().map(l => parseInt(l));
       $('tr.filter-row').each(function(i, _tr) {
 	  let tr = $(_tr);
@@ -190,6 +229,7 @@
       $('#semester').change(do_search);
       $('#time_of_day').change(do_search);
       $('#language').change(do_search);
+      do_search();
   });
 </script>
 {% endblock %}

@@ -904,7 +904,8 @@ def find_instructors(request, center):
                   {'center': center, 'instructors': instructors,
                    'courses': models.CourseTemplate.objects.filter(
                        active=True).order_by('title'),
-                   'languages': models.Language.objects.all()})
+                   'languages': models.Language.objects.all(),
+                   'year': datetime.date.today().year})
 
 @center_admin
 def add_instructor(request, center, staffid):
