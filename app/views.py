@@ -966,7 +966,8 @@ def course_reports(request, center):
             stats.append((tmpl, ts))
     students = []
     achievements = list(models.Achievement.objects.filter(
-        active=True).order_by('name').prefetch_related('requirements'))
+        active=True).order_by('name').prefetch_related(
+            'requirements', 'prerequisites'))
     reqs = list(models.AchievementRequirement.objects.filter(
         achievement__active=True).prefetch_related('courses'))
     base_requirements = {r: set(t.id for t in r.courses.all())
