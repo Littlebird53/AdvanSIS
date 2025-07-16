@@ -9,16 +9,16 @@
 <table>
   <tr>
     <th>Course</th>
+    <th>Total Enrollment</th>
     <th>Times Offered</th>
     <th>GPA</th>
-    <th>Total Enrollment</th>
   </tr>
   {% for course, stats in courses %}
   <tr>
     <td>{{course}}</td>
+    <td style="text-align: right">{{stats.enrollment}}</td>
     <td style="text-align: right">{{stats.offered}}</td>
     <td style="text-align: right">{{stats.gpa}}</td>
-    <td style="text-align: right">{{stats.enrollment}}</td>
   </tr>
   <tr>
     <td colspan="4">
@@ -59,7 +59,7 @@
 <p>This student is eligible for the following achievements, but has not applied for any of them:</p>
 <ul>
   {% for p in plain %}
-  <li>{{p}}</li>
+  <li>{{p}} &mdash; <a href="{% url 'app:achievement_apply_behalf' p.id student.id %}">Apply on their behalf</a></li>
   {% endfor %}
 </ul>
 {% endif %}

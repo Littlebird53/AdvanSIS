@@ -3,6 +3,11 @@
 {% block title %}Apply for {{achievement}}{% endblock %}
 
 {% block content %}
+{% if is_self %}
+<h1>Apply for {{achievement}}</h1>
+{% else %}
+<h1>Apply for {{achievement}} on behalf of {{person}}</h1>
+{% endif %}
 <form method="POST">
   {% csrf_token %}
   {{form}}

@@ -1236,9 +1236,14 @@ def check_achievement(achievement, person):
         return False
     return not models.AchievementAward.objects.filter(cond).exclude(status='R').exists()
 @login_required
-def achievement_apply(request, achievementid):
+def achievement_apply(request, achievementid, studentid=None):
     achievement = get_object_or_404(models.Achievement, pk=achievementid)
-    person = request.user.person
+    if studentid is None:
+        person = request.user.person
+    else:
+        person = get_person(request, studentid)
+    ctx = {'achievement': achievement, 'person': person,
+           'is_self': (studentid is None)}
     if check_achievement(achievement, person):
         cls = forms.CertificateForm if achievement.category == 'C' else forms.DiplomaForm
         if request.method == 'POST':
@@ -1249,14 +1254,13 @@ def achievement_apply(request, achievementid):
                 app.achievement = achievement
                 app.save()
                 return render(request, 'app/achievement_apply_success.html',
-                              {'achievement': achievement})
+                              ctx)
         else:
             form = cls()
-        return render(request, 'app/achievement_apply_form.html',
-                      {'form': form, 'achievement': achievement})
+        ctx['form'] = form
+        return render(request, 'app/achievement_apply_form.html', ctx)
     else:
-        return render(request, 'app/achievement_apply_reject.html',
-                      {'achievement': achievement})
+        return render(request, 'app/achievement_apply_reject.html', ctx)
 
 GPA_VALUES = {
     'A': 4.0,

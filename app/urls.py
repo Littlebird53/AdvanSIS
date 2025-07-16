@@ -64,6 +64,7 @@ urlpatterns = [
          name='church_endorsement'),
     path('course/<int:courseid>/enroll', views.enroll, name='enroll'),
     path('achievement/<int:achievementid>/', views.achievement_apply, name='achievement_apply'),
+    path('achievement/<int:achievementid>/<int:studentid>/', views.achievement_apply, name='achievement_apply_behalf'),
     path('center/<int:centerid>/mou/director_signature/',
          views.sign_mou, {'role': 'director'}, name='mou_director_sig'),
     path('center/<int:centerid>/mou/sponsor_signature/',

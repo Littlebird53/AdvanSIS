@@ -3,5 +3,10 @@
 {% block title %}Apply for {{achievement}}{% endblock %}
 
 {% block content %}
+<h1>Not Eligible</h1>
+{% if is_self %}
 <p>You are not currently eligible to apply for {{achievement}}.</p>
+{% else %}
+<p>{{person}} is not currently eligible to apply for {{achievement}}.</p>
+{% endif %}
 {% endblock %}

@@ -3,5 +3,10 @@
 {% block title %}Apply for {{achievement}}{% endblock %}
 
 {% block content %}
+<h1>Successfully Applied</h1>
+{% if is_self %}
 <p>You have successfully applied for {{achievement}}.</p>
+{% else %}
+<p>You have successfully applied for {{achievement}} on behalf of {{person}}.</p>
+{% endif %}
 {% endblock %}
