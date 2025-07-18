@@ -572,6 +572,12 @@ def current_popups(request, dismiss=None):
                   {'popups': popups[:3],
                    'remaining': max(popups.count()-3, 0)})
 
+@login_required
+def all_popups(request):
+    return render(request, 'app/messages.html',
+                  {'popups': models.PopupMessage.objects.filter(
+                      person=request.user.person).order_by('-sent')})
+
 def send_message(sender, recipients, text):
     from django.utils.timezone import now
     # TODO: send email

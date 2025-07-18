@@ -121,6 +121,7 @@ urlpatterns = [
          name='message_course_students'),
     path('messages/global/',
          views.MessageAllUsersView.as_view(), name='message_global'),
+    path('messages/', views.all_popups, name='all_popups'),
 
     # Addresses
     path('address/email/<int:personid>/', views.edit_email_address, name='edit_email'),
