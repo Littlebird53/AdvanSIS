@@ -11,28 +11,31 @@ function update_all_forms(obj) {
     $('form').each((i, f) => update_form(f, obj));
 }
 $(function() {
-    update_all_forms(initial_form_data);
-    $('form').submit(_ => {check_form_inputs = false;});
-    $(window).bind('beforeunload', function(e) {
-        if (check_form_inputs) {
-            let cur = {};
-            let mismatch = false;
-            $('form').each((i, f) => {
-                let a = update_form(f, cur);
-                if (a != 'skip' && cur[a] != initial_form_data[a]) {
-                    mismatch = true;
-                }
-            });
-            if (mismatch) {
-                e.preventDefault();
-                return true;
-            }
+  update_all_forms(initial_form_data);
+  $('form').submit(_ => {check_form_inputs = false;});
+  $(window).bind('beforeunload', function(e) {
+    if (check_form_inputs) {
+      let cur = {};
+      let mismatch = false;
+      $('form').each((i, f) => {
+        let a = update_form(f, cur);
+        if (a != 'skip' && cur[a] != initial_form_data[a]) {
+          mismatch = true;
         }
-    });
-    $(window).bind('htmx:afterSwap', function(e) {
-      $(e.target).find('form').each((i, f) => update_form(f, initial_form_data));
-      $(e.target).find('.filter-select').select2();
-    });
+      });
+      if (mismatch) {
+        e.preventDefault();
+        return true;
+      }
+    }
+  });
+  $(window).bind('htmx:afterSwap', function(e) {
+    $(e.target).find('form').each((i, f) => update_form(f, initial_form_data));
+  });
+  $(window).bind('htmx:afterSettle', function(e) {
+    // afterSwap is sometimes too soon to apply select2
+    $('.filter-select').select2();
+  });
   $('.filter-select').select2();
   $(window).on('animationend', function(e) {
     if (e.target.className == 'status') {

@@ -60,9 +60,11 @@ class ContactUpdateForm(RequiredMixin, forms.ModelForm):
                   'languages_spoken']
         widgets = {'date_of_birth': DateWidget}
 
-class NewEmailForm(forms.ModelForm):
+class NewEmailForm(RequiredMixin, forms.ModelForm):
     prefix = 'email'
     make_default = forms.BooleanField(required=False, label='Set as account email (e.g. for password resets)')
+
+    widget_attrs = {'email': {'style': 'width: 20em'}}
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person

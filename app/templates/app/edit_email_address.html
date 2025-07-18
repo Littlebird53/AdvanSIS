@@ -10,10 +10,10 @@
     </tr>
     {% for addr in existing %}
     <tr>
-      <td>{{addr.email}}</td>
+      <td>{{addr.email}} {% if addr.email == person.user.email %}(account email){% endif %}</td>
       <td>{{addr.get_category_display}}</td>
       <td>
-	      <button type="submit" name="delete" value="{{addr.id}}">Delete</button>
+	      <button type="submit" name="delete" value="{{addr.id}}" style="margin: auto">Delete</button>
       </td>
     </tr>
     {% endfor %}
