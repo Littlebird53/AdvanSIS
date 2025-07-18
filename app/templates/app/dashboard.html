@@ -60,6 +60,7 @@
   {% if center is None %}
   <h2>Instructor-at-Large ({{row.0.status_line}})</h2>
   <p><a href="{% url 'app:instructor_at_large_profile' %}">Update availability</a></p>
+  <p><a href="{% url 'app:course_catalog' %}">Prepare to Teach</a></p>
   {% elif center.approved %}
   <h2>{{center.name}} ({{row.0.status_line}})</h2>
   {% if not row.2 %}
