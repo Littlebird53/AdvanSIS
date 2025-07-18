@@ -17,8 +17,7 @@
 <div class="search-item">
   <a class="fake-anchor" name="c{{center.id}}">null</a>
   <h2>{{center.name}} ({{center.code}})</h2>
-  <p><b>Director:</b> {{center.director.given_name}} {{center.director.family_name}}</p>
-  {# TODO: contact info #}
+  <p><b>Director:</b> {{center.director.given_name}} {{center.director.family_name}} {{center.director.main_email.email|urlize}}</p>
   <p><a href="{% url 'app:student_apply' center.id %}">Apply to be a student at this center</a></p>
   <p><a href="{% url 'app:instructor_apply' center.id %}">Apply to be an instructor at this center</a></p>
   {% if user.is_staff %}
