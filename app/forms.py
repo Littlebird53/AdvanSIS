@@ -236,6 +236,10 @@ class NewPopupForm(RequiredMixin, forms.Form):
         ('C', 'Current'), ('F', 'Former'), ('A', 'Applied')])
 
     make_filtered = ['roles', 'status']
+    widget_attrs = {
+        'roles': {'style': 'width: 85%'},
+        'status': {'style': 'width: 80%'},
+    }
 
 class CalendarForm(forms.Form):
     days = forms.MultipleChoiceField(
