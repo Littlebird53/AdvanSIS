@@ -24,7 +24,10 @@ class Command(BaseCommand):
                 pass
         for sr in StaffRecord.objects.filter(status='C', center_approved=True, advance_approved=True, acceptance_date__isnull=True):
             try:
-                self.send_email(sr, 'instructor')
+                if sr.center is None:
+                    self.send_email(sr, 'instructor_at_large')
+                else:
+                    self.send_email(sr, 'instructor')
                 sr.acceptance_date = datetime.date.today()
                 sr.save()
             except:

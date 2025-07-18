@@ -1,0 +1,63 @@
+\documentclass[letterpaper]{article} % This line defines the document class as an article and explicitly sets the paper size to US Letter (8.5x11 inches).
+\usepackage[utf8]{inputenc} % Standard package for handling text encoding.
+\usepackage[T1]{fontenc} % Standard package for font encoding.
+\usepackage{geometry} % This package allows for precise control over page dimensions.
+\geometry{letterpaper, margin=1.5in} % While 'letterpaper' is set in the documentclass, using the geometry package with 'letterpaper' and 'margin=1in' ensures standard US letter dimensions and sets all margins to one inch for a clean layout.
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage[default]{lato}
+
+\newcommand{\apprdate}{ {{- sr.acceptance_date -}} }
+\newcommand{\instructorname}{ {{- sr.person.full_name -}} }
+\newcommand{\instructoraddrone}{ {{- sr.person.latex_addr1 -}} }
+\newcommand{\instructoraddrtwo}{ {{- sr.person.latex_addr2 -}} }
+\newcommand{\id}{ {{- sr.person.user.username -}} }
+
+{% graphicspath %}
+
+\definecolor{blue}{HTML}{6F8EA3}
+
+\begin{document}
+\pagestyle{fancy}
+\fancyfoot[C]{\textcolor{blue}{ 3210 East Guasti Road • Ontario, CA 91761-8642 • 909.687.165 • advance@gs.edu}}
+\begin{center}
+    \includegraphics{Gateway new blue logo horizontal.PNG}
+\end{center}
+
+\vspace{1cm}
+% Sender's details and date, typically placed at the top.
+\raggedright % Aligns the following text to the left margin.
+\apprdate
+\vspace{0.5cm} % Adds a vertical space.
+
+% Student's address block, using the defined variables.
+\instructorname \\ % Prints the student's name in bold.
+\instructoraddrone \\ % Prints the first line of the student's address.
+\instructoraddrtwo % Prints the second line of the student's address
+
+\vspace{1cm} % Adds more vertical space before the salutation.
+
+% Salutation, using the defined student name variable.
+Dear \instructorname,
+
+\vspace{0.5cm}
+
+% Body of the letter, compiled from the provided excerpts.
+We are happy to inform you that your application to be an instructor with the ADVANCE Program at Gateway Seminary has been approved! Welcome to the Gateway ADVANCE family. Your instructor identification number is \textbf{\id}. Please remember this number for all future correspondence with Gateway Seminary. \\
+\vspace{.5cm}
+Gateway Seminary has proudly sponsored the ADVANCE program for more than 40 years with inspiring results. We have had thousands of students take classes and many graduates who serve as pastors, missionaries, and in many other types of ministry roles. We pray that God will bless your commitment to theological education and that you will have the chance to see your students grow in their wisdom, knowledge, and faithfulness to the Gospel. May God advance His kingdom through your service.
+
+\vspace{1cm} % Adds vertical space before the closing.
+
+Sincerely,
+
+\includegraphics[scale=.5]{Warren Haynes Signature.jpg}
+\vspace{.1cm} \\
+Dr. Warren Haynes \\
+ADVANCE Program Director, Gateway Seminary
+
+
+\end{document}
