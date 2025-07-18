@@ -431,7 +431,7 @@ class Course(models.Model):
     instructor = models.ForeignKey(Person, on_delete=models.SET_NULL,
                                    null=True)
     associate_instructors = models.ManyToManyField(
-        Person, related_name='associates')
+        Person, related_name='associates', blank=True)
     schedule = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
