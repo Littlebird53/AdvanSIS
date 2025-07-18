@@ -77,6 +77,7 @@
 
 {% if transcript %}
 <h2>Transcript</h2>
+<p><a href="{% url 'app:student_transcript' student.id %}">Download PDF transcript</a></p>
 <table>
   <thead>
     <tr>

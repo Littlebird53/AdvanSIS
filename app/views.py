@@ -225,6 +225,8 @@ def can_edit_info(user, person):
         person=user.person, role__in=['D', 'R'], status='C',
         center__in=s_centers.union(i_centers)).exists()
 def get_person(request, personid):
+    if personid is None:
+        return request.user.person
     person = get_object_or_404(models.Person, pk=personid)
     if not can_edit_info(request.user, person):
         raise PermissionDenied()
@@ -416,7 +418,8 @@ def add_student_query(request, courseid):
         raise PermissionDenied()
 
     qr = models.Person.objects.exclude(grade__course=course).filter(
-        studentrecord__status='C').order_by('family_name', 'given_name')
+        studentrecord__status='C').order_by(
+            'family_name', 'given_name').select_related('user').distinct()
     form = forms.StudentSearchForm(request.GET,
                                    initial={'include': course.multi_center})
     form.is_valid()
@@ -1278,12 +1281,12 @@ GPA_VALUES = {
 }
 
 @login_required
-def transcript(request):
+def transcript(request, personid=None):
     import io
     import collections
     from django.http import FileResponse
     from django_tex.core import compile_template_to_pdf
-    person = request.user.person
+    person = get_person(request, personid)
     context = {
         'person': person,
         'achievements': models.AchievementAward.objects.filter(
@@ -1528,7 +1531,7 @@ def staff_stats_spreadsheet(request):
     registrations = collections.Counter()
     students = collections.defaultdict(set)
     keys = {}
-    sem_map = {'Wi': 0, 'Sp': 0.25, 'Su': 0.5, 'Fa': 0.75}
+    sem_map = {'Sp': 0, 'Su': 0.25, 'Fa': 0.5, 'Wi': 0.75}
     for course in models.Course.objects.prefetch_related('grade_set', 'template'):
         num = (course.year or 0) + sem_map.get(course.semester, 0)
         keys[num] = (course.year, course.semester)
@@ -1540,6 +1543,17 @@ def staff_stats_spreadsheet(request):
             credits[num] += cred
             registrations[num] += 1
             students[num].add(grade.person_id)
+    month_map = [0, 0, 0, 0, 0, 0, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.75]
+    new_students = collections.Counter()
+    for dt in models.StudentRecord.objects.filter(
+            acceptance_date__isnull=False).values_list(
+                'acceptance_date', flat=True):
+        new_students[dt.year + month_map[dt.month]] += 1
+    new_staff = collections.Counter()
+    for dt in models.StaffRecord.objects.filter(
+            acceptance_date__isnull=False).values_list(
+                'acceptance_date', flat=True):
+        new_staff[dt.year + month_map[dt.month]] += 1
     import csv
     from django.http import HttpResponse
     response = HttpResponse(
@@ -1549,11 +1563,13 @@ def staff_stats_spreadsheet(request):
     writer = csv.writer(response)
     writer.writerow(['Sort Key', 'Year', 'Semester', 'Active Centers',
                      'Active Instructors', 'Courses', 'Credits',
-                     'Registrations', 'Enrolled Students'])
+                     'Registrations', 'Enrolled Students',
+                     'New Students', 'New Staff'])
     for num, (year, semester) in sorted(keys.items()):
         writer.writerow([num, year, semester, len(centers[num]),
                          len(instructors[num]), courses[num], credits[num],
-                         registrations[num], len(students[num])])
+                         registrations[num], len(students[num]),
+                         new_students[num], new_staff[num]])
     return response
 
 @login_required

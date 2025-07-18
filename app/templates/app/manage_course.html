@@ -20,7 +20,7 @@
   <button hx-get="{% url 'app:edit_schedule' course.id %}"
           hx-target="#schedule">Edit Schedule</button>
 </div>
-<h2>Grades</h2>
+<h2>Registration &amp; Grades</h2>
 <table id="grade_list">
   <tr>
     <th>Person</th>
@@ -33,7 +33,7 @@
   {% include 'app/manage_course_grade.html' %}
   {% endfor %}
 </table>
-{% if course.status != 'L' %}
+{% if course.status == 'A' %}
 <div id="add-student">
   <button hx-get="{% url 'app:add_student' course.id %}"
           hx-target="#add-student">
@@ -41,6 +41,7 @@
   </button>
 </div>
 {% endif %}
+<h2>Files</h2>
 <form method="POST" data-form-id="files">
   {% csrf_token %}
   <input type="hidden" name="mode" value="files"></input>
@@ -99,7 +100,7 @@
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <input type="hidden" name="mode" value="add"></input>
-  <h2>Add new file</h2>
+  <h3>Add new file</h3>
   {{add_file}}
   <button type="submit">Submit file</button>
 </form>

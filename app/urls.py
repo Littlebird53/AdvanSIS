@@ -107,6 +107,7 @@ urlpatterns = [
     path('achievement/', views.achievement_search, name='achievement_search'),
     path('achievement/catalog/', views.achievement_catalog, name='achievement_catalog'),
     path('transcript/', views.transcript, name='transcript'),
+    path('transcript/<int:personid>/', views.transcript, name='student_transcript'),
 
     # Messages
     path('messages/popups/', views.current_popups, name='list_popups'),
