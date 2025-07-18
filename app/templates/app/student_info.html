@@ -116,21 +116,23 @@
   </thead>
   <tbody>
     {% for course in resume %}
-    <td>{{course.template.title}}</td>
-    <td>{{course.year}}</td>
-    <td>{{course.get_semester_display}}</td>
-    <td>
-      {% if course.instructor == student %}
-      Instructor
-      {% else %}
-      Associate Instructor
-      {% endif %}
-    </td>
-    <td>
-      {% if course.center_id in director_centers %}
-      <a href="{% url 'app:manage_course' course.id %}">Manage</a>
-      {% endif %}
-    </td>
+    <tr>
+      <td>{{course.template.title}}</td>
+      <td>{{course.year}}</td>
+      <td>{{course.get_semester_display}}</td>
+      <td>
+        {% if course.instructor == student %}
+        Instructor
+        {% else %}
+        Associate Instructor
+        {% endif %}
+      </td>
+      <td>
+        {% if course.center_id in director_centers %}
+        <a href="{% url 'app:manage_course' course.id %}">Manage</a>
+        {% endif %}
+      </td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>

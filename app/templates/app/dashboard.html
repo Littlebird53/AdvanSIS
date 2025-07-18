@@ -103,7 +103,7 @@
   <p><a href="{% url 'app:message_center_students' center.id %}">Communication Manager</a></p>
   <p><a href="{% url 'app:center_tally' center.id %}">Tally Sheet</a></p>
   <p><a href="{% url 'app:center_budget' center.id %}">Center Budget</a></p>
-  <p><a href="{% url 'app:center_course_report' center.id %}">Course Reports</a></p>
+  <p><a href="{% url 'app:center_course_report' center.id %}">Center Reports</a></p>
   {% if row.0.role == 'D' and row.0.status == 'C' %}
   <p><a href="{% url 'app:find_instructors' center.id %}">Find Instructors</a></p>
   {% endif %}
