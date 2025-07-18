@@ -19,38 +19,93 @@
   </div>
   {{instructors.management_form}}
   <table>
-    <tr>
-      <th>Person</th>
-      <th>Courses</th>
-      <th>Semesters</th>
-      <th>Avg. Courses/Semester</th>
-      <th>Avg. Enrollment</th>
-      <th>Avg. GPA</th>
-      <th>All Grades In</th>
-      <th>Status</th>
-      <th>Role</th>
-    </tr>
-    {% for form in instructors %}
-    <tr>
-      <td>
-        <a href="{% url 'app:student_info' form.instance.person.id %}">{{form.instance.person}}</a>
-      </td>
-      {% for stat in form.instance.stats %}
-      <td style="text-align: right">{{stat}}</td>
+    <thead>
+      <tr>
+        <th>Person
+          <span class="sort-asc" data-col="0">&uarr;</span>
+          <span class="sort-desc" data-col="0">&darr;</span>
+        </th>
+        <th>Courses
+          <span class="sort-asc" data-col="1">&uarr;</span>
+          <span class="sort-desc" data-col="1">&darr;</span>
+        </th>
+        <th>Semesters
+          <span class="sort-asc" data-col="2">&uarr;</span>
+          <span class="sort-desc" data-col="2">&darr;</span>
+        </th>
+        <th>Avg. Courses/Semester
+          <span class="sort-asc" data-col="3">&uarr;</span>
+          <span class="sort-desc" data-col="3">&darr;</span>
+        </th>
+        <th>Avg. Enrollment
+          <span class="sort-asc" data-col="4">&uarr;</span>
+          <span class="sort-desc" data-col="4">&darr;</span>
+        </th>
+        <th>Avg. GPA
+          <span class="sort-asc" data-col="5">&uarr;</span>
+          <span class="sort-desc" data-col="5">&darr;</span>
+        </th>
+        <th>All Grades In
+          <span class="sort-asc" data-col="6">&uarr;</span>
+          <span class="sort-desc" data-col="6">&darr;</span>
+        </th>
+        <th>Status
+          <span class="sort-asc" data-col="7">&uarr;</span>
+          <span class="sort-desc" data-col="7">&darr;</span>
+        </th>
+        <th>Role
+          <span class="sort-asc" data-col="8">&uarr;</span>
+          <span class="sort-desc" data-col="8">&darr;</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody id="data">
+      {% for form in instructors %}
+      <tr>
+        <td data-key="{{form.instance.person}}">
+          <a href="{% url 'app:student_info' form.instance.person.id %}">{{form.instance.person}}</a>
+        </td>
+        {% for stat in form.instance.stats %}
+        <td style="text-align: right" data-key="{{stat}}">{{stat}}</td>
+        {% endfor %}
+        <td data-key="{{form.instance.status}}">
+          {{form.status.errors}}
+          {{form.status}}
+        </td>
+        <td data-key="{{form.instance.role}}">
+          {{form.role.errors}}
+          {{form.role}}
+          {{form.id}}
+        </td>
+      </tr>
       {% endfor %}
-      <td>
-        {{form.status.errors}}
-        {{form.status}}
-      </td>
-      <td>
-        {{form.role.errors}}
-        {{form.role}}
-        {{form.id}}
-      </td>
-    </tr>
-    {% endfor %}
+    </tbody>
   </table>
   <button type="submit">Save</button>
   <p>{{message}}</p>
 </form>
+
+<script type="text/javascript">
+  function sort_table(col, ascending) {
+      let rows = $('#data tr');
+      rows.sort(function(a, b) {
+          let va = $(a.childNodes[col]).data('key');
+          let vb = $(b.childNodes[col]).data('key');
+          if (ascending) {
+              return (va > vb) ? 1 : 0;
+          } else {
+              return (va > vb) ? 0 : 1;
+          }
+      });
+      $.each(rows, (i, r) => $('#data').append(r));
+  }
+  $(function() {
+      $('.sort-asc').on('click', function(e) {
+          sort_table(parseInt($(e.target).data('col')), true);
+      });
+      $('.sort-desc').on('click', function(e) {
+          sort_table(parseInt($(e.target).data('col')), false);
+      });
+  });
+</script>
 {% endblock %}
