@@ -349,9 +349,9 @@ class Center(models.Model):
             'enter_percent': 0,
         }
         if ret['course_count'] > 0:
-            ret['approve_percent'] = round(100*ret['approve_count']/ret['course_count'], 2)
+            ret['approve_percent'] = round(100*ret['approve_count']/ret['course_count'])
         if ret['grade_count'] > 0:
-            ret['enter_percent'] = round(100*ret['enter_count']/ret['grade_count'], 2)
+            ret['enter_percent'] = round(100*ret['enter_count']/ret['grade_count'])
         return ret
 
 class MOU(models.Model):
@@ -541,7 +541,7 @@ class StudentRecord(models.Model):
         if courses > 0:
             semesters = len(set(self.person.grade_set.all().values_list(
                 'course__year', 'course__semester')))
-            avg = round(courses / semesters, 2)
+            avg = round(courses / semesters)
         qs = self.person.grade_set.all()
         if self.center is None:
             qs = qs.filter(course__center__isnull=False)
@@ -636,9 +636,9 @@ class StaffRecord(models.Model):
         semester_count = len(set(courses.values_list('year', 'semester')))
         cps = 0
         if semester_count > 0:
-            cps = round(course_count / semester_count, 2)
+            cps = round(course_count / semester_count)
         grades = Grade.objects.filter(course__in=courses)
-        spc = round(grades.count() / max(course_count, 1), 2)
+        spc = round(grades.count() / max(course_count, 1))
         gpa = calc_gpa(grades)
         return [course_count, semester_count, cps,
                 spc, gpa, not grades.filter(value='IP').exists()]

@@ -146,7 +146,7 @@ def get_staff_stats():
     ret['grade_input'] = grades.exclude(value='IP').count()
     ret['grade_percent'] = 100
     if ret['grade_total'] > 0:
-        ret['grade_percent'] = round(100 * ret['grade_input'] / ret['grade_total'], 2)
+        ret['grade_percent'] = round(100 * ret['grade_input'] / ret['grade_total'])
     prev_year, prev_sem = get_previous_term()
     grades = models.Grade.objects.filter(
         course__year=prev_year, course__semester=prev_sem)
@@ -154,7 +154,7 @@ def get_staff_stats():
     ret['prev_grade_input'] = grades.exclude(value='IP').count()
     ret['prev_grade_percent'] = 100
     if ret['prev_grade_total'] > 0:
-        ret['prev_grade_percent'] = round(100 * ret['prev_grade_input'] / ret['prev_grade_total'], 2)
+        ret['prev_grade_percent'] = round(100 * ret['prev_grade_input'] / ret['prev_grade_total'])
     return ret
 
 @login_required
