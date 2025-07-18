@@ -26,6 +26,7 @@ urlpatterns = [
          name='student_info'),
     path('lock_courses/<int:centerid>/<int:year>/<slug:semester>/',
          views.lock_courses, name='lock_courses'),
+    path('center/<int:centerid>/', views.center_info, name='center_info'),
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,

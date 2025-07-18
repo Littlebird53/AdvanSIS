@@ -1,0 +1,48 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{center}} Info{% endblock %}
+
+{% block content %}
+<h1>{{center}}</h1>
+
+<h2>Staff</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sr in staff %}
+    <tr>
+      <td>{{sr.person.given_name}} {{sr.person.family_name}}</td>
+      <td>{{sr.person.main_email.email|urlize}}</td>
+      <td>{{sr.get_role_display}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if fees %}
+<h2>Fees</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Country</th>
+      <th>Fee Per Credit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fee in fees %}
+    <tr>
+      <td>{{fee.country}}</td>
+      <td style="text-align: right">${{fee.credit_fee}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

@@ -593,6 +593,20 @@ def send_message(sender, recipients, text):
 ### CENTERS
 ####################
 
+@login_required
+def center_info(request, centerid):
+    center = get_object_or_404(models.Center, pk=centerid)
+    staff = models.StaffRecord.objects.filter(
+        center=center, status='C', role__in=['D', 'R'],).order_by('role')
+    budget = models.CenterBudget.objects.filter(
+        center=center).order_by('year').last()
+    fees = []
+    if budget is not None:
+        fees = models.CenterFees.objects.filter(budget=budget).order_by(
+            'country__name')
+    return render(request, 'app/center_info.html',
+                  {'center': center, 'staff': staff, 'fees': fees})
+
 def center_admin(fn):
     @login_required
     def _fn(request, centerid, *args, **kwargs):
