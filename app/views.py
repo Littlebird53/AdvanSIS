@@ -1547,8 +1547,8 @@ def staff_stats_spreadsheet(request):
         headers={'Content-Disposition': 'attachment; filename="stats.csv"'},
     )
     writer = csv.writer(response)
-    writer.writerow(['Sort Key', 'Year', 'Semester', 'New Centers',
-                     'New Instructors', 'Courses', 'Credits',
+    writer.writerow(['Sort Key', 'Year', 'Semester', 'Active Centers',
+                     'Active Instructors', 'Courses', 'Credits',
                      'Registrations', 'Enrolled Students'])
     for num, (year, semester) in sorted(keys.items()):
         writer.writerow([num, year, semester, len(centers[num]),
