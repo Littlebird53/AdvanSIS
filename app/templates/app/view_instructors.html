@@ -33,8 +33,7 @@
     {% for form in instructors %}
     <tr>
       <td>
-        {{form.person.errors}}
-        {{form.person}}
+        <a href="{% url 'app:student_info' form.instance.person.id %}">{{form.instance.person}}</a>
       </td>
       {% for stat in form.instance.stats %}
       <td style="text-align: right">{{stat}}</td>
@@ -46,6 +45,7 @@
       <td>
         {{form.role.errors}}
         {{form.role}}
+        {{form.id}}
       </td>
     </tr>
     {% endfor %}

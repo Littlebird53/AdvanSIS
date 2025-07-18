@@ -125,12 +125,6 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
                   'delivery_format', 'language', 'country',
                   'multi_center']
 
-class DisplayPersonWidget(forms.widgets.Widget):
-    DISPLAY_TEMPLATE = Template('''<span><a href="{% url 'app:student_info' value.id %}">{{value}}</a></span>''')
-    def render(self, value, **kwargs):
-        person = models.Person.objects.filter(pk=value).first()
-        return self.DISPLAY_TEMPLATE.render(Context({'value': person}))
-
 class GradeForm(forms.ModelForm):
     class Meta:
         model = models.Grade
@@ -148,24 +142,16 @@ class StudentSearchForm(forms.Form):
                                  'style': 'width: 100%'})
 
 class StudentRecordForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['person'].disabled = True
     class Meta:
         model = models.StudentRecord
-        fields = ['person', 'status']
-        widgets = {'person': DisplayPersonWidget}
+        fields = ['status']
 StudentRecordFormset = forms.modelformset_factory(
     models.StudentRecord, form=StudentRecordForm, extra=0, edit_only=True)
 
 class StaffRecordForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['person'].disabled = True
     class Meta:
         model = models.StaffRecord
-        fields = ['person', 'status', 'role']
-        widgets = {'person': DisplayPersonWidget}
+        fields = ['status', 'role']
 StaffRecordFormset = forms.modelformset_factory(
     models.StaffRecord, form=StaffRecordForm,
     extra=0, edit_only=True)
