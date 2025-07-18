@@ -8,6 +8,13 @@
   <h2>{{course.template.code}} &mdash;&mdash;&mdash; {{course.get_semester_display}} {{course.year}}</h2>
 </div>
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
+<h2>Instructors</h2>
+<ul>
+  <li>{{course.instructor.given_name}} {{course.instructor.family_name}} {{course.instructor.main_email.email|urlize}}</li>
+  {% for ins in course.associate_instructors.all %}
+  <li>{{ins.given_name}} {{ins.family_name}} {{ins.main_email.email|urlize}}</li>
+  {% endfor %}
+</ul>
 <h2>Learning Objectives</h2>
 {{course.template.learning_objectives_block}}
 <h2>Schedule</h2>
