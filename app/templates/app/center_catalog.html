@@ -3,9 +3,19 @@
 {% block title %}Centers{% endblock %}
 
 {% block content %}
+<div>
+  <div id="toc">
+    <ul>
+      {% for center in centers %}
+      <li><a href="#c{{center.id}}">{{center.code}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div id="contents">
 <h1>All Centers</h1>
 {% for center in centers %}
 <div class="search-item">
+  <a class="fake-anchor" name="c{{center.id}}">null</a>
   <h2>{{center.name}} ({{center.code}})</h2>
   <p><b>Director:</b> {{center.director.given_name}} {{center.director.family_name}}</p>
   {# TODO: contact info #}
@@ -29,5 +39,7 @@
 <div class="search-item">
   <h2>Apply to Be an Instructor-at-Large</h2>
   <p>To apply to be an Instructor-at-Large, <a href="{% url 'app:instructor_at_large_apply' %}">click here</a>.</p>
+</div>
+  </div>
 </div>
 {% endblock %}

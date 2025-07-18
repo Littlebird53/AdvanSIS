@@ -180,7 +180,8 @@ div.center-subtitle h3 {
   top: 100px;
   position: fixed;
   width: 220px;
-  overflow: scroll;
+  max-height: calc(100% - 100px);
+  overflow-y: scroll;
   font-size: 12pt;
 }
 #contents {
