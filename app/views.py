@@ -1574,6 +1574,13 @@ def staff_stats_spreadsheet(request):
             acceptance_date__isnull=False).values_list(
                 'acceptance_date', flat=True):
         new_staff[dt.year + month_map[dt.month]] += 1
+    new_centers = collections.Counter()
+    for center in models.Center.objects.all():
+        mous = center.mou_set.all().filter(start_date__isnull=False)
+        if mous.exists():
+            first = mous.order_by('start_date').first()
+            new_centers[first.start_date.year +
+                        month_map[first.start_date.month]] += 1
     import csv
     from django.http import HttpResponse
     response = HttpResponse(
@@ -1584,12 +1591,13 @@ def staff_stats_spreadsheet(request):
     writer.writerow(['Sort Key', 'Year', 'Semester', 'Active Centers',
                      'Active Instructors', 'Courses', 'Credits',
                      'Registrations', 'Enrolled Students',
-                     'New Students', 'New Staff'])
+                     'New Students', 'New Staff', 'New Centers'])
     for num, (year, semester) in sorted(keys.items()):
         writer.writerow([num, year, semester, len(centers[num]),
                          len(instructors[num]), courses[num], credits[num],
                          registrations[num], len(students[num]),
-                         new_students[num], new_staff[num]])
+                         new_students[num], new_staff[num],
+                         new_centers[num]])
     return response
 
 @login_required
