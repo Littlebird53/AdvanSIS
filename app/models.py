@@ -536,18 +536,21 @@ class StudentRecord(models.Model):
         return self.get_status_display()
 
     def stats(self):
-        courses = self.person.grade_set.all().count()
+        credits = self.person.grade_set.all().aggregate(
+            total=models.Sum('course__template__credits'))['total'] or 0
         avg = 0
-        if courses > 0:
+        if credits > 0:
             semesters = len(set(self.person.grade_set.all().values_list(
                 'course__year', 'course__semester')))
-            avg = round(courses / semesters)
+            avg = round(credits / semesters)
         qs = self.person.grade_set.all()
         if self.center is None:
             qs = qs.filter(course__center__isnull=False)
         else:
             qs = qs.exclude(course__center=self.center)
-        return [courses, avg, self.person.gpa, qs.count]
+        other = qs.aggregate(
+            total=models.Sum('course__template__credits'))['total'] or 0
+        return [credits, avg, self.person.gpa, other]
 
 class SharedFile(models.Model):
     owner = models.ForeignKey(Person, on_delete=models.SET_NULL,
