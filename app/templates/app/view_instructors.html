@@ -12,7 +12,7 @@
   <button type="submit">Search</button>
 </form>
 
-<form method="POST">
+<form method="POST" data-form-id="skip">
   {% csrf_token %}
   <div style="display: none">
     {{filter_form}}
