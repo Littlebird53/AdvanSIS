@@ -1171,7 +1171,7 @@ class StudentApplyView(AccessMixin, FormView):
             prev.acceptance_date = None
             prev.save()
             return render(request, 'app/student_apply_success.html',
-                          {'sr': sr})
+                          {'sr': prev})
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
