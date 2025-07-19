@@ -1162,6 +1162,16 @@ class StudentApplyView(AccessMixin, FormView):
                 center=self.center, person=self.person).exists():
             # TODO: explain?
             return redirect('app:dashboard')
+        prev = models.StudentRecord.objects.filter(
+            person=self.person, status='C').first()
+        if prev is not None:
+            prev.pk = None
+            prev.center = self.center
+            prev.status = 'A'
+            prev.acceptance_date = None
+            prev.save()
+            return render(request, 'app/student_apply_success.html',
+                          {'sr': sr})
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
