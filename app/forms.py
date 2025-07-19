@@ -132,8 +132,6 @@ class GradeForm(forms.ModelForm):
 
 class StudentSearchForm(forms.Form):
     query = forms.CharField(max_length=100, required=False)
-    include = forms.BooleanField(
-        required=False, label='Include students from other centers')
     courses = forms.ModelMultipleChoiceField(
         queryset=models.CourseTemplate.objects.filter(
             active=True).order_by('title'),

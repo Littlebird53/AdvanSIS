@@ -401,6 +401,9 @@ def add_student(request, courseid, studentid):
     student = get_object_or_404(models.Person, pk=studentid)
     if not course.can_edit(request.user.person) or course.status != 'A':
         raise PermissionDenied()
+    if not models.StudentRecord.objects.filter(
+            center=course.center, person=student, status='C').exists():
+        raise PermissionDenied()
 
     grade, created = models.Grade.objects.get_or_create(
         course=course, person=student)
@@ -418,13 +421,11 @@ def add_student_query(request, courseid):
         raise PermissionDenied()
 
     qr = models.Person.objects.exclude(grade__course=course).filter(
-        studentrecord__status='C').order_by(
+        studentrecord__status='C',
+        studentrecord__center=course.center).order_by(
             'family_name', 'given_name').select_related('user').distinct()
-    form = forms.StudentSearchForm(request.GET,
-                                   initial={'include': course.multi_center})
+    form = forms.StudentSearchForm(request.GET)
     form.is_valid()
-    if not form.cleaned_data.get('include'):
-        qr = qr.filter(studentrecord__center=course.center)
     if form.cleaned_data.get('query'):
         q1 = Q()
         for sec in form.cleaned_data['query'].split(';'):
@@ -1217,20 +1218,22 @@ def course_search(request):
         person=request.user.person, status='C').values_list(
             'center', flat=True)
     courses = models.Course.objects.filter(
-        Q(center__in=centers) | Q(multi_center=True), status='A',
+        center__in=centers, status='A',
         accepting_enrollments=True).exclude(
             grade__person=request.user.person).order_by(
                 'center__name', 'template__title')
+    other = models.Course.objects.filter(
+        status='A', accepting_enrollments=True, multi_center=True,
+        center__isnull=False).exclude(
+            center__in=centers).order_by('center__name', 'template__title')
     return render(request, 'app/course_search.html',
-                  {'courses': courses})
+                  {'courses': courses, 'other': other})
 
 @login_required
 def enroll(request, courseid):
     course = get_object_or_404(models.Course, pk=courseid)
     qr = models.StudentRecord.objects.filter(
-        person=request.user.person, status='C')
-    if not course.multi_center:
-        qr = qr.filter(center=course.center)
+        person=request.user.person, status='C', center=course.center)
     if course.status == 'A' and qr.exists():
         grade = models.Grade.objects.get_or_create(
             course=course, person=request.user.person,

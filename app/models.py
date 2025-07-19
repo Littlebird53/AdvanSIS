@@ -441,7 +441,8 @@ class Course(models.Model):
     country = models.ForeignKey(Country, null=True,
                                 on_delete=models.SET_NULL)
     accepting_enrollments = models.BooleanField(default=True)
-    multi_center = models.BooleanField(default=False)
+    multi_center = models.BooleanField(
+        default=False, verbose_name='Advertize to students in other centers')
     section = models.CharField(max_length=10, blank=True, null=True)
     status = models.CharField(max_length=1, default='P', choices=[
         ('P', 'Pending'), ('R', 'Rejected'), ('A', 'Approved'),
