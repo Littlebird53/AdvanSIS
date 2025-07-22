@@ -20,7 +20,7 @@ def make_email(subject, to, template_name, context):
     message = EmailMultiAlternatives(subject=subject, to=[to])
     message.mixed_subtype = 'related'
     tmpl = get_template(template_name)
-    message.attach_alternatives(tmpl.render(context), 'text/html')
+    message.attach_alternative(tmpl.render(context), 'text/html')
     for name in ['logo', 'facebook', 'twitter', 'instagram', 'youtube']:
         with open(finders.find(f'email/{name}.png'), 'rb') as fin:
             data = fin.read()
