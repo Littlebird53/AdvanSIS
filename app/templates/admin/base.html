@@ -1,0 +1,13 @@
+{% extends 'admin/base.html' %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+  document.addEventListener('keydown', function(e) {
+      if (e.key == 's' && e.ctrlKey) {
+	  e.preventDefault();
+	  document.getElementsByName('_save')[0].click();
+      }
+  });
+</script>
+{% endblock extrahead %}
