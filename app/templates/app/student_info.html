@@ -85,6 +85,7 @@
       <th>Year</th>
       <th>Semester</th>
       <th>Instructor</th>
+      <th>Credits</th>
       <th>Grade</th>
     </tr>
   </thead>
@@ -95,6 +96,7 @@
       <td>{{grade.course.year}}</td>
       <td>{{grade.course.semester}}</td>
       <td>{{grade.course.instructor}}</td>
+      <td>{{grade.course.template.credits}}</td>
       <td>{{grade.value}}</td>
     </tr>
     {% endfor %}

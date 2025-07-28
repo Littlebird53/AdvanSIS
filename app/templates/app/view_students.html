@@ -1,8 +1,10 @@
 {% extends 'app/base.html' %}
 
-{% block title %}View Students{% endblock %}
+{% block title %}{{center.name}} Student Roster{% endblock %}
 
 {% block content %}
+
+<h1>{{center.name}} Student Roster</h1>
 
 <p>
   {% if status == None %}

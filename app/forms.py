@@ -213,11 +213,11 @@ class NewInstructorPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)
 
 class NewPopupForm(RequiredMixin, forms.Form):
-    text = forms.CharField(label='Message Body', widget=forms.Textarea)
     roles = forms.MultipleChoiceField(initial='S', choices=[
         ('S', 'Students'), ('I', 'Instructors'), ('D', 'Staff')])
     status = forms.MultipleChoiceField(initial='C', choices=[
         ('C', 'Current'), ('F', 'Former'), ('A', 'Applied')])
+    text = forms.CharField(label='Message Body', widget=forms.Textarea)
 
     make_filtered = ['roles', 'status']
     widget_attrs = {
@@ -465,9 +465,9 @@ class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
     time_of_day = forms.MultipleChoiceField(
         choices=models.StaffRecord.TIME_OF_DAY)
     timezone = forms.ChoiceField(choices=timezone_values)
-    bio = forms.CharField(max_length=2000, widget=forms.Textarea)
     preferred_contact_method = forms.ChoiceField(choices=[
         ('phone', 'phone'), ('email', 'email')])
+    bio = forms.CharField(max_length=2000, widget=forms.Textarea)
 
     make_filtered = ['courses', 'terms', 'time_of_day', 'timezone']
 

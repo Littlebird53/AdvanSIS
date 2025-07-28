@@ -449,7 +449,7 @@ class Course(models.Model):
         ('L', 'Locked')])
 
     def __str__(self):
-        return f'{self.template} {self.semester}{self.year}'
+        return f'{self.template} {self.get_semester_display()} {self.year}'
 
     def can_edit(self, person):
         return person == self.instructor or self.center.is_admin(person)
@@ -752,6 +752,9 @@ class PopupMessage(models.Model):
     sender = models.ForeignKey(Person, null=True, on_delete=models.SET_NULL,
                                related_name='+')
     dismissed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'From: {self.sender}, To: {self.person}, {self.text[:40]}'
 
 class CenterBudget(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
