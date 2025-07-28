@@ -6,7 +6,7 @@
 <h1>{{center}} Courses for {{semester}}{{year}}</h1>
 <form>
   <table>{{form.as_table}}</table>
-  <button type="submit">View</button>
+  <button type="submit">Search</button>
 </form>
 <table>
   <tr>
@@ -18,13 +18,13 @@
   <tr>
     <td>
       <a href="{% url 'app:manage_course' course.id %}">
-	{{course.template}}
+	      {{course.template}}
       </a>
     </td>
     <td>
       {% if course.instructor %}
       <a href="{% url 'app:student_info' course.instructor.id %}">
-	{{course.instructor}}
+	      {{course.instructor}}
       </a>
       {% else %}
       (Instructor not listed)

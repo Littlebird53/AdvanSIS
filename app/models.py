@@ -139,7 +139,7 @@ class Person(models.Model):
                                        ('III', 'III'), ('IV', 'IV'),
                                        ('V', 'V')])
     preferred_name = models.CharField(max_length=100, null=True)
-    date_of_birth = models.DateField(null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
     sex = models.CharField(choices=[('M', 'Male'), ('F', 'Female')],
                            max_length=1, null=True)
     marital_status = models.CharField(

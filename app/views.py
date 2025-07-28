@@ -659,6 +659,8 @@ def view_students(request, center, status):
         center=center).prefetch_related('person__grade_set')
     if status is not None:
         qs = qs.filter(status=status)
+    else:
+        qs = qs.order_by('status')
     if request.method == 'POST':
         form = forms.StudentRecordFormset(request.POST, queryset=qs)
         if form.is_valid():

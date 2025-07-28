@@ -51,7 +51,7 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
 
 class ContactUpdateForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['languages_spoken']
-    make_required = ['ed_level']
+    make_required = ['ed_level', 'date_of_birth']
     class Meta:
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
@@ -109,7 +109,8 @@ class NewMailingForm(forms.ModelForm):
                   'zip_code', 'category']
 
 class NewCourseForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['template', 'language', 'country']
+    make_filtered = ['template', 'language', 'country',
+                     'associate_instructors']
 
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -117,11 +118,15 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
         self.fields['instructor'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status='C', staffrecord__role__in=['I', 'D'])
+        self.fields['associate_instructors'].queryset = models.Person.objects.filter(
+            staffrecord__center=self.center,
+            staffrecord__status='C', staffrecord__role__in=['I', 'D', 'A'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
         self.fields['country'].initial = center.country
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
+                  'associate_instructors',
                   'delivery_format', 'language', 'country',
                   'multi_center']
 
@@ -225,7 +230,7 @@ class NewPopupForm(RequiredMixin, forms.Form):
         'status': {'style': 'width: 80%'},
     }
 
-class CalendarForm(forms.Form):
+class CalendarForm(RequiredMixin, forms.Form):
     days = forms.MultipleChoiceField(
         label='Days of the Week',
         choices=[('Sunday', 'Sunday'), ('Monday', 'Monday'),
@@ -237,6 +242,10 @@ class CalendarForm(forms.Form):
     start = forms.DateField(label='First Meeting', widget=DateWidget)
     end = forms.DateField(label='Last Meeting', widget=DateWidget)
     location = forms.CharField(label='Location')
+
+    widget_attrs = {
+        'location': {'style': 'width: 20em'},
+    }
 
 class TallySheetForm(forms.Form):
     semester = forms.ChoiceField(choices=models.SEMESTERS)
