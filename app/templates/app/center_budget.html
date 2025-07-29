@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+{% load autosave %}
 
 {% block title %}Center Budget{% endblock %}
 
@@ -29,16 +30,16 @@
     <th>Delete</th>
   </tr>
   {% for fee in fees %}
-  {% include 'app/center_budget_fee.html' %}
+  {{fee|as_row}}
   {% endfor %}
 </table>
 
 <form hx-target="#hourly-fees" hx-swap="beforeend"
-      hx-post="{% url 'app:center_budget_new_fee' budget.center.id budget.id %}"
+      hx-post="{% create_url 'centerfees' %}"
       data-form-id="skip">
-  {% csrf_token %}
   <table>
-    {{add_fee.as_table}}
+    <input type="hidden" name="budget" value="{{budget.id}}"/>
+    {% create_form 'centerfees' %}
   </table>
   <button type="submit">Add</button>
 </form>
@@ -56,7 +57,7 @@
     <th>Delete</th>
   </tr>
   {% for course in courses %}
-  {% include 'app/center_budget_course.html' %}
+  {{course|as_row:"new"}}
   {% endfor %}
   <tr id="courses-total">
     <th>Total</th>
@@ -77,31 +78,18 @@
 
 <details>
   <summary>Add Course</summary>
-<form hx-target="#courses-total" hx-swap="beforebegin"
-      hx-post="{% url 'app:center_budget_new_course' budget.center.id budget.id %}"
-      data-form-id="skip">
-  {% csrf_token %}
-  <table>
-    <tr>
-      <th>
-        <label for="{{add_course.course.id_for_label}}">Course</label>
-      </th>
-      <th>
-        <label for="{{add_course.semester.id_for_label}}">Semester</label>
-      </th>
-    </tr>
-    <tr>
-      <td>{{add_course.course}}</td>
-      <td>{{add_course.semester}}</td>
-    </tr>
-  </table>
-  <button type="submit">Add</button>
-</form>
+  <form hx-target="#courses-total" hx-swap="beforebegin"
+        hx-post="{% create_url 'expectedcourse' %}"
+        data-form-id="skip">
+    <input type="hidden" name="budget" value="{{budget.id}}"/>
+    {% create_form_horizontal 'expectedcourse' %}
+    <button type="submit">Add</button>
+  </form>
 </details>
 
 <h3>Other</h3>
 
-{% include 'app/center_budget_income.html' %}
+{{budget|as_row:"income"}}
 
 <h2>Expenses</h2>
 
@@ -114,13 +102,13 @@
     <th>Stipend</th>
   </tr>
   {% for stipend in stipends %}
-  {% include 'app/center_budget_stipend.html' %}
+  {{stipend|as_row}}
   {% endfor %}
 </table>
 
 <h3>Other Expenses</h3>
 
-{% include 'app/center_budget_expenses.html' %}
+{{budget|as_row:"expenses"}}
 
 <h2>Totals</h2>
 
@@ -156,7 +144,7 @@
           let tr = $(el);
           let country = tr.data('country-id');
           ret[country] = parseFloat(
-              tr.find('input#id_credit_fee').val() || '0');
+              tr.find('input').val() || '0');
           tr.find('.total-country-fee').html(toDollar(
               gateway_fees[country] + ret[country]));
       });
@@ -177,7 +165,7 @@
               let tr2 = $(el2);
               let country = tr2.data('country');
               let students = parseInt(
-                  tr2.find('input#id_students').val() || '0');
+                  tr2.find('input').val() || '0');
               gateway += gateway_fees[country] * students * credits;
               if (center_fees.hasOwnProperty(country)) {
                   center += center_fees[country] * students * credits;

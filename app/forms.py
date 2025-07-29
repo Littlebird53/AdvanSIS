@@ -377,60 +377,6 @@ class NewCenterApplicationForm(forms.ModelForm):
         fields = ['name', 'sponsor', 'sponsor_rep', 'sponsor_rep_title',
                   'coi_file']
 
-class CenterBudgetExpenseForm(RequiredMixin, forms.ModelForm):
-    widget_attrs = {'marketing': {'placeholder': '$'},
-                    'office': {'placeholder': '$'},
-                    'books': {'placeholder': '$'},
-                    'other_expense': {'placeholder': '$'}}
-    class Meta:
-        model = models.CenterBudget
-        fields = ['marketing', 'office', 'books', 'other_expense']
-
-class CenterBudgetIncomeForm(RequiredMixin, forms.ModelForm):
-    widget_attrs = {'other_income': {'placeholder': '$'}}
-    class Meta:
-        model = models.CenterBudget
-        fields = ['other_income']
-
-class CenterStipendForm(RequiredMixin, forms.ModelForm):
-    widget_attrs = {'stipend': {'placeholder': '$'}}
-    class Meta:
-        model = models.CenterStipend
-        fields = ['stipend']
-
-class CenterFeeForm(RequiredMixin, forms.ModelForm):
-    widget_attrs = {'credit_fee': {'placeholder': '$'}}
-    class Meta:
-        model = models.CenterFees
-        fields = ['credit_fee']
-
-class NewCenterFeeForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['country']
-    class Meta:
-        model = models.CenterFees
-        fields = ['country']
-
-class NewExpectedCourseForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['course']
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['course'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
-    class Meta:
-        model = models.ExpectedCourse
-        fields = ['course', 'semester']
-
-class ExpectedEnrollmentForm(RequiredMixin, forms.ModelForm):
-    widget_attrs = {'students': {'style': 'width: 3.5em'}}
-    class Meta:
-        model = models.ExpectedEnrollment
-        fields = ['students']
-
-class NewExpectedEnrollmentForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['country']
-    class Meta:
-        model = models.ExpectedEnrollment
-        fields = ['country']
-
 class StaffStatsForm(RequiredMixin, forms.Form):
     any_choice = [('', 'Any')]
     start_year = forms.IntegerField()

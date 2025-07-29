@@ -1,30 +1,18 @@
-<tr class="fee" id="fee_{{fee.id}}" data-country-id="{{fee.country.id}}">
+{% load autosave %}
+<tr {{id_fields}} class="fee" data-country-id="{{instance.country.id}}">
   <td>
-    {{fee.country}}
+    {{instance.country}}
   </td>
   <td>
-    <form hx-trigger="change"
-	        hx-target="#fee_{{fee.id}}"
-	        hx-swap="outerHTML"
-	        hx-post="{% url 'app:center_budget_fee' fee.budget.center.id fee.id %}"
-          data-form-id="skip">
-      {% csrf_token %}
-      {{fee.as_form.credit_fee}}
-    </form>
+    {{instance|form_field}}
   </td>
   <td style="border-left: 1px solid gray">
-    ${{fee.country.credit_fee}}
+    ${{instance.country.credit_fee}}
   </td>
   <td>
     <span class="total-country-fee"></span>
   </td>
   <td>
-    <form hx-post="{% url 'app:center_budget_del_fee' fee.budget.center.id fee.id %}"
-          hx-target="#fee_{{fee.id}}"
-          hx-swap="outerhtml"
-          style="margin-top: 15%">
-      {% csrf_token %}
-      <button style="width: 100%">Delete</button>
-    </form>
+    {{instance|delete_button}}
   </td>
 </tr>

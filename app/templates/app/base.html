@@ -13,7 +13,7 @@
     <script type="text/javascript" src="{% static 'lib/jquery-3.7.1.slim.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'lib/htmx-2.0.4.min.js' %}"></script>
   </head>
-  <body>
+  <body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
     <nav>
       <ul>
         {% if user.is_authenticated %}

@@ -1,29 +1,29 @@
-<tr id="course_row_{{course.id}}" class="course"
-    data-credits="{{course.course.credits}}">
+{% load autosave %}
+<tr {{id_fields}} class="course" data-credits="{{instance.course.credits}}">
   <td>
-    {{course.course.title}}
+    {{instance.course.title}}
   </td>
   <td>
-    {{course.get_semester_display}}
+    {{instance.get_semester_display}}
   </td>
   <td>
-    <table id="course_{{course.id}}">
+    <table id="course_{{instance.id}}">
       <tr>
 	      <th>Country</th>
 	      <th>Students</th>
       </tr>
-      {% for enrollment in course.iter_enrollments %}
-      {% include 'app/center_budget_enrollment.html' %}
+      {% for enrollment in instance.iter_enrollments %}
+      {{enrollment|as_row}}
       {% endfor %}
     </table>
     <details>
       <summary>Add Country</summary>
-      <form hx-target="#course_{{course.id}}" hx-swap="beforeend"
-	          hx-post="{% url 'app:center_budget_new_enrollment' course.budget.center.id course.id %}"
+      <form hx-target="#course_{{instance.id}}" hx-swap="beforeend"
+	          hx-post="{% create_url 'expectedenrollment' %}"
             data-form-id="skip">
-	      {% csrf_token %}
 	      <table>
-	        {{course.new_country_form.as_table}}
+          <input type="hidden" name="course" value="{{instance.id}}"/>
+          {% create_form 'expectedenrollment' %}
 	      </table>
 	      <button type="submit">Add</button>
       </form>
@@ -39,11 +39,6 @@
     <span class="total-fee"></span>
   </td>
   <td>
-    <form hx-post="{% url 'app:center_budget_del_course' course.budget.center.id course.id %}"
-          hx-target="#course_row_{{course.id}}"
-          hx-swap="outerhtml">
-      {% csrf_token %}
-      <button style="width: 100%">Delete</button>
-    </form>
+    {{instance|delete_button}}
   </td>
 </tr>

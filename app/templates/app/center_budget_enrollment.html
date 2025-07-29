@@ -1,14 +1,8 @@
-<tr class="enrollment" data-country="{{enrollment.country.id}}"
-    id="enrollment_{{enrollment.id}}">
-  <td>{{enrollment.country}}</td>
+{% load autosave %}
+<tr {{id_fields}} class="enrollment"
+    data-country="{{instance.country.id}}">
+  <td>{{instance.country}}</td>
   <td>
-    <form hx-trigger="change"
-	        hx-target="#enrollment_{{enrollment.id}}"
-	        hx-swap="outerHTML"
-	        hx-post="{% url 'app:center_budget_enrollment' enrollment.course.budget.center.id enrollment.id %}"
-          data-form-id="skip">
-      {% csrf_token %}
-      {{enrollment.as_form.students}}
-    </form>
+    {{instance|form_field}}
   </td>
 </tr>

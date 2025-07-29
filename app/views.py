@@ -819,95 +819,10 @@ def center_budget(request, center, year=None):
         'fees': budget.centerfees_set.all().order_by('country__name'),
         'courses': budget.expectedcourse_set.all().order_by('course__title'),
         'stipends': budget.centerstipend_set.all().order_by('-stipend'),
-        'add_fee': forms.NewCenterFeeForm(),
-        'add_course': forms.NewExpectedCourseForm(),
         'countries': json.dumps(dict([
             (i, float(v)) for i, v in
             models.Country.objects.all().values_list('id', 'credit_fee')])),
     })
-@center_admin
-def center_budget_expenses(request, center, budgetid):
-    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
-    form = forms.CenterBudgetExpenseForm(request.POST, instance=budget)
-    if form.is_valid():
-        form.save()
-    return render(request, 'app/center_budget_expenses.html',
-                  {'budget': budget})
-@center_admin
-def center_budget_income(request, center, budgetid):
-    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
-    form = forms.CenterBudgetIncomeForm(request.POST, instance=budget)
-    if form.is_valid():
-        form.save()
-    return render(request, 'app/center_budget_income.html',
-                  {'budget': budget})
-@center_admin
-def center_budget_stipend(request, center, stipendid):
-    stipend = get_object_or_404(models.CenterStipend, pk=stipendid)
-    form = forms.CenterStipendForm(request.POST, instance=stipend)
-    if form.is_valid():
-        form.save()
-    return render(request, 'app/center_budget_stipend.html',
-                  {'stipend': stipend})
-@center_admin
-def center_budget_fee(request, center, feeid):
-    fee = get_object_or_404(models.CenterFees, pk=feeid)
-    form = forms.CenterFeeForm(request.POST, instance=fee)
-    if form.is_valid():
-        form.save()
-    return render(request, 'app/center_budget_fee.html', {'fee': fee})
-@center_admin
-def center_budget_new_fee(request, center, budgetid):
-    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
-    form = forms.NewCenterFeeForm(request.POST)
-    if form.is_valid():
-        fee = form.save(commit=False)
-        fee.budget = budget
-        fee.save()
-        return render(request, 'app/center_budget_fee.html', {'fee': fee})
-    return render(request, 'app/empty_response.html')
-@center_admin
-def center_budget_delete_fee(request, center, feeid):
-    fee = get_object_or_404(models.CenterFees, pk=feeid)
-    fee.delete()
-    return render(request, 'app/empty_response.html')
-@center_admin
-def center_budget_new_course(request, center, budgetid):
-    budget = get_object_or_404(models.CenterBudget, pk=budgetid)
-    form = forms.NewExpectedCourseForm(request.POST)
-    if form.is_valid():
-        course = form.save(commit=False)
-        course.budget = budget
-        course.save()
-        return render(request, 'app/center_budget_course.html',
-                      {'course': course})
-    return render(request, 'app/empty_response.html')
-@center_admin
-def center_budget_delete_course(request, center, courseid):
-    course = get_object_or_404(models.ExpectedCourse, pk=courseid,
-                               budget__center=center)
-    course.delete()
-    return render(request, 'app/empty_response.html')
-@center_admin
-def center_budget_enrollment(request, center, enrollmentid):
-    enrollment = get_object_or_404(models.ExpectedEnrollment,
-                                   pk=enrollmentid)
-    form = forms.ExpectedEnrollmentForm(request.POST, instance=enrollment)
-    if form.is_valid():
-        form.save()
-    return render(request, 'app/center_budget_enrollment.html',
-                  {'enrollment': enrollment})
-@center_admin
-def center_budget_new_enrollment(request, center, courseid):
-    course = get_object_or_404(models.ExpectedCourse, pk=courseid)
-    form = course.new_country_form(request.POST)
-    if form.is_valid():
-        enrollment = form.save(commit=False)
-        enrollment.course = course
-        enrollment.save()
-        return render(request, 'app/center_budget_enrollment.html',
-                      {'enrollment': enrollment})
-    return render(request, 'app/empty_response.html')
 
 @center_admin
 def sign_mou(request, center, role):

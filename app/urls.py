@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import include, path
+from app import models
 from app import views
 
 app_name = 'app'
@@ -27,6 +28,8 @@ urlpatterns = [
     path('lock_courses/<int:centerid>/<int:year>/<slug:semester>/',
          views.lock_courses, name='lock_courses'),
     path('center/<int:centerid>/', views.center_info, name='center_info'),
+
+    path('api/', include(models.AutosaveFormMixin.urls)),
 
     # Rosters
     path('center/<int:centerid>/instructors/', views.view_instructors,
@@ -76,28 +79,6 @@ urlpatterns = [
          name='center_budget'),
     path('center/<int:centerid>/budget/<int:year>/', views.center_budget,
          name='old_center_budget'),
-    path('center/<int:centerid>/budget/expenses/<int:budgetid>/',
-         views.center_budget_expenses, name='center_budget_expenses'),
-    path('center/<int:centerid>/budget/income/<int:budgetid>/',
-         views.center_budget_income, name='center_budget_income'),
-    path('center/<int:centerid>/budget/stipend/<int:stipendid>/',
-         views.center_budget_stipend, name='center_budget_stipend'),
-    path('center/<int:centerid>/budget/fee/<int:feeid>/',
-         views.center_budget_fee, name='center_budget_fee'),
-    path('center/<int:centerid>/budget/fee/new/<int:budgetid>/',
-         views.center_budget_new_fee, name='center_budget_new_fee'),
-    path('center/<int:centerid>/budget/<int:budgetid>/course/',
-         views.center_budget_new_course, name='center_budget_new_course'),
-    path('center/<int:centerid>/budget/delete/course/<int:courseid>/',
-         views.center_budget_delete_course, name='center_budget_del_course'),
-    path('center/<int:centerid>/budget/enrollment/<int:enrollmentid>/',
-         views.center_budget_enrollment, name='center_budget_enrollment'),
-    path('center/<int:centerid>/budget/enrollment/new/<int:courseid>/',
-         views.center_budget_new_enrollment, name='center_budget_new_enrollment'),
-    path('center/<int:centerid>/budget/delete/course/<int:courseid>/',
-         views.center_budget_delete_course, name='center_budget_del_course'),
-    path('center/<int:centerid>/budget/delete/fee/<int:feeid>/',
-         views.center_budget_delete_fee, name='center_budget_del_fee'),
 
     # Catalogs
     path('course/', views.course_search, name='course_search'),

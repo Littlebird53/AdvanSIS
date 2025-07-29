@@ -1,7 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import modelform_factory
+from django.shortcuts import render, get_object_or_404
 from django.template import Context, Template
+from django.template.loader import get_template
 import datetime
 from functools import cached_property
 
@@ -40,6 +43,86 @@ def get_current_term():
                 ]
     month = datetime.date.today().month
     return seq[term_map[month]]
+
+class AutosaveFormMixin:
+    urls = []
+    create_views = {}
+    def __init_subclass__(cls, *args, **kwargs):
+        super().__init_subclass__(*args, **kwargs)
+        from django.urls import path
+        name = cls.__name__.lower()
+        cls.urls += [
+            path(name + '/<int:instanceid>/', cls.change_view, name=name),
+            path(name + '/new/', cls.create_view, name='new_'+name),
+        ]
+        cls.edit_url_name = 'app:'+name
+        cls.create_url_name = 'app:new_'+name
+        if 'new' in cls.forms:
+            cls.create_views[name] = cls
+    @classmethod
+    def build_form(cls, name, *args, **kwargs):
+        blob = cls.forms[name]
+        fcls = modelform_factory(cls, fields=blob['fields'])
+        prefix = cls.__name__.lower() + '_' + name
+        if 'instance' in kwargs:
+            prefix += '_' + str(kwargs['instance'].pk)
+        form = fcls(*args, **kwargs, prefix=prefix)
+        for wname, attrs in blob.get('widgets', {}).items():
+            form.fields[wname].widget.attrs.update(attrs)
+        cls.modify_form(form)
+        return form
+    @classmethod
+    def change_view(cls, request, instanceid):
+        instance = get_object_or_404(cls, pk=instanceid)
+        if not cls.check_permissions(request, instance, {}):
+            raise PermissionDenied()
+        if request.method == 'DELETE':
+            instance.delete()
+            return render(request, 'app/empty_response.html')
+        fname = request.POST.get('form', 'default')
+        form = cls.build_form(fname, request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+        return render(request, cls.forms[fname]['template'],
+                      instance.as_context(fname))
+    @classmethod
+    def create_view(cls, request):
+        fname = request.POST.get('form', 'new')
+        by_id = {}
+        for name, model in cls.forms[fname].get('id_fields', {}).items():
+            val = request.POST.get(name)
+            if not val or not val.isdigit():
+                val = -1
+            val = int(val)
+            by_id[name] = get_object_or_404(model, pk=val)
+        if not cls.check_permissions(request, None, by_id):
+            raise PermissionDenied()
+        form = cls.build_form(fname, request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            for name, obj in by_id.items():
+                setattr(instance, name, obj)
+            instance.save()
+            return render(request, cls.forms[fname]['template'],
+                          instance.as_context(fname))
+        return render(request, 'app/empty_response.html')
+    @classmethod
+    def check_permissions(cls, request, instance, by_id):
+        return True
+    @classmethod
+    def modify_form(cls, form):
+        pass
+    def as_context(self, name):
+        from django.utils.safestring import mark_safe
+        rid = self.__class__.__name__.lower()
+        rid += '_' + name
+        rid += '_' + str(self.pk)
+        fields = f'id="{rid}" hx-target="#{rid}" hx-swap="outerHTML"'
+        return {'instance': self, 'id_fields': mark_safe(fields)}
+    def as_row(self, name='default'):
+        from django.utils.safestring import mark_safe
+        tname = self.forms[name]['template']
+        return get_template(tname).render(self.as_context(name))
 
 class Language(models.Model):
     code = models.CharField(max_length=3)
@@ -756,7 +839,7 @@ class PopupMessage(models.Model):
     def __str__(self):
         return f'From: {self.sender}, To: {self.person}, {self.text[:40]}'
 
-class CenterBudget(models.Model):
+class CenterBudget(models.Model, AutosaveFormMixin):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     year = models.IntegerField()
     other_income = models.DecimalField(max_digits=8, decimal_places=2,
@@ -770,61 +853,105 @@ class CenterBudget(models.Model):
     other_expense = models.DecimalField(max_digits=7, decimal_places=2,
                                      blank=True, null=True)
 
+    forms = {
+        'income': {'fields': ['other_income'],
+                   'widgets': {'other_income': {'placeholder': '$'}},
+                   'template': 'app/center_budget_income.html'},
+        'expenses': {'fields': ['marketing', 'office', 'books',
+                                'other_expense'],
+                     'widgets': {'marketing': {'placeholder': '$'},
+                                 'office': {'placeholder': '$'},
+                                 'books': {'placeholder': '$'},
+                                 'other_expense': {'placeholder': '$'}},
+                     'template': 'app/center_budget_expenses.html'},
+    }
+
     @property
     def display_year(self):
         n = (self.year + 1) % 100
         return f'{self.year}-{n}'
 
-    def as_income_form(self):
-        from app.forms import CenterBudgetIncomeForm as fcls
-        return fcls(instance=self)
+    @classmethod
+    def check_permissions(cls, request, instance, by_id):
+        return (instance and
+                request.user.is_authenticated and
+                instance.center.is_admin(request.user.person))
 
-    def as_expense_form(self):
-        from app.forms import CenterBudgetExpenseForm as fcls
-        return fcls(instance=self)
-
-class CenterFees(models.Model):
+class CenterFees(models.Model, AutosaveFormMixin):
     budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     credit_fee = models.DecimalField(max_digits=5, decimal_places=2,
                                      blank=True, null=True)
 
-    def as_form(self):
-        from app.forms import CenterFeeForm as fcls
-        return fcls(instance=self)
+    forms = {
+        'default': {'fields': ['credit_fee'],
+                    'widgets': {'credit_fee': {'placeholder': '$'}},
+                    'template': 'app/center_budget_fee.html'},
+        'new': {'fields': ['country'],
+                'id_fields': {'budget': CenterBudget},
+                'widgets': {'country': {'class': 'filter-select'}},
+                'template': 'app/center_budget_fee.html'},
+    }
 
-class ExpectedCourse(models.Model):
+    @classmethod
+    def check_permissions(cls, request, instance, by_id):
+        budget = by_id.get('budget') or instance.budget
+        return (budget and request.user.is_authenticated and
+                budget.center.is_admin(request.user.person))
+
+class ExpectedCourse(models.Model, AutosaveFormMixin):
     budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
     semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
+
+    forms = {
+        'new': {'fields': ['course', 'semester'],
+                'id_fields': {'budget': CenterBudget},
+                'widgets': {'course': {'class': 'filter-select'}},
+                'template': 'app/center_budget_course.html'},
+    }
+
+    @classmethod
+    def modify_form(cls, form):
+        form.fields['course'].queryset = CourseTemplate.objects.filter(
+            active=True).order_by('title')
+
+    @classmethod
+    def check_permissions(cls, request, instance, by_id):
+        budget = by_id.get('budget') or instance.budget
+        return (budget and request.user.is_authenticated and
+                budget.center.is_admin(request.user.person))
 
     def iter_enrollments(self):
         yield from self.expectedenrollment_set.all().order_by(
             'country__name')
 
-    def new_country_form(self, post=None):
-        from app.forms import NewExpectedEnrollmentForm
-        return NewExpectedEnrollmentForm(post,
-                                         prefix=f'new_enrollment_{self.id}')
-
-class ExpectedEnrollment(models.Model):
+class ExpectedEnrollment(models.Model, AutosaveFormMixin):
     course = models.ForeignKey(ExpectedCourse, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     students = models.IntegerField(default=1)
 
-    def as_form(self):
-        from app.forms import ExpectedEnrollmentForm as fcls
-        return fcls(instance=self)
+    forms = {
+        'default': {'fields': ['students'],
+                    'widgets': {'students': {'style': 'width: 3.5em'}},
+                    'template': 'app/center_budget_enrollment.html'},
+        'new': {'fields': ['country'],
+                'id_fields': {'course': ExpectedCourse},
+                'widgets': {'country': {'class': 'filter-select'}},
+                'template': 'app/center_budget_enrollment.html'},
+    }
 
-class CenterStipend(models.Model):
+class CenterStipend(models.Model, AutosaveFormMixin):
     budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
     staff = models.ForeignKey(StaffRecord, on_delete=models.CASCADE)
     stipend = models.DecimalField(max_digits=7, decimal_places=2,
                                   blank=True, null=True)
 
-    def as_form(self):
-        from app.forms import CenterStipendForm as fcls
-        return fcls(instance=self)
+    forms = {
+        'default': {'fields': ['stipend'],
+                    'widgets': {'stipend': {'placeholder': '$'}},
+                    'template': 'app/center_budget_stipend.html'},
+    }
 
 class Prospect(models.Model):
     given_name = models.CharField(max_length=100, null=True,

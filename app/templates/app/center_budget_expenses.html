@@ -1,9 +1,9 @@
-<form hx-trigger="change"
-      hx-post="{% url 'app:center_budget_expenses' budget.center.id budget.id %}"
-      hx-swap="outerHTML"
+{% load autosave %}
+<form {{id_fields}} hx-trigger="change"
+      hx-post="{% url instance.edit_url_name instance.id %}"
       data-form-id="skip">
-  {% csrf_token %}
+  <input type="hidden" name="form" value="expenses"/>
   <table id="other-expenses">
-    {{budget.as_expense_form.as_table}}
+    {{instance|as_form_table:"expenses"}}
   </table>
 </form>
