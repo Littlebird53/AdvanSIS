@@ -24,6 +24,7 @@ nav {
   top: 0;
   background: #6f8ea3;
   margin: 0;
+  z-index: 10;
 }
 
 nav ul {
@@ -140,6 +141,11 @@ form button {
   max-width: 400px;
   margin-bottom: 20px;
   font-weight: bold;
+}
+
+form.delete-form button {
+  margin-top: 20%;
+  width: 100%;
 }
 
 form td button {
