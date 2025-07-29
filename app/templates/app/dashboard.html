@@ -166,8 +166,8 @@
 <h2>Links</h2>
 <p><a href="{% url 'app:course_search' %}">Enroll in a course</a></p>
 <p><a href="{% url 'app:center_search' %}">Apply to another center</a></p>
-<p><a href="{% url 'app:achievement_search' %}">Academic Progress</a></p>
-<p><a href="{% url 'app:transcript' %}">Download Transcript</a></p>
+<p><a href="{% url 'app:student_info' request.user.person.id %}">My Info</a></p>
+<p><a href="{% url 'app:achievement_search' %}">Achievements</a></p>
 <h2>External Links</h2>
 <p>Get help by emailing <a href="mailto:ADVANCE@gs.edu">ADVANCE@gs.edu</a>.</p>
 {# TODO: Youtube videos #}

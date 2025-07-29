@@ -514,7 +514,7 @@ def student_info(request, studentid):
         person=request.user.person, role__in=['D', 'R'], status='C',
         center__in=s_centers.union(i_centers)).values_list(
             'center', flat=True)
-    if request.user.is_staff:
+    if request.user.is_staff or request.user == student.user:
         director_centers = s_centers.union(i_centers)
     is_director = len(director_centers) > 0
     is_instructor = models.Grade.objects.filter(
@@ -575,19 +575,34 @@ def current_popups(request, dismiss=None):
 
 @login_required
 def all_popups(request):
+    qr = models.PopupMessage.objects.order_by('-sent').filter(
+        person=request.user.person)
     return render(request, 'app/messages.html',
-                  {'popups': models.PopupMessage.objects.filter(
-                      person=request.user.person).order_by('-sent')})
+                  {'popups': qr.exclude(sender=request.user.person),
+                   'sent': qr.filter(sender=request.user.person)})
 
 def send_message(sender, recipients, text):
     from django.utils.timezone import now
     # TODO: send email
+    found = False
+    tm = now()
     for recipient in recipients:
         p = models.PopupMessage()
         p.person = recipient
-        p.sent = now()
+        p.sent = tm
         p.text = text
         p.sender = sender
+        if recipient == sender:
+            p.dismissed = True
+            found = True
+        p.save()
+    if not found:
+        p = models.PopupMessage()
+        p.person = sender
+        p.sent = tm
+        p.text = text
+        p.sender = sender
+        p.dismissed = True
         p.save()
 
 ####################
@@ -742,7 +757,8 @@ def center_tally(request, center):
                 new_student = True
                 charge += home.student_fee
             achievements = models.AchievementAward.objects.filter(
-                person=person, year=year, semester=semester, status='A')
+                person=person, year=year, semester=semester,
+                status__in=['A', 'P', 'D'])
             for achievement in achievements:
                 if achievement.walking:
                     deg_charge += 90
@@ -933,7 +949,8 @@ def course_reports(request, center):
                 req_need[r] = (cs - courses, r.count - m)
         have = set([aa.achievement
                     for aa in models.AchievementAward.objects.filter(
-                            person=sr.person, status__in=['S', 'A'])])
+                            person=sr.person,
+                            status__in=['S', 'A', 'P', 'D'])])
         plain = []
         need_course = []
         for ach in achievements:
@@ -1164,7 +1181,8 @@ def enroll(request, courseid):
 def achievement_search(request):
     person = request.user.person
     has_already = person.achievementaward_set.filter(
-        status__in=['S', 'A']).values_list('achievement', 'achievement__category')
+        status__in=['S', 'A', 'P', 'D']).values_list(
+            'achievement', 'achievement__category')
     qr = models.Achievement.objects.order_by('name').filter(active=True).exclude(
         Q(category='C', credits__gt=(person.credits_earned
                                      + person.credits_in_progress
@@ -1187,7 +1205,8 @@ def check_achievement(achievement, person):
         credits -= person.certificate_credits
     if credits < achievement.credits:
         return False
-    return not models.AchievementAward.objects.filter(cond).exclude(status='R').exists()
+    return not models.AchievementAward.objects.filter(cond).exclude(
+        status='R').exists()
 @login_required
 def achievement_apply(request, achievementid, studentid=None):
     achievement = get_object_or_404(models.Achievement, pk=achievementid)
@@ -1240,7 +1259,7 @@ def transcript(request, personid=None):
     context = {
         'person': person,
         'achievements': models.AchievementAward.objects.filter(
-            person=person, status='A').order_by('awarded'),
+            person=person, status__in=['A', 'P', 'D']).order_by('awarded'),
         'email': person.emails.all().filter(active=True).first(),
         'address': person.mailings.all().filter(active=True).first(),
     }
@@ -1433,7 +1452,7 @@ class StaffReportView(AccessMixin, FormView):
                            filter=~Q(person__grade__value__in=['F', 'Au', 'W']),
                            default=0),
                 used=Sum('person__achievementaward__achievement__credits',
-                         filter=Q(person__achievementaward__status__in=['S', 'A']),
+                         filter=Q(person__achievementaward__status__in=['S', 'A', 'P', 'D']),
                          default=0))
 
         stats = {
@@ -1567,7 +1586,7 @@ def staff_tally_sheet(request):
             acceptance_date__isnull=False, acceptance_date__lt=end_date)
         centers = [r.center for r in records if r.center]
         for ach in student.achievementaward_set.all().filter(
-                year=year, semester=semester, status='A'):
+                year=year, semester=semester, status__in=['A', 'P', 'D']):
             if len(centers) > 1:
                 double_count.update(centers)
             for c in centers:

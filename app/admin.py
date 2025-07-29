@@ -95,6 +95,7 @@ class AchievementAdmin(admin.ModelAdmin):
     inlines = [AchievementRequirementInline]
     list_display = ['name', 'abbreviation', 'credits', 'category']
     list_filter = ['credits', 'category']
+    search_fields = ['name']
 
 @admin.register(models.SharedFile)
 class FileAdmin(admin.ModelAdmin):
@@ -109,6 +110,7 @@ class CourseTemplateInline(admin.TabularInline):
 @admin.register(models.LearningObjective)
 class LearningObjectiveAdmin(admin.ModelAdmin):
     inlines = [CourseTemplateInline]
+    search_fields = ['name']
 
 class LearningObjectiveInline(M2MMixin, NonrelatedTabularInline):
     model = models.LearningObjective
@@ -126,6 +128,7 @@ class MOUAdmin(admin.ModelAdmin):
     list_display = ['center', 'status', 'start_date', 'expiration']
     readonly_fields = ['start_date', 'expiration']
     list_filter = ['status']
+    search_fields = ['center__name']
 
 @admin.register(models.Person)
 class PersonAdmin(admin.ModelAdmin):
@@ -227,6 +230,8 @@ admin.site.register(User, UserAdmin)
 @admin.register(models.PopupMessage)
 class PopupAdmin(admin.ModelAdmin):
     autocomplete_fields = ['person', 'sender']
+    search_fields = ['person__given_name', 'person__family_name',
+                     'sender__given_name', 'sender__family_name']
 
 class ProspectDateFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
@@ -278,12 +283,16 @@ class StaffAdmin(admin.ModelAdmin):
     readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status', 'role', 'center_approved', 'advance_approved']
     list_display = ['person', 'center', 'role', 'status']
+    search_fields = ['person__given_name', 'person__family_name',
+                     'center__name']
 
 @admin.register(models.StudentRecord)
 class StudentAdmin(admin.ModelAdmin):
     readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status']
     list_display = ['person', 'center', 'status']
+    search_fields = ['person__given_name', 'person__family_name',
+                     'center__name']
 
 class AwardYearFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
@@ -316,3 +325,4 @@ class AchievementAwardAdmin(admin.ModelAdmin):
                    AwardYearFilter, 'semester']
     list_display = ['person', 'status', 'campus', 'walking', 'year', 'semester']
     readonly_fields = ['person']
+    search_fields = ['person__given_name', 'person__family_name']

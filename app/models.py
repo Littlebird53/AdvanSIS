@@ -286,7 +286,7 @@ class Person(models.Model):
     @property
     def certificate_credits(self):
         return self.achievementaward_set.filter(
-            status__in=['S', 'A'], achievement__category='C',
+            status__in=['S', 'A', 'P', 'D'], achievement__category='C',
         ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
 
     @property
@@ -295,7 +295,7 @@ class Person(models.Model):
             value__in=['F', 'Au', 'W']).aggregate(
                 v=models.Sum('course__template__credits'))['v'] or 0
         use = self.achievementaward_set.filter(
-            status__in=['S', 'A'], achievement__category='C',
+            status__in=['S', 'A', 'P', 'D'], achievement__category='C',
         ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
         return has - use
 
@@ -790,7 +790,7 @@ class Achievement(models.Model):
             if len(cls) < req.count:
                 return False
         for req in self.prerequisites.all():
-            if not AchievementAward.objects.filter(person=student, achievement=req, status='A').exists():
+            if not AchievementAward.objects.filter(person=student, achievement=req, status__in=['A', 'P', 'D']).exists():
                 return False
         return True
 
@@ -802,7 +802,8 @@ class AchievementAward(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('S', 'Submitted'), ('A', 'Approved'), ('R', 'Rejected')],
+        choices=[('S', 'Submitted'), ('A', 'Approved'), ('R', 'Rejected'),
+                 ('P', 'Printed'), ('D', 'Received')],
         default='S', max_length=1)
     applied = models.DateField(blank=True, null=True)
     awarded = models.DateField(blank=True, null=True)
@@ -829,6 +830,8 @@ class AchievementAward(models.Model):
         return super().save(*args, **kwargs)
 
 class PopupMessage(models.Model):
+    # always implicitly send a copy to the sender
+    # but with dismissed=True
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     sent = models.DateTimeField()
     text = models.TextField()
