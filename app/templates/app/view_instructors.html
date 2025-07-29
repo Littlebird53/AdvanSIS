@@ -87,14 +87,15 @@
 
 <script type="text/javascript">
   function sort_table(col, ascending) {
-      let rows = $('#data tr');
+      let rows = Array.from($('#data tr'));
       rows.sort(function(a, b) {
-          let va = $(a.childNodes[col]).data('key');
-          let vb = $(b.childNodes[col]).data('key');
+          let va = $(a.children[col]).data('key');
+          let vb = $(b.children[col]).data('key');
+          if (va == vb) return 0;
           if (ascending) {
-              return (va > vb) ? 1 : 0;
+              return (va > vb) ? 1 : -1;
           } else {
-              return (va > vb) ? 0 : 1;
+              return (va > vb) ? -1 : 1;
           }
       });
       $.each(rows, (i, r) => $('#data').append(r));
