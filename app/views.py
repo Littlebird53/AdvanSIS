@@ -110,6 +110,15 @@ def sort_courses(courses):
     dct = {'present': [], 'past': [], 'future': []}
     for course in courses:
         key = course.sort_key()
+        if course.schedule:
+            start = course.schedule.get('start')
+            end = course.schedule.get('end')
+            if start and end:
+                start = datetime.date.fromisoformat(start)
+                end = datetime.date.fromisoformat(end)
+                if start <= datetime.date.today() <= end:
+                    dct['present'].append(course)
+                    continue
         if key[0] < year:
             dct['past'].append(course)
         elif key[0] > year:
