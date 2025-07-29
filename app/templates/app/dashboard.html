@@ -70,6 +70,7 @@
   {% with stats=center.director_stats %}
   <p>{{stats.approve_count}} / {{stats.course_count}} = {{stats.approve_percent}}% courses approved for the current semester</p>
   <p>{{stats.enter_count}} / {{stats.grade_count}} = {{stats.enter_percent}}% grades entered for the current semester</p>
+  <p>{{stats.applied_students}} student applications are pending &mdash; <a href="{% url 'app:center_students_applied' center.id %}">view applications</a></p>
   {% endwith %}
   {% with mou=center.current_mou %}
   {% if mou.status == 'P' %}
@@ -94,6 +95,9 @@
   <p>Your Memorandum of Understanding has expired. Please contact the ADVANCE office to renew it.</p>
   {% elif mou.expires_soon %}
   <p>Your Memorandum of Understanding will expire in the next six weeks. Please contact the ADVANCE office to renew it.</p>
+  {% endif %}
+  {% if mou is not None %}
+  <p><a href="{% url 'app:download_mou' center.id %}">Download most recent MOU</a></p>
   {% endif %}
   {% endwith %}
   {% endif %}

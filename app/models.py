@@ -430,6 +430,8 @@ class Center(models.Model):
             'grade_count': grades.count(),
             'enter_count': grades.exclude(value='IP').count(),
             'enter_percent': 0,
+            'applied_students': StudentRecord.objects.filter(
+                center=self, status='A').count(),
         }
         if ret['course_count'] > 0:
             ret['approve_percent'] = round(100*ret['approve_count']/ret['course_count'])

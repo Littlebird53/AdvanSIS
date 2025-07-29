@@ -16,11 +16,11 @@
 
 % Blanks on the first page:
 % 1. The blank for the ADVANCE Center in the title
-\newcommand{\advancemastercentername}{ {{- center.name -}} }
+\newcommand{\advancemastercentername}{ {{- mou.center.name -}} }
 % 2. The blank for the Sponsoring Organization name at the beginning of the agreement
-\newcommand{\sponsoringorgname}{ {{- center.sponsor -}} }
+\newcommand{\sponsoringorgname}{ {{- mou.center.sponsor -}} }
 % 3. The blank for the ADVANCE Local Center name at the beginning of the agreement
-\newcommand{\advancelocalcentername}{ {{- center.name -}} }
+\newcommand{\advancelocalcentername}{ {{- mou.center.name -}} }
 
 % Dates on the final page (Revision Procedures section):
 \newcommand{\agreementstartdate}{ {{- mou.start_date -}} }
@@ -32,17 +32,19 @@
 \newcommand{\gatewaywarrenhaynesdate}{ {{- mou.advance_sig -}} }
 
 % Sponsoring Organization Signer Details
-\newcommand{\sponsoringorgsignature}{ {{- center.sponsor_rep -}} }
-\newcommand{\sponsoringorgsignername}{ {{- center.sponsor_rep -}} }
-\newcommand{\sponsoringorgsignertitle}{ {{- center.sponsor_rep_title -}} }
+\newcommand{\sponsoringorgsignature}{ {{- mou.center.sponsor_rep -}} }
+\newcommand{\sponsoringorgsignername}{ {{- mou.center.sponsor_rep -}} }
+\newcommand{\sponsoringorgsignertitle}{ {{- mou.center.sponsor_rep_title -}} }
 \newcommand{\sponsoringorgsigndate}{ {{- mou.sponsor_sig -}} }
 
 % ADVANCE Local Center Signer Details (Title "Local Center Director" is fixed)
-\newcommand{\centersignature}{ {{- director.full_name }} }
-\newcommand{\advancelocalsignername}{ {{- director.name -}} }
+\newcommand{\centersignature}{ {{- mou.center.director.full_name }} }
+\newcommand{\advancelocalsignername}{ {{- mou.center.director.full_name -}} }
 \newcommand{\advancelocalsigndate}{ {{- mou.director_sig -}} }
 
 % ====================================================================
+
+{% graphicspath %}
 
 \begin{document}
 
@@ -88,10 +90,10 @@ Gateway agrees to the following responsibilities:
 \begin{enumerate} \singlespacing
     \item Identification of ADVANCE students as Gateway students, which shall include the provision of a student ID number and library privileges for all ADVANCE Students
     \item Provision of certificates for students who complete all certificate course requirements
-    \item Provision of diplomas and the opportunity to participate in official Gateway graduation ceremony for students who complete all diploma course requirements 
+    \item Provision of diplomas and the opportunity to participate in official Gateway graduation ceremony for students who complete all diploma course requirements
     \item Provision of syllabi templates for each course
-    \item Prompt response to ADVANCE Local Center communication 
-    \item Provision of regular training opportunities for ADVANCE Local Center personnel 
+    \item Prompt response to ADVANCE Local Center communication
+    \item Provision of regular training opportunities for ADVANCE Local Center personnel
     \item Verification of academic credentials for potential ADVANCE Local Center instructors
 \end{enumerate}
 
@@ -107,14 +109,14 @@ This agreement can be canceled upon sixty (60) day written notification of eithe
 % Signature Block, formatted to match the source's layout
 \begin{flushleft}
 \textbf{Gateway Seminary} \hfill \textbf{Gateway Seminary} \\
-\vspace{1em} 
+\vspace{1em}
 \underline{\includegraphics{alexander-stewart signature for MOU.PNG}} \hfill \underline{\includegraphics[scale=0.8]{Haynes signature, trimmed.jpg}} \\ % Placeholder lines for physical signatures
 Dr. Alex Stewart, VP Academic Services \hfill Dr. Warren Haynes, ADVANCE Director \\
 Date \underline{\gatewayalexstewartdate} \hfill Date \underline{\gatewaywarrenhaynesdate} \\
 \vspace{2em} % Vertical space between Gateway and Sponsoring Organization blocks
 \textbf{Sponsoring Organization} \hfill \textbf{ADVANCE Local Center} \\
 \vspace{1em}
-\underline{{\Large \fontfamily{calligra}\selectfont \sponsoringorgsignature}} \hfill \underline{{\Large \fontfamily{calligra}\selectfont \centersignature}} \\
+\underline{\Large \fontfamily{calligra}\selectfont \sponsoringorgsignature} \hfill \underline{\Large \fontfamily{calligra}\selectfont \centersignature} \\
 \underline{\sponsoringorgsignername}, \underline{\sponsoringorgsignertitle} \hfill \underline{\advancelocalsignername}, Local Center Director \\ % Signer name and title lines
 Date \underline{\sponsoringorgsigndate} \hfill Date \underline{\advancelocalsigndate}
 \end{flushleft}

@@ -73,6 +73,8 @@ urlpatterns = [
          views.sign_mou, {'role': 'director'}, name='mou_director_sig'),
     path('center/<int:centerid>/mou/sponsor_signature/',
          views.sign_mou, {'role': 'sponsor'}, name='mou_sponsor_sig'),
+    path('center/<int:centerid>/mou/', views.download_mou,
+         name='download_mou'),
 
     # Budgets
     path('center/<int:centerid>/budget/', views.center_budget,

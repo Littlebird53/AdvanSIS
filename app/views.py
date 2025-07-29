@@ -5,16 +5,19 @@ from django.contrib.staticfiles import finders
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, Max, Q, Sum
+from django.http import FileResponse
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
+from django_tex.core import compile_template_to_pdf
 from app import models
 from app import forms
 import collections
 import datetime
 from email.mime.image import MIMEImage
-import json
+import io
 import itertools
+import json
 
 def make_email(subject, to, template_name, context):
     message = EmailMultiAlternatives(subject=subject, to=[to])
@@ -862,6 +865,13 @@ def sign_mou(request, center, role):
     return redirect('app:dashboard')
 
 @center_admin
+def download_mou(request, center):
+    mou = center.current_mou
+    pdf = compile_template_to_pdf(mou.template_name, {'mou': mou})
+    buf = io.BytesIO(pdf)
+    return FileResponse(buf, as_attachment=True, filename='mou.pdf')
+
+@center_admin
 def find_instructors(request, center):
     instructors = models.StaffRecord.objects.filter(
         center__isnull=True, status='C').order_by(
@@ -1260,10 +1270,6 @@ GPA_VALUES = {
 
 @login_required
 def transcript(request, personid=None):
-    import io
-    import collections
-    from django.http import FileResponse
-    from django_tex.core import compile_template_to_pdf
     person = get_person(request, personid)
     context = {
         'person': person,
