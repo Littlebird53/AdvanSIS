@@ -237,7 +237,6 @@ class UserAdmin(BaseUserAdmin):
             person = user.person
             for field in person._meta.get_fields():
                 if 'Many' in field.__class__.__name__:
-                    print(field.name, field.target_field, dir(field))
                     continue
                 if field.name in ['id', 'user']:
                     continue
@@ -298,7 +297,6 @@ class UserAdmin(BaseUserAdmin):
             person = other.person
             for field in person._meta.get_fields():
                 if 'Many' in field.__class__.__name__:
-                    print(field.name, field.target_field, dir(field))
                     continue
                 if field.name in ['id', 'user']:
                     continue
@@ -354,7 +352,6 @@ class ProspectDateFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value() is not None:
             try:
-                print(self.value())
                 limit = datetime.date.fromisoformat(self.value())
                 return queryset.exclude(
                     prospectcontact__date__gte=limit)
