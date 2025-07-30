@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.template import Context, Template
 from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
 from app import models
+import collections
 import datetime
 
 class M2MMixin:
@@ -205,6 +207,7 @@ class UserAdmin(BaseUserAdmin):
                StudentRecordInline, StaffRecordInline,
                PersonGradeInline, AchievementAwardInline]
     list_display = ['username', 'person__given_name', 'person__family_name']
+    list_select_related = ['person']
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
     readonly_fields = ['credits_earned', 'credits_in_progress']
@@ -219,11 +222,106 @@ class UserAdmin(BaseUserAdmin):
             'classes': ['collapse']}),
         ('Grade Summary', {'fields': ('credits_earned', 'credits_in_progress')}),
     )
+    actions = ['compare_users', 'merge_users']
 
     def credits_earned(self, instance):
         return instance.person.credits_earned
     def credits_in_progress(self, instance):
         return instance.person.credits_in_progress
+
+    @admin.action(description='Compare selected accounts')
+    def compare_users(self, request, queryset, is_merge=False):
+        values = collections.defaultdict(set)
+        names = {}
+        for user in queryset:
+            person = user.person
+            for field in person._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    print(field.name, field.target_field, dir(field))
+                    continue
+                if field.name in ['id', 'user']:
+                    continue
+                disp = f'get_{field.name}_display'
+                if hasattr(person, disp):
+                    val = getattr(person, disp)()
+                else:
+                    val = getattr(person, field.name)
+                names[field.name] = field.verbose_name
+                if val is not None:
+                    values[field.name].add(val)
+        diff = []
+        for key in values:
+            if len(values[key]) > 1:
+                diff.append(names[key] + ': ' + ' vs '.join(sorted(values[key])))
+        if diff:
+            self.message_user(request, Template('Users differ in the following fields:<br/><ul>{% for d in diff %}<li>{{d}}</li>{% endfor %}</ul>').render(Context({'diff': diff})))
+        elif not is_merge:
+            self.message_user(request, 'User profiles are compatible.')
+    @admin.action(description='Merge selected accounts')
+    def merge_users(self, request, queryset):
+        if queryset.count() < 2:
+            return
+        self.compare_users(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0].person
+        old = list(models.Person.objects.filter(user__in=queryset).exclude(
+            pk=main.pk))
+        emails = set(a.email for a in main.emails.all())
+        phones = set(a.phone for a in main.phones.all())
+        def mailcomp(a):
+            return (a.address, a.attention, a.city, a.state,
+                    a.zip_code, a.country_id)
+        mailings = set(mailcomp(a) for a in main.mailings.all())
+        models.Course.objects.filter(instructor__in=old).update(
+            instructor=main)
+        for course in models.Course.objects.filter(
+                associate_instructors__in=old):
+            course.associate_instructors.remove(old)
+            course.associate_instructors.add(main)
+        models.Grade.objects.filter(person__in=old).update(person=main)
+        models.StudentRecord.objects.filter(person__in=old).update(
+            person=main)
+        models.StaffRecord.objects.filter(person__in=old).update(
+            person=main)
+        models.SharedFile.objects.filter(owner__in=old).update(
+            owner=main)
+        models.AchievementAward.objects.filter(person__in=old).update(
+            person=main)
+        models.PopupMessage.objects.filter(person__in=old).update(
+            person=main)
+        models.PopupMessage.objects.filter(sender__in=old).update(
+            sender=main)
+        for other in ls[1:]:
+            other.active = False
+            other.save()
+            person = other.person
+            for field in person._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    print(field.name, field.target_field, dir(field))
+                    continue
+                if field.name in ['id', 'user']:
+                    continue
+                if getattr(main, field.name) is not None:
+                    setattr(main, field.name, getattr(person, field.name))
+            for addr in person.emails.all():
+                if addr.email not in emails:
+                    emails.add(addr.email)
+                    main.emails.add(addr)
+            person.emails.clear()
+            for addr in person.phones.all():
+                if addr.phone not in phones:
+                    phones.add(addr.phone)
+                    main.phones.add(addr)
+            person.phones.clear()
+            for addr in person.mailings.all():
+                comp = mailcomp(addr)
+                if comp not in mailings:
+                    mailings.add(comp)
+                    main.mailings.add(addr)
+            person.mailings.clear()
+        main.save()
+        self.message_user(request, f'Merged {queryset.count()} accounts.')
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
