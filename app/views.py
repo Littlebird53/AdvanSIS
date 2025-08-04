@@ -200,7 +200,7 @@ def dashboard(request):
         else:
             courses = sort_courses(models.Course.objects.filter(
                 (Q(instructor=request.user.person) |
-                 Q(associate_instructors=request.user.person)),
+                 Q(assistant_instructors=request.user.person)),
                 center=record.center))
         if record.status == 'C':
             current.append((record, courses, False))
@@ -531,7 +531,7 @@ def student_info(request, studentid):
     is_director = len(director_centers) > 0
     is_instructor = models.Grade.objects.filter(
         (Q(course__instructor=request.user.person) |
-         Q(course__associate_instructors=request.user.person))
+         Q(course__assistant_instructors=request.user.person))
     ).filter(person=student).exists()
     if not is_director and not is_instructor:
         raise PermissionDenied()
@@ -544,7 +544,7 @@ def student_info(request, studentid):
     if is_director:
         transcript = student.grade_set.all()
         resume = models.Course.objects.filter(
-            (Q(instructor=student) | Q(associate_instructors=student)),
+            (Q(instructor=student) | Q(assistant_instructors=student)),
             status__in=['P', 'A', 'L'])
         s_applications = student.studentrecord_set.all().filter(
             center__in=director_centers)

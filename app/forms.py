@@ -109,8 +109,8 @@ class NewMailingForm(forms.ModelForm):
                   'zip_code', 'category']
 
 class NewCourseForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['template', 'language', 'country',
-                     'associate_instructors']
+    make_filtered = ['template', 'languages', 'country',
+                     'assistant_instructors']
 
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,7 +118,7 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
         self.fields['instructor'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status='C', staffrecord__role__in=['I', 'D'])
-        self.fields['associate_instructors'].queryset = models.Person.objects.filter(
+        self.fields['assistant_instructors'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status='C', staffrecord__role__in=['I', 'D', 'A'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
@@ -126,8 +126,8 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
-                  'associate_instructors',
-                  'delivery_format', 'language', 'country',
+                  'assistant_instructors',
+                  'delivery_format', 'languages', 'country',
                   'multi_center']
 
 class GradeForm(forms.ModelForm):

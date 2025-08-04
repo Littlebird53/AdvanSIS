@@ -57,8 +57,7 @@ class AutosaveFormMixin:
         ]
         cls.edit_url_name = 'app:'+name
         cls.create_url_name = 'app:new_'+name
-        if 'new' in cls.forms:
-            cls.create_views[name] = cls
+        cls.create_views[name] = cls
     @classmethod
     def build_form(cls, name, *args, **kwargs):
         blob = cls.forms[name]
@@ -133,7 +132,7 @@ class Language(models.Model):
 
     @classmethod
     def get_english(cls):
-        return cls.objects.filter(code='eng').first()
+        return cls.objects.filter(code='eng')
 
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -515,14 +514,14 @@ class Course(models.Model):
     semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
     instructor = models.ForeignKey(Person, on_delete=models.SET_NULL,
                                    null=True)
-    associate_instructors = models.ManyToManyField(
-        Person, related_name='associates', blank=True)
+    assistant_instructors = models.ManyToManyField(
+        Person, related_name='assistants', blank=True)
     schedule = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
         max_length=1, null=True)
-    language = models.ForeignKey(Language, on_delete=models.SET_NULL,
-                                 null=True, default=Language.get_english)
+    languages = models.ManyToManyField(Language,
+                                       default=Language.get_english)
     country = models.ForeignKey(Country, null=True,
                                 on_delete=models.SET_NULL)
     accepting_enrollments = models.BooleanField(default=True)
@@ -662,7 +661,7 @@ class StaffRecord(models.Model):
                  ('A', 'Applied'), ('R', 'Rejected')],
         max_length=1, default='A')
     role = models.CharField(
-        choices=[('I', 'Instructor'), ('A', 'Associate Instructor'),
+        choices=[('I', 'Instructor'), ('A', 'Assistant Instructor'),
                  ('D', 'Director'), ('R', 'Registrar')],
         max_length=1, default='I')
     reference1_name = models.CharField(max_length=100, blank=True, null=True)
@@ -719,7 +718,7 @@ class StaffRecord(models.Model):
     def stats(self):
         courses = Course.objects.filter(
             (models.Q(instructor=self.person) |
-             models.Q(associate_instructors=self.person)),
+             models.Q(assistant_instructors=self.person)),
             status__in=['A', 'L'])
         course_count = courses.count()
         semester_count = len(set(courses.values_list('year', 'semester')))

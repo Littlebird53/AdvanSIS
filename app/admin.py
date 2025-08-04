@@ -79,7 +79,7 @@ class CourseFileAdmin(admin.TabularInline):
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
     autocomplete_fields = ['template', 'center', 'instructor',
-                           'associate_instructors']
+                           'assistant_instructors']
     search_fields = ['template__title', 'instructor__given_name',
                      'instructor__family_name', 'center__name']
     list_display = ['template__title', 'center', 'instructor',
@@ -275,9 +275,9 @@ class UserAdmin(BaseUserAdmin):
         models.Course.objects.filter(instructor__in=old).update(
             instructor=main)
         for course in models.Course.objects.filter(
-                associate_instructors__in=old):
-            course.associate_instructors.remove(old)
-            course.associate_instructors.add(main)
+                assistant_instructors__in=old):
+            course.assistant_instructors.remove(old)
+            course.assistant_instructors.add(main)
         models.Grade.objects.filter(person__in=old).update(person=main)
         models.StudentRecord.objects.filter(person__in=old).update(
             person=main)
