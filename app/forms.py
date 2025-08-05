@@ -253,8 +253,21 @@ class CalendarForm(RequiredMixin, forms.Form):
     }
 
 class TallySheetForm(forms.Form):
-    semester = forms.ChoiceField(choices=models.SEMESTERS)
-    year = forms.IntegerField()
+    semester = forms.ChoiceField(choices=models.SEMESTERS,
+                                 initial=models.get_current_term)
+    year = forms.IntegerField(initial=lambda: datetime.date.today().year)
+
+class SemesterRangeForm(forms.Form):
+    start_semester = forms.ChoiceField(
+        required=False, choices=models.SEMESTERS,
+        initial=models.get_current_term)
+    start_year = forms.IntegerField(
+        required=False, initial=lambda: datetime.date.today().year)
+    end_semester = forms.ChoiceField(
+        required=False, choices=models.SEMESTERS,
+        initial=models.get_current_term)
+    end_year = forms.IntegerField(
+        required=False, initial=lambda: datetime.date.today().year)
 
 class StudentApplicationForm(RequiredMixin, forms.ModelForm):
     church_sbc = forms.TypedChoiceField(

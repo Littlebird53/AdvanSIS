@@ -3,7 +3,15 @@
 {% block title %}{{center}} Courses{% endblock %}
 
 {% block content %}
-<h1>{{center}} Courses for {{semester}}{{year}}</h1>
+{% if y1 and y2 %}
+<h1>{{center}} Courses {{s1}} {{y1}} &mdash; {{s2}} {{y2}}</h1>
+{% elif y1 %}
+<h1>{{center}} Courses from {{s1}} {{y1}} onwards</h1>
+{% elif y2 %}
+<h1>{{center}} Courses upto {{s2}} {{y2}}</h1>
+{% else %}
+<h1>{{center}} All Courses</h1>
+{% endif %}
 <form>
   <table>{{form.as_table}}</table>
   <button type="submit">Search</button>
@@ -11,6 +19,7 @@
 <table>
   <tr>
     <th>Title</th>
+    <th>Term</th>
     <th>Instructor</th>
     <th>Status</th>
   </tr>
@@ -21,6 +30,7 @@
 	      {{course.template}}
       </a>
     </td>
+    <td>{{course.get_semester_display}} {{course.year}}</td>
     <td>
       {% if course.instructor %}
       <a href="{% url 'app:student_info' course.instructor.id %}">

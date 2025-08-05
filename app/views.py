@@ -900,22 +900,36 @@ def add_instructor(request, center, staffid):
 
 @center_admin
 def manage_courses(request, center):
-    year = datetime.date.today().year
-    semester = get_current_term()
-    if 'year' in request.GET:
-        form = forms.TallySheetForm(request.GET)
-        if form.is_valid():
-            year = form.cleaned_data['year']
-            semester = form.cleaned_data['semester']
+    if len(request.GET) == 0:
+        form = forms.SemesterRangeForm()
+        dct = {f: form.get_initial_for_field(form.fields[f], f)
+               for f in form.fields}
     else:
-        initial = {'year': datetime.date.today().year,
-                   'semester': get_current_term}
-        form = forms.TallySheetForm(initial=initial)
+        form = forms.SemesterRangeForm(request.GET)
+        form.is_valid()
+        dct = form.cleaned_data
+    y1 = dct.get('start_year')
+    s1 = dct['start_semester']
+    y2 = dct['end_year']
+    s2 = dct['end_semester']
+    if not s1 or not y1:
+        s1, y1 = None, None
+    if not s2 or not y2:
+        s2, y2 = None, None
+    qs = models.Course.objects.filter(center=center).select_related(
+        'template').order_by('year', 'template__title')
+    seq = ['Sp', 'Su', 'Fa', 'Wi']
+    if y1:
+        qs = qs.exclude(year__lt=y1)
+        if s1 != 'Sp':
+            qs = qs.exclude(year=y1, semester__in=seq[:seq.index(s1)])
+    if y2:
+        qs = qs.exclude(year__gt=y2)
+        if s2 != 'Wi':
+            qs = qs.exclude(year=y2, semester__in=seq[seq.index(s2):])
     return render(request, 'app/manage_center_courses.html', {
-        'form': form, 'year': year, 'semester': semester,
-        'courses': models.Course.objects.filter(
-            center=center, year=year, semester=semester).select_related(
-                'template').order_by('template__title')})
+        'form': form, 'y1': y1, 's1': s1, 'y2': y2, 's2': s2,
+        'center': center, 'courses': qs})
 
 def template_stats(template, center):
     courses = models.Course.objects.filter(template=template,
