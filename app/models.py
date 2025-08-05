@@ -476,6 +476,7 @@ class LearningObjective(models.Model):
 
 class CourseTemplate(models.Model):
     title = models.CharField(max_length=100)
+    short_title = models.CharField(max_length=100, blank=True, null=True)
     credits = models.IntegerField(default=3)
     thinkific_id = models.IntegerField(null=True, blank=True)
     division = models.CharField(max_length=1, null=True)
@@ -490,6 +491,10 @@ class CourseTemplate(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.code})'
+
+    @property
+    def display_title(self):
+        return self.short_title or self.title
 
     LO_TEMPLATE = Template('''
     <ul>
@@ -517,10 +522,8 @@ class Course(models.Model):
                                null=True)
     year = models.IntegerField(default=2025)
     semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
-    instructor = models.ForeignKey(Person, on_delete=models.SET_NULL,
-                                   null=True)
-    assistant_instructors = models.ManyToManyField(
-        Person, related_name='assistants', blank=True)
+    instructors = models.ManyToManyField(
+        Person, related_name='instructors', blank=True)
     schedule = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
@@ -541,7 +544,7 @@ class Course(models.Model):
         return f'{self.template} {self.get_semester_display()} {self.year}'
 
     def can_edit(self, person):
-        return person == self.instructor or self.center.is_admin(person)
+        return person in self.instructors.all() or self.center.is_admin(person)
 
     def sort_key(self):
         terms = ['Sp', 'Su', 'Fa', 'Wi']
@@ -722,10 +725,8 @@ class StaffRecord(models.Model):
         return ', '.join((self.profile or {}).get('terms', []))
 
     def stats(self):
-        courses = Course.objects.filter(
-            (models.Q(instructor=self.person) |
-             models.Q(assistant_instructors=self.person)),
-            status__in=['A', 'L'])
+        courses = Course.objects.filter(instructors=self.person,
+                                        status__in=['A', 'L'])
         course_count = courses.count()
         semester_count = len(set(courses.values_list('year', 'semester')))
         cps = 0

@@ -10,8 +10,7 @@
 <p><b>Description:</b> {{course.template.description|linebreaksbr}}</p>
 <h2>Instructors</h2>
 <ul>
-  <li>{{course.instructor.given_name}} {{course.instructor.family_name}} {{course.instructor.main_email.email|urlize}}</li>
-  {% for ins in course.assistant_instructors.all %}
+  {% for ins in course.instructors.all %}
   <li>{{ins.given_name}} {{ins.family_name}} {{ins.main_email.email|urlize}}</li>
   {% endfor %}
 </ul>

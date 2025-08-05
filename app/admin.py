@@ -78,11 +78,10 @@ class CourseFileAdmin(admin.TabularInline):
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
-    autocomplete_fields = ['template', 'center', 'instructor',
-                           'assistant_instructors']
-    search_fields = ['template__title', 'instructor__given_name',
-                     'instructor__family_name', 'center__name']
-    list_display = ['template__title', 'center', 'instructor',
+    autocomplete_fields = ['template', 'center', 'instructors']
+    search_fields = ['template__title', 'instructors__given_name',
+                     'instructors__family_name', 'center__name']
+    list_display = ['template__title', 'center',
                     'semester', 'year', 'status']
     list_filter = ['semester', 'template__division', 'delivery_format',
                    'status']
@@ -272,12 +271,9 @@ class UserAdmin(BaseUserAdmin):
             return (a.address, a.attention, a.city, a.state,
                     a.zip_code, a.country_id)
         mailings = set(mailcomp(a) for a in main.mailings.all())
-        models.Course.objects.filter(instructor__in=old).update(
-            instructor=main)
-        for course in models.Course.objects.filter(
-                assistant_instructors__in=old):
-            course.assistant_instructors.remove(old)
-            course.assistant_instructors.add(main)
+        for course in models.Course.objects.filter(instructors__in=old):
+            course.instructors.remove(old)
+            course.instructors.add(main)
         models.Grade.objects.filter(person__in=old).update(person=main)
         models.StudentRecord.objects.filter(person__in=old).update(
             person=main)

@@ -199,9 +199,7 @@ def dashboard(request):
             courses = {}
         else:
             courses = sort_courses(models.Course.objects.filter(
-                (Q(instructor=request.user.person) |
-                 Q(assistant_instructors=request.user.person)),
-                center=record.center))
+                instructors=request.user.person, center=record.center))
         if record.status == 'C':
             current.append((record, courses, False))
         else:
@@ -530,9 +528,8 @@ def student_info(request, studentid):
         director_centers = s_centers.union(i_centers)
     is_director = len(director_centers) > 0 or request.user.is_staff
     is_instructor = models.Grade.objects.filter(
-        (Q(course__instructor=request.user.person) |
-         Q(course__assistant_instructors=request.user.person))
-    ).filter(person=student).exists()
+        course__instructors=request.user.person).filter(
+            person=student).exists()
     if not is_director and not is_instructor and not request.user.is_staff:
         raise PermissionDenied()
     s_applications = []
@@ -544,9 +541,8 @@ def student_info(request, studentid):
     achievements = []
     if is_director:
         transcript = student.grade_set.all()
-        resume = models.Course.objects.filter(
-            (Q(instructor=student) | Q(assistant_instructors=student)),
-            status__in=['P', 'A', 'L'])
+        resume = models.Course.objects.filter(instructors=student,
+                                              status__in=['P', 'A', 'L'])
         s_applications = student.studentrecord_set.all().filter(
             center__in=director_centers)
         i_applications = student.staffrecord_set.all().filter(
@@ -656,6 +652,7 @@ def new_course(request, center):
             course = form.save(commit=False)
             course.center = center
             course.save()
+            form.save_m2m()
             return redirect('app:course', course.id)
     else:
         form = forms.NewCourseForm(center)
@@ -1542,7 +1539,8 @@ def staff_stats_spreadsheet(request):
         num = (course.year or 0) + sem_map.get(course.semester, 0)
         keys[num] = (course.year, course.semester)
         centers[num].add(course.center_id)
-        instructors[num].add(course.instructor_id)
+        for inst in course.instructors.all():
+            instructors[num].add(inst.id)
         courses[num] += 1
         cred = course.template.credits
         for grade in course.grade_set.all():

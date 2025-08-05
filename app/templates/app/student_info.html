@@ -84,7 +84,7 @@
       <th>Course</th>
       <th>Year</th>
       <th>Semester</th>
-      <th>Instructor</th>
+      <th>Instructors</th>
       <th>Credits</th>
       <th>Grade</th>
     </tr>
@@ -95,7 +95,13 @@
       <td>{{grade.course.template.title}}</td>
       <td>{{grade.course.year}}</td>
       <td>{{grade.course.semester}}</td>
-      <td>{{grade.course.instructor}}</td>
+      <td>
+        <ul>
+          {% for inst in grade.course.instructors.all %}
+          <li>{{inst}}</li>
+          {% endfor %}
+        </ul>
+      </td>
       <td>{{grade.course.template.credits}}</td>
       <td>{{grade.value}}</td>
     </tr>
@@ -114,7 +120,6 @@
       <th>Title</th>
       <th>Year</th>
       <th>Semester</th>
-      <th>Role</th>
       <th>Manage Course</th>
     </tr>
   </thead>
@@ -124,13 +129,6 @@
       <td>{{course.template.title}}</td>
       <td>{{course.year}}</td>
       <td>{{course.get_semester_display}}</td>
-      <td>
-        {% if course.instructor == student %}
-        Instructor
-        {% else %}
-        Assistant Instructor
-        {% endif %}
-      </td>
       <td>
         {% if course.center_id in director_centers %}
         <a href="{% url 'app:manage_course' course.id %}">Manage</a>

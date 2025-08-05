@@ -32,13 +32,11 @@
     </td>
     <td>{{course.get_semester_display}} {{course.year}}</td>
     <td>
-      {% if course.instructor %}
-      <a href="{% url 'app:student_info' course.instructor.id %}">
-	      {{course.instructor}}
-      </a>
-      {% else %}
-      (Instructor not listed)
-      {% endif %}
+      <ul>
+        {% for inst in course.instructors.all %}
+        <li><a href="{% url 'app:student_info' inst.id %}">{{inst}}</a></li>
+        {% endfor %}
+      </ul>
     </td>
     <td>{{course.get_status_display}}</td>
   </tr>

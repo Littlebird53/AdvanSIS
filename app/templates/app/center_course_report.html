@@ -28,7 +28,7 @@
 	  <tr>
 	    <th>Year</th>
 	    <th>Semester</th>
-	    <th>Instructor</th>
+	    <th>Instructors</th>
 	    <th>Enrollment</th>
 	    <th>Manage</th>
 	  </tr>
@@ -36,7 +36,13 @@
 	  <tr>
 	    <td>{{course.year}}</td>
 	    <td>{{course.get_semester_display}}</td>
-	    <td>{{course.instructor}}</td>
+	    <td>
+        <ul>
+          {% for inst in course.instructors.all %}
+          <li>{{inst}}</li>
+          {% endfor %}
+        </ul>
+      </td>
 	    <td>{{course.enrollment}}</td>
 	    <td>
 	      <a href="{% url 'app:manage_course' course.id %}">Manage</a>

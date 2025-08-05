@@ -109,16 +109,13 @@ class NewMailingForm(forms.ModelForm):
                   'zip_code', 'category']
 
 class NewCourseForm(RequiredMixin, forms.ModelForm):
-    make_filtered = ['template', 'languages', 'country',
-                     'assistant_instructors']
+    make_filtered = ['template', 'languages', 'country', 'instructors']
+    make_required = ['instructors']
 
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.center = center
-        self.fields['instructor'].queryset = models.Person.objects.filter(
-            staffrecord__center=self.center,
-            staffrecord__status='C', staffrecord__role__in=['I', 'D'])
-        self.fields['assistant_instructors'].queryset = models.Person.objects.filter(
+        self.fields['instructors'].queryset = models.Person.objects.filter(
             staffrecord__center=self.center,
             staffrecord__status='C', staffrecord__role__in=['I', 'D', 'A'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
@@ -128,10 +125,16 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
         if mc and self.cleaned_data.get('delivery_format') != 'O':
             raise forms.ValidationError(_("Advertising to other centers doesn't make sense for in-person classes."), code='local-multi-center')
         return mc
+    def clean_instructors(self):
+        inst = self.cleaned_data.get('instructors', [])
+        if not models.StaffRecord.objects.filter(
+                center=self.center, person__in=inst, role__in=['D', 'I'],
+                status='C').exists():
+            raise forms.ValidationError('At least one instructor must have a non-assistant role.')
+        return inst
     class Meta:
         model = models.Course
-        fields = ['template', 'year', 'semester', 'instructor',
-                  'assistant_instructors',
+        fields = ['template', 'year', 'semester', 'instructors',
                   'delivery_format', 'languages', 'country',
                   'multi_center']
 
