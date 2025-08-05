@@ -36,6 +36,12 @@
   {% else %}
   <a href="{% url 'app:center_students_rejected' center.id %}">Rejected Applications</a>
   {% endif %}
+  -
+  {% if status == 'W' %}
+  <span>Applications Awaiting Recommendations</span>
+  {% else %}
+  <a href="{% url 'app:center_students_waiting' center.id %}">Applications Awaiting Recommendations</a>
+  {% endif %}
 </p>
 
 {% if count > 0 %}

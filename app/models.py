@@ -582,8 +582,9 @@ class StudentRecord(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
         choices=[('C', 'Current Student'), ('F', 'Former Student'),
-                 ('A', 'Applied Student'), ('R', 'Rejected Student')],
-        max_length=1, default='A')
+                 ('A', 'Applied Student'), ('R', 'Rejected Student'),
+                 ('W', 'Student Waiting for Church Recommendation')],
+        max_length=1, default='W')
     church = models.CharField(max_length=100, blank=True, null=True)
     church_membership = models.CharField(max_length=100, blank=True,
                                          null=True)

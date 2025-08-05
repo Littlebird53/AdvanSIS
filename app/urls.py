@@ -44,6 +44,8 @@ urlpatterns = [
          {'status': 'F'}, name='center_students_former'),
     path('center/<int:centerid>/students/rejected/', views.view_students,
          {'status': 'R'}, name='center_students_rejected'),
+    path('center/<int:centerid>/students/waiting/', views.view_students,
+         {'status': 'W'}, name='center_students_waiting'),
     path('center/<int:centerid>/find_instructors',
          views.find_instructors, name='find_instructors'),
     path('center/<int:centerid>/add_instructor/<int:staffid>/',
