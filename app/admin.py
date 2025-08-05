@@ -223,6 +223,38 @@ class LearningObjectiveAdmin(admin.ModelAdmin):
     inlines = [CourseTemplateInline]
     search_fields = ['name']
 
+    actions = ['compare_objectives', 'merge_objectives']
+
+    @admin.action(description='Compare selected objectives')
+    def compare_objectives(self, request, queryset, is_merge=False):
+        msg = compare_objects(queryset)
+        if msg is not None:
+            self.message_user(request, msg)
+        elif not is_merge:
+            self.message_user(request, 'Learning objectives are compatible.')
+    @admin.action(description='Merge selected objectives')
+    def merge_objectives(self, request, queryset):
+        ct = queryset.count()
+        if ct < 2:
+            return
+        self.compare_objectives(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0]
+        old = ls[1:]
+        for tmpl in models.CourseTemplate.objects.filter(
+                learning_objectives__in=old):
+            tmpl.learning_objectives.remove(*old)
+            tmpl.learning_objectives.add(main)
+        for other in old:
+            if main.name is None:
+                main.name = other.name
+            if main.description is None:
+                main.description = other.description
+            other.delete()
+        main.save()
+        self.message_user(request, f'Merged {ct} objectives.')
+
 class LearningObjectiveInline(M2MMixin, NonrelatedTabularInline):
     model = models.LearningObjective
     save_to = 'learning_objectives'
