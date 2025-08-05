@@ -23,11 +23,19 @@ GPA_VALUES = {
     'F': 0.0,
 }
 
-def calc_gpa(grades):
+def calc_gpa(grades, unique_only=False):
     att = 0
     get = 0
+    seen = set()
+    if unique_only:
+        # comma sorts after +, so this makes A+ < A < A-
+        grades = sorted(grades, key=lambda g: str(g.value)+',')
     for g in grades:
         if g.value in GPA_VALUES:
+            if unique_only:
+                if g.course.template in seen:
+                    continue
+                seen.add(g.course.template)
             cr = g.course.template.credits
             att += cr
             get += cr * GPA_VALUES[g.value]
@@ -273,9 +281,9 @@ class Person(models.Model):
 
     @property
     def credits_earned(self):
-        return self.grade_set.exclude(
-            value__in=['F', 'Au', 'IP', 'W']).aggregate(
-                v=models.Sum('course__template__credits'))['v'] or 0
+        return sum([t.credits for t in set(
+            g.course.template for g in self.grade_set.exclude(
+                value__in=['F', 'Au', 'IP', 'W']))])
 
     @property
     def credits_in_progress(self):
@@ -290,13 +298,10 @@ class Person(models.Model):
 
     @property
     def potential_achievement_credits(self):
-        has = self.grade_set.exclude(
-            value__in=['F', 'Au', 'W']).aggregate(
-                v=models.Sum('course__template__credits'))['v'] or 0
-        use = self.achievementaward_set.filter(
-            status__in=['S', 'A', 'P', 'D'], achievement__category='C',
-        ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
-        return has - use
+        has = sum([t.credits for t in set(
+            g.course.template for g in self.grade_set.exclude(
+                value__in=['F', 'Au', 'W']))])
+        return has - self.certificate_credits
 
     @property
     def full_name(self):
@@ -367,7 +372,7 @@ class Person(models.Model):
 
     @property
     def gpa(self):
-        return calc_gpa(self.grade_set.all())
+        return calc_gpa(self.grade_set.all(), True)
 
 class Center(models.Model):
     name = models.CharField(max_length=400)

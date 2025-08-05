@@ -102,6 +102,8 @@
     {% endfor %}
   </tbody>
 </table>
+
+<p><b>Total Credits Earned:</b> {{student.credits_earned}}</p>
 {% endif %}
 
 {% if resume %}
@@ -267,5 +269,38 @@
   </tr>
 </table>
 {% endfor %}
+
+{% if achievements %}
+<h2>Achievements</h2>
+{% for ach in achievements %}
+<h3>{{ach.achievement}}</h3>
+<table>
+  <tr>
+    <th>Status</th>
+    <td>{{ach.get_status_display}}</td>
+  </tr>
+  <tr>
+    <th>Graduation Term</th>
+    <td>{{ach.get_semester_display}} {{ach.year}}</td>
+  </tr>
+  <tr>
+    <th>Application Date</th>
+    <td>{{ach.applied}}</td>
+  </tr>
+  {% if ach.awarded %}
+  <tr>
+    <th>Award Date</th>
+    <td>{{ach.awarded}}</td>
+  </tr>
+  {% endif %}
+  {% if ach.walking %}
+  <tr>
+    <th>Campus</th>
+    <td>{{ach.campus}}</td>
+  </tr>
+  {% endif %}
+</table>
+{% endfor %}
+{% endif %}
 
 {% endblock %}

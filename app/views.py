@@ -541,6 +541,7 @@ def student_info(request, studentid):
     resume = []
     contact_form = None
     contact_form_open = False
+    achievements = []
     if is_director:
         transcript = student.grade_set.all()
         resume = models.Course.objects.filter(
@@ -559,6 +560,8 @@ def student_info(request, studentid):
                 contact_form_open = True
         else:
             contact_form = forms.ContactUpdateForm(instance=student)
+        achievements = models.AchievementAward.objects.filter(
+            person=student)
     return render(request, 'app/student_info.html',
                   {'student': student,
                    'emails': student.emails.filter(active=True),
@@ -572,6 +575,7 @@ def student_info(request, studentid):
                    'instructor_applications': i_applications,
                    'contact_form': contact_form,
                    'contact_form_open': contact_form_open,
+                   'achievements': achievements,
                    })
 
 @login_required
@@ -1299,9 +1303,13 @@ def transcript(request, personid=None):
         context['center'] = sr.center
         context['center_address'] = sr.center.mailings.all().filter(
             active=True).first()
-    grades = models.Grade.objects.filter(person=person).order_by('course__template__title')
+    grades = models.Grade.objects.filter(person=person)
     semesters = collections.defaultdict(list)
-    for grade in grades:
+    seen = set()
+    for grade in sorted(grades, key=lambda g: str(g.value)+','):
+        if grade.course.template in seen:
+            grade.value = 'R'
+        seen.add(grade.course.template)
         semesters[grade.course.sort_key()[:2]].append(grade)
     blocks = []
     total_att = 0
@@ -1323,7 +1331,7 @@ def transcript(request, personid=None):
             if g.value != 'Au':
                 cr = g.course.template.credits
                 att += cr
-                if g.value not in ['F', 'IP', 'W']:
+                if g.value not in ['F', 'IP', 'W', 'R']:
                     get += cr
                 if g.value in GPA_VALUES:
                     gpa_att += cr
