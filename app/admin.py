@@ -7,6 +7,40 @@ from app import models
 import collections
 import datetime
 
+def compare_objects(objects):
+    values = collections.defaultdict(set)
+    names = {}
+    fields = []
+    for obj in objects:
+        for field in obj._meta.get_fields():
+            if 'Many' in field.__class__.__name__:
+                continue
+            if 'OneToOne' in field.__class__.__name__:
+                continue
+            if 'BigAuto' in field.__class__.__name__:
+                continue
+            disp = f'get_{field.name}_display'
+            fields.append((field.name,
+                           disp if hasattr(obj, disp) else None))
+            names[field.name] = field.verbose_name
+        break
+    for obj in objects:
+        for field, disp in fields:
+            if disp:
+                val = getattr(obj, disp)()
+            else:
+                val = getattr(obj, field)
+            if val is not None:
+                values[field].add(str(val))
+    diff = []
+    for field, _ in fields:
+        if len(values[field]) > 1:
+            diff.append(names[field] + ': ' + ' vs '.join(sorted(values[field])))
+    if diff:
+        return Template('''Records differ in the following fields:<br/>
+        <ul>{% for d in diff %}<li>{{d}}</li>{% endfor %}</ul>''').render(
+            Context({'diff': diff}))
+
 class M2MMixin:
     save_to = None
     extra = 0
@@ -85,6 +119,43 @@ class CourseAdmin(admin.ModelAdmin):
                     'semester', 'year', 'status']
     list_filter = ['semester', 'template__division', 'delivery_format',
                    'status']
+    list_select_related = ['template']
+
+    actions = ['compare_courses', 'merge_courses']
+
+    @admin.action(description='Compare selected courses')
+    def compare_courses(self, request, queryset, is_merge=False):
+        msg = compare_objects(queryset)
+        if msg is not None:
+            self.message_user(request, msg)
+        elif not is_merge:
+            self.message_user(request, 'Course records are compatible.')
+    @admin.action(description='Merge selected courses')
+    def merge_courses(self, request, queryset):
+        ct = queryset.count()
+        if ct < 2:
+            return
+        self.compare_courses(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0]
+        models.CourseFile.objects.filter(course__in=queryset).update(
+            course=main)
+        models.Grade.objects.filter(course__in=queryset).update(
+            course=main)
+        for other in ls[1:]:
+            for field in other._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    continue
+                if field.name in ['id', 'template']:
+                    continue
+                if getattr(main, field.name) is None:
+                    setattr(main, field.name, getattr(other, field.name))
+            main.languages.add(*other.languages.all())
+            main.instructors.add(*other.instructors.all())
+            other.delete()
+        main.save()
+        self.message_user(request, f'Merged {ct} courses.')
 
 class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
     model = models.AchievementRequirement
@@ -97,6 +168,45 @@ class AchievementAdmin(admin.ModelAdmin):
     list_display = ['name', 'abbreviation', 'credits', 'category']
     list_filter = ['credits', 'category']
     search_fields = ['name']
+
+    actions = ['compare_achievements', 'merge_achievements']
+
+    @admin.action(description='Compare selected achievements')
+    def compare_achievements(self, request, queryset, is_merge=False):
+        msg = compare_objects(queryset)
+        if msg is not None:
+            self.message_user(request, msg)
+        elif not is_merge:
+            self.message_user(request, 'Achievement records are compatible.')
+    @admin.action(description='Merge selected achievements')
+    def merge_achievements(self, request, queryset):
+        ct = queryset.count()
+        if ct < 2:
+            return
+        self.compare_achievements(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0]
+        old = ls[1:]
+        for ach in models.Achievement.objects.filter(
+                prerequisites__in=old):
+            ach.prerequisites.remove(old)
+            ach.prerequisites.add(main)
+        models.AchievementAward.objects.filter(
+            achievement__in=old).update(achievement=main)
+        for other in old:
+            for field in other._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    continue
+                if field.name in ['id']:
+                    continue
+                if getattr(main, field.name) is None:
+                    setattr(main, field.name, getattr(other, field.name))
+            main.requirements.add(*other.requirements.all())
+            main.prerequisites.add(*other.prerequisites.all())
+            other.delete()
+        main.save()
+        self.message_user(request, f'Merged {ct} achievements.')
 
 @admin.register(models.SharedFile)
 class FileAdmin(admin.ModelAdmin):
@@ -230,29 +340,9 @@ class UserAdmin(BaseUserAdmin):
 
     @admin.action(description='Compare selected accounts')
     def compare_users(self, request, queryset, is_merge=False):
-        values = collections.defaultdict(set)
-        names = {}
-        for user in queryset:
-            person = user.person
-            for field in person._meta.get_fields():
-                if 'Many' in field.__class__.__name__:
-                    continue
-                if field.name in ['id', 'user']:
-                    continue
-                disp = f'get_{field.name}_display'
-                if hasattr(person, disp):
-                    val = getattr(person, disp)()
-                else:
-                    val = getattr(person, field.name)
-                names[field.name] = field.verbose_name
-                if val is not None:
-                    values[field.name].add(val)
-        diff = []
-        for key in values:
-            if len(values[key]) > 1:
-                diff.append(names[key] + ': ' + ' vs '.join(sorted(values[key])))
-        if diff:
-            self.message_user(request, Template('Users differ in the following fields:<br/><ul>{% for d in diff %}<li>{{d}}</li>{% endfor %}</ul>').render(Context({'diff': diff})))
+        msg = compare_objects([u.person for u in queryset])
+        if msg is not None:
+            self.message_user(request, msg)
         elif not is_merge:
             self.message_user(request, 'User profiles are compatible.')
     @admin.action(description='Merge selected accounts')
