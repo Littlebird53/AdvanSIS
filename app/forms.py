@@ -123,6 +123,11 @@ class NewCourseForm(RequiredMixin, forms.ModelForm):
             staffrecord__status='C', staffrecord__role__in=['I', 'D', 'A'])
         self.fields['template'].queryset = models.CourseTemplate.objects.filter(active=True).order_by('title')
         self.fields['country'].initial = center.country
+    def clean_multi_center(self):
+        mc = self.cleaned_data['multi_center']
+        if mc and self.cleaned_data.get('delivery_format') != 'O':
+            raise forms.ValidationError(_("Advertising to other centers doesn't make sense for in-person classes."), code='local-multi-center')
+        return mc
     class Meta:
         model = models.Course
         fields = ['template', 'year', 'semester', 'instructor',
