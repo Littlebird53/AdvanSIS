@@ -928,8 +928,9 @@ def manage_courses(request, center):
         qs = qs.exclude(year__gt=y2)
         if s2 != 'Wi':
             qs = qs.exclude(year=y2, semester__in=seq[seq.index(s2):])
+    dct = dict(models.SEMESTERS + [(None, None)])
     return render(request, 'app/manage_center_courses.html', {
-        'form': form, 'y1': y1, 's1': s1, 'y2': y2, 's2': s2,
+        'form': form, 'y1': y1, 's1': dct[s1], 'y2': y2, 's2': dct[s2],
         'center': center, 'courses': qs})
 
 def template_stats(template, center):
