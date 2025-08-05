@@ -528,12 +528,12 @@ def student_info(request, studentid):
             'center', flat=True)
     if request.user.is_staff or request.user == student.user:
         director_centers = s_centers.union(i_centers)
-    is_director = len(director_centers) > 0
+    is_director = len(director_centers) > 0 or request.user.is_staff
     is_instructor = models.Grade.objects.filter(
         (Q(course__instructor=request.user.person) |
          Q(course__assistant_instructors=request.user.person))
     ).filter(person=student).exists()
-    if not is_director and not is_instructor:
+    if not is_director and not is_instructor and not request.user.is_staff:
         raise PermissionDenied()
     s_applications = []
     i_applications = []

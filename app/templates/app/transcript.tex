@@ -22,7 +22,7 @@
 
 \begin{multicols*}{3}
   \begin{center}
-  
+
 \hspace{100in} \\ \hspace{100in}
     {\Large ADVANCE} \\
     Director: Dr. Warren Haynes \\
@@ -64,7 +64,7 @@
       {{grade.course.template.title}} &
       {{grade.course.template.credits}} &
       {{grade.value}} &
-      {{grade.course.center.code}} &
+      {% if grade.course.center %}{{grade.course.center.code}}{% endif %} &
       \\ %note \\ % TODO
     {% endfor %}
     \multicolumn{6}{l}{\it TERM SUMMARY: Credits Attempted: {{semester.attempted}} Credits Awarded: {{semester.earned}}} \\
