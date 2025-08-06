@@ -834,7 +834,6 @@ class AchievementAward(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            import datetime
             self.applied = datetime.date.today()
         return super().save(*args, **kwargs)
 

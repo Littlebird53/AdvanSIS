@@ -1088,7 +1088,7 @@ class InstructorAtLargeProfileView(AccessMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
-        ret = self.sr.profile.copy()
+        ret = (self.sr.profile or {}).copy()
         ret['resume'] = self.sr.resume
         return ret
 
