@@ -4,18 +4,22 @@
 
 {% block content %}
 <h1>All Messages</h1>
-<h2>Received</h2>
-{% for popup in popups %}
-<div class="popup-message">
-  <p class="popup-sender">Message from {{popup.sender.given_name}} {{popup.sender.family_name}} on {{popup.sent}}:</p>
-  <p class="popup-body">{{popup.text|linebreaksbr}}</p>
-</div>
-{% endfor %}
-<h2>Sent</h2>
-{% for popup in sent %}
-<div class="popup-message">
-  <p>Date: {{popup.sent}}</p>
-  <p class="popup-body">{{popup.text|linebreaksbr}}</p>
-</div>
-{% endfor %}
+<details>
+  <summary>Received</summary>
+  {% for popup in popups %}
+  <div class="popup-message">
+    <p class="popup-sender">Message from {{popup.sender.given_name}} {{popup.sender.family_name}} on {{popup.sent}}:</p>
+    <p class="popup-body">{{popup.text|linebreaksbr}}</p>
+  </div>
+  {% endfor %}
+</details>
+<details>
+  <summary>Sent</summary>
+  {% for popup in sent %}
+  <div class="popup-message">
+    <p>Date: {{popup.sent}}</p>
+    <p class="popup-body">{{popup.text|linebreaksbr}}</p>
+  </div>
+  {% endfor %}
+</details>
 {% endblock %}
