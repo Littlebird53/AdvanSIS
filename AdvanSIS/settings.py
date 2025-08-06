@@ -131,7 +131,7 @@ STATIC_ROOT = '/var/www/joseph-static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_ROOT = 'files'
+MEDIA_ROOT = '/var/www/joseph-media/'
 MEDIA_URL = 'media/'
 
 LOGIN_REDIRECT_URL = '/dashboard/'
