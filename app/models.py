@@ -695,6 +695,7 @@ class StaffRecord(models.Model):
     advance_approved = models.BooleanField(default=False)
     profile = models.JSONField(blank=True, null=True,
                                encoder=DjangoJSONEncoder)
+    resume = models.FileField(blank=True, null=True)
 
     TIME_OF_DAY = [('M', 'Morning'), ('D', 'Midday'), ('A', 'Afternoon'),
                    ('E', 'Evening')]
