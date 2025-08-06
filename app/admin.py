@@ -141,8 +141,33 @@ class CourseAdmin(admin.ModelAdmin):
         main = ls[0]
         models.CourseFile.objects.filter(course__in=queryset).update(
             course=main)
-        models.Grade.objects.filter(course__in=queryset).update(
-            course=main)
+        grades = {g.person: g for g in main.grade_set.all()}
+        def pick_grade(v1, v2):
+            other = ['P', 'Tr', 'IP', 'F', 'Au', 'W']
+            if v1 not in other:
+                if v2 not in other:
+                    if (v1 + ',') < (v2 + ','):
+                        return v1
+                    else:
+                        return v2
+                return v1
+            elif v2 not in other:
+                return v2
+            elif other.index(v1) < other.index(v2):
+                return v1
+            else:
+                return v2
+        other_grades = models.Grade.objects.filter(course__in=ls[1:])
+        for g in other_grades:
+            if g.person not in grades:
+                grades[g.person] = g
+                g.course = main
+                g.save()
+            else:
+                old = grades[g.person]
+                old.value = pick_grade(old.value, g.value)
+                old.save()
+                g.delete()
         for other in ls[1:]:
             for field in other._meta.get_fields():
                 if 'Many' in field.__class__.__name__:
