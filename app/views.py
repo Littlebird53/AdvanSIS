@@ -459,6 +459,7 @@ def edit_schedule(request, courseid):
 
     if request.method == 'POST':
         form = forms.CalendarForm(request.POST)
+        modality_form = forms.ModalityForm(request.POST, instance=course)
         if form.is_valid():
             data = form.cleaned_data
             data['mode'] = 'weekly'
@@ -468,8 +469,10 @@ def edit_schedule(request, courseid):
                           {'course': course})
     else:
         form = forms.CalendarForm(initial=course.schedule or {})
+        modality_form = forms.ModalityForm(instance=course)
     return render(request, 'app/edit_schedule.html',
-                  {'course': course, 'form': form})
+                  {'course': course, 'form': form,
+                   'modality_form': modality_form})
 
 @login_required
 def list_centers(request):

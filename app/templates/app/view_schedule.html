@@ -1,3 +1,17 @@
 {{course.display_schedule}}
+<table>
+  <tr>
+    <th>Accepting Enrollments</th>
+    <td>{{course.accepting_enrollments|yesno}}</td>
+  </tr>
+  <tr>
+    <th>Delivery Format</th>
+    <td>{{course.get_delivery_format_display}}</td>
+  </tr>
+  <tr>
+    <th>Advertising to Other Centers</th>
+    <td>{{course.multi_center|yesno}}</td>
+  </tr>
+</table>
 <button hx-get="{% url 'app:edit_schedule' course.id %}"
 	hx-target="#schedule">Edit Schedule</button>

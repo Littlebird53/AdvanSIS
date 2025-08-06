@@ -16,9 +16,7 @@
 <p><a href="{% url 'app:message_course_students' course.id %}">Message all students</a></p>
 <h2>Schedule</h2>
 <div id="schedule">
-  {{course.display_schedule}}
-  <button hx-get="{% url 'app:edit_schedule' course.id %}"
-          hx-target="#schedule">Edit Schedule</button>
+  {% include 'app/view_schedule.html' %}
 </div>
 <h2>Registration &amp; Grades</h2>
 <table id="grade_list">

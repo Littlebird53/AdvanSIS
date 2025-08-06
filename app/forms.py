@@ -255,6 +255,12 @@ class CalendarForm(RequiredMixin, forms.Form):
         'location': {'style': 'width: 20em'},
     }
 
+class ModalityForm(forms.ModelForm):
+    class Meta:
+        model = models.Course
+        fields = ['accepting_enrollments', 'delivery_format',
+                  'multi_center']
+
 class TallySheetForm(forms.Form):
     semester = forms.ChoiceField(choices=models.SEMESTERS,
                                  initial=models.get_current_term)
