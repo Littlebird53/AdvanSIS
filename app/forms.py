@@ -458,7 +458,9 @@ class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['courses'].choices = models.CourseTemplate.objects.filter(active=True).values_list('id', 'title')
+        self.fields['courses'].choices = [
+            (ct.id, ct.display_title)
+            for ct in models.CourseTemplate.objects.filter(active=True)]
         import datetime
         cur_year = datetime.date.today().year
         self.fields['terms'].choices = [
