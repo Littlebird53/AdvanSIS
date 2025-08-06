@@ -807,7 +807,7 @@ class Achievement(models.Model):
     def short_name(self):
         return self.name.replace('Leadership Diploma', '').replace('Diploma', '').replace('Certificate', '').strip()
 
-class AchievementAward(models.Model):
+class AchievementAward(models.Model, AutosaveFormMixin):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     status = models.CharField(
@@ -831,6 +831,9 @@ class AchievementAward(models.Model):
                  ('XL', 'X-Large'), ('XXL', 'XX-Large'),
                  ('XXXL', 'XXX-Large')],
         max_length=4, blank=True, null=True)
+
+    forms = {'default': {'fields': ['display_name'],
+                         'template': 'app/student_info_achievement.html'}}
 
     def save(self, *args, **kwargs):
         if not self.id:
