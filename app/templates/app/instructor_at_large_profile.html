@@ -3,7 +3,7 @@
 {% block title %}Instructor-at-Large Profile{% endblock %}
 
 {% block content %}
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>
     {{form.as_table}}

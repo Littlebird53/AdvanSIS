@@ -445,6 +445,8 @@ class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
         ('phone', 'phone'), ('email', 'email')])
     bio = forms.CharField(max_length=2000, widget=forms.Textarea)
 
+    resume = forms.FileField(required=False)
+
     make_filtered = ['courses', 'terms', 'time_of_day', 'timezone']
 
     def __init__(self, *args, **kwargs):

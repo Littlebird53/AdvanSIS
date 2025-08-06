@@ -168,6 +168,9 @@
 	</p>
 	<p><b>Available At:</b> {{instructor.get_time_of_day_display}}</p>
 	<p><b>Timezone:</b> {{instructor.profile.timezone}}</p>
+  {% if instructor.resume %}
+  <p><a href="{{instructor.resume.url}}">Resume</a></p>
+  {% endif %}
 	<p>
 	  <b>Preferred Concat Method:</b>
 	  {% if instructor.profile.preferred_contact_method == 'phone' %}

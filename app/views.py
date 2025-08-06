@@ -1088,10 +1088,15 @@ class InstructorAtLargeProfileView(AccessMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
-        return self.sr.profile
+        ret = self.sr.profile.copy()
+        ret['resume'] = self.sr.resume
+        return ret
 
     def form_valid(self, form):
-        self.sr.profile = form.cleaned_data
+        dct = form.cleaned_data
+        self.sr.resume = dct['resume']
+        del dct['resume']
+        self.sr.profile = dct
         self.sr.save()
         return render(self.request,
                       'app/instructor_at_large_profile_success.html')
