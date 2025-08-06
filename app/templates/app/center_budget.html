@@ -93,6 +93,36 @@
 
 <h2>Expenses</h2>
 
+<h3>Student Fees</h3>
+
+<table>
+  <tr>
+    <th>Country</th>
+    <th>New Students</th>
+    <th>Certificate Completions</th>
+    <th>In-Person Graduations</th>
+    <th>Total Fee</th>
+    <th>Delete</th>
+  </tr>
+  {% for r in roster %}{{r|as_row}}{% endfor %}
+  <tr id="roster-total">
+    <th>Total</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td><span id="roster-total-fee"></span></td>
+    <td></td>
+  </tr>
+</table>
+
+<form hx-target="#roster-total" hx-swap="beforebegin"
+      hx-post="{% create_url 'expectedroster' %}"
+      data-form-id="skip">
+  <input type="hidden" name="budget" value="{{budget.id}}"/>
+  {% create_form_horizontal 'expectedroster' %}
+  <button type="submit">Add</button>
+</form>
+
 <h3>Staff Stipends</h3>
 
 <table>
@@ -184,22 +214,44 @@
       return {center: center_total, gateway: gateway_total};
   }
 
+  function update_roster() {
+    let total = 0;
+    $('.roster').each(function(i, el) {
+      console.log(el);
+      let tr = $(el);
+      let fee = parseFloat(tr.data('country-fee'));
+      let row = 0;
+      let ns = parseInt(tr.find('.new-students input').val() || '0');
+      row += ns * Math.min(fee, 30);
+      let ct = parseInt(tr.find('.certificates input').val() || '0');
+      row += ct * Math.min(fee, 10);
+      let ip = parseInt(tr.find('.in-person input').val() || '0');
+      row += ip * 80;
+      tr.find('.total-fee').html(toDollar(row));
+      total += row;
+      console.log(fee, ns, ct, ip, row);
+    });
+    $('#roster-total-fee').html(toDollar(total));
+    return total;
+  }
+
   function update_totals() {
-      let courses = update_courses();
-      let other_income = parseFloat($('#id_other_income').val() || '0');
-      let expenses = 0;
-      $('.stipend input#id_stipend').each(function(i, el) {
-          expenses += parseFloat($(el).val() || '0');
-      });
-      $('#other-expenses input').each(function(i, el) {
-          expenses += parseFloat($(el).val() || '0');
-      });
-      $('#total-income').html(toDollar(courses.center + courses.gateway +
-                                       other_income));
-      $('#total-expenses').html(toDollar(expenses));
-      $('#total-fees').html(toDollar(courses.gateway));
-      $('#total-balance').html(toDollar(courses.center + other_income -
-                                        expenses));
+    let courses = update_courses();
+    let other_income = parseFloat($('#id_other_income').val() || '0');
+    let expenses = 0;
+    let roster = update_roster();
+    $('.stipend input#id_stipend').each(function(i, el) {
+      expenses += parseFloat($(el).val() || '0');
+    });
+    $('#other-expenses input').each(function(i, el) {
+      expenses += parseFloat($(el).val() || '0');
+    });
+    $('#total-income').html(toDollar(courses.center + courses.gateway +
+                                     other_income));
+    $('#total-expenses').html(toDollar(expenses));
+    $('#total-fees').html(toDollar(courses.gateway + roster));
+    $('#total-balance').html(toDollar(courses.center + other_income -
+                                      expenses - roster));
   }
 
   $(function() {

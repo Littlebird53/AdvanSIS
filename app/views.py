@@ -848,6 +848,7 @@ def center_budget(request, center, year=None):
         'fees': budget.centerfees_set.all().order_by('country__name'),
         'courses': budget.expectedcourse_set.all().order_by('course__title'),
         'stipends': budget.centerstipend_set.all().order_by('-stipend'),
+        'roster': budget.expectedroster_set.all().order_by('country__name'),
         'countries': json.dumps(dict([
             (i, float(v)) for i, v in
             models.Country.objects.all().values_list('id', 'credit_fee')])),

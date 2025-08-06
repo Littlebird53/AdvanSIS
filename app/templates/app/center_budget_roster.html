@@ -1,0 +1,12 @@
+{% load autosave %}
+<tr {{id_fields}} class="roster"
+    data-country-fee="{{instance.country.student_fee}}">
+  <td>{{instance.country}}</td>
+  <td class="new-students">{{instance|form_field:"new_students"}}</td>
+  <td class="certificates">{{instance|form_field:"certificates"}}</td>
+  <td class="in-person">{{instance|form_field:"in_person"}}</td>
+  <td style="border-left: 1px solid gray">
+    <span class="total-fee"></span>
+  </td>
+  <td>{{instance|delete_button}}</td>
+</tr>

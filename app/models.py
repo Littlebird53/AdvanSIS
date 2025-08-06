@@ -964,6 +964,28 @@ class CenterStipend(models.Model, AutosaveFormMixin):
                     'template': 'app/center_budget_stipend.html'},
     }
 
+class ExpectedRoster(models.Model, AutosaveFormMixin):
+    budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    new_students = models.IntegerField(default=1)
+    certificates = models.IntegerField(default=0)
+    in_person = models.IntegerField(default=0)
+
+    forms = {
+        'default': {'fields': ['new_students'],
+                    'template': 'app/center_budget_roster.html'},
+        'new_students': {'fields': ['new_students'],
+                         'template': 'app/center_budget_roster.html'},
+        'certificates': {'fields': ['certificates'],
+                         'template': 'app/center_budget_roster.html'},
+        'in_person': {'fields': ['in_person'],
+                      'template': 'app/center_budget_roster.html'},
+        'new': {'fields': ['country'],
+                'id_fields': {'budget': CenterBudget},
+                'widgets': {'country': {'class': 'filter-select'}},
+                'template': 'app/center_budget_roster.html'},
+    }
+
 class Prospect(models.Model):
     given_name = models.CharField(max_length=100, null=True,
                                   verbose_name='Given (First) Name')

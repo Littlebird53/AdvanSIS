@@ -21,9 +21,10 @@ def as_row(obj, name='default'):
 @register.filter
 def form_field(obj, name='default'):
     form = obj.build_form(name, instance=obj)
-    tmpl = Template('<form hx-trigger="change" hx-post="{% url obj.edit_url_name obj.id %}" data-form-id="skip">{{field}}</form>')
+    tmpl = Template('<form hx-trigger="change" hx-post="{% url obj.edit_url_name obj.id %}" data-form-id="skip">{{field}}<input type="hidden" name="form" value="{{name}}"/></form>')
     return tmpl.render(Context({
         'obj': obj,
+        'name': name,
         'field': form[obj.forms[name]['fields'][0]],
     }))
 
