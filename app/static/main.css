@@ -1,6 +1,6 @@
 :root {
   --left-pad: 140px;
-  --window-width: calc(min(1000px, 100vw) - var(--left-pad));
+  --window-width: calc(min(1200px, 100vw) - var(--left-pad));
 }
 
 div.search-item p {

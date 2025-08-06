@@ -133,9 +133,9 @@
     </td>
     <td>
       <ul style="max-height: 5lh; overflow-y: scroll">
-	{% for course in instructor.interested_courses %}
-	<li>{{course.title}}</li>
-	{% endfor %}
+	      {% for course in instructor.interested_courses %}
+	      <li>{{course.display_title}}</li>
+	      {% endfor %}
       </ul>
     </td>
     <td>
