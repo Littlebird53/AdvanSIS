@@ -454,6 +454,7 @@ class InstructorAtLargeProfileForm(RequiredMixin, forms.Form):
     resume = forms.FileField(required=False)
 
     make_filtered = ['courses', 'terms', 'time_of_day', 'timezone']
+    widget_attrs = {'courses': {'style': 'width: 40em'}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
