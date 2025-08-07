@@ -191,7 +191,7 @@ class AchievementAdmin(admin.ModelAdmin):
     exclude = ['requirements']
     inlines = [AchievementRequirementInline]
     list_display = ['name', 'abbreviation', 'credits', 'category']
-    list_filter = ['credits', 'category']
+    list_filter = ['credits', 'category', 'active']
     search_fields = ['name']
 
     actions = ['compare_achievements', 'merge_achievements']
@@ -570,7 +570,8 @@ class AwardYearFilter(admin.SimpleListFilter):
 @admin.register(models.AchievementAward)
 class AchievementAwardAdmin(admin.ModelAdmin):
     list_filter = ['status', 'campus', 'walking',
-                   AwardYearFilter, 'semester']
-    list_display = ['person', 'status', 'campus', 'walking', 'year', 'semester']
+                   AwardYearFilter, 'semester', 'achievement__active']
+    list_display = ['person', 'achievement', 'status', 'campus',
+                    'walking', 'year', 'semester']
     readonly_fields = ['person']
     search_fields = ['person__given_name', 'person__family_name']
