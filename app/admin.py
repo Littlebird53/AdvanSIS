@@ -470,6 +470,8 @@ class UserAdmin(BaseUserAdmin):
         super().save_model(request, obj, form, change)
         if not change:
             obj.username = str(obj.id)
+            import uuid
+            obj.set_password(str(uuid.uuid1()))
             obj.save()
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
