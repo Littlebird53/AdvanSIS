@@ -305,6 +305,9 @@ class PersonAdmin(admin.ModelAdmin):
     exclude = ['emails', 'phones', 'mailings']
     verbose_name_plural = 'People (use Users table instead)'
 
+    def has_add_permission(self, request):
+        return False
+
 class PersonInline(admin.StackedInline):
     model = models.Person
     can_delete = False

@@ -444,7 +444,8 @@ class Center(models.Model):
 
     @property
     def director(self):
-        sr = self.staffrecord_set.filter(status='C', role='D').first()
+        sr = self.staffrecord_set.filter(
+            status='C', role='D').select_related('person').first()
         if sr:
             return sr.person
 
