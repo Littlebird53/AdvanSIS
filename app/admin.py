@@ -215,7 +215,7 @@ class AchievementAdmin(admin.ModelAdmin):
         old = ls[1:]
         for ach in models.Achievement.objects.filter(
                 prerequisites__in=old):
-            ach.prerequisites.remove(old)
+            ach.prerequisites.remove(*old)
             ach.prerequisites.add(main)
         models.AchievementAward.objects.filter(
             achievement__in=old).update(achievement=main)
