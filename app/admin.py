@@ -466,6 +466,11 @@ class UserAdmin(BaseUserAdmin):
             person.mailings.clear()
         main.save()
         self.message_user(request, f'Merged {queryset.count()} accounts.')
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:
+            obj.username = str(obj.id)
+            obj.save()
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
