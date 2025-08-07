@@ -574,4 +574,5 @@ class AchievementAwardAdmin(admin.ModelAdmin):
     list_display = ['person', 'achievement', 'status', 'campus',
                     'walking', 'year', 'semester']
     readonly_fields = ['person']
-    search_fields = ['person__given_name', 'person__family_name']
+    search_fields = ['person__given_name', 'person__family_name',
+                     'achievement__name']
