@@ -41,6 +41,21 @@ def compare_objects(objects):
         <ul>{% for d in diff %}<li>{{d}}</li>{% endfor %}</ul>''').render(
             Context({'diff': diff}))
 
+def merge_m2m(field, objects, key):
+    cur = set(key(val) for val in field.all())
+    for obj in objects:
+        val = key(obj)
+        if val not in cur:
+            cur.add(val)
+            field.add(obj)
+def merge_emails(field, emails):
+    merge_m2m(field, emails, lambda e: e.email)
+def merge_phones(field, phones):
+    merge_m2m(field, phones, lambda p: p.phone)
+def merge_mailings(field, mailings):
+    merge_m2m(field, mailings, lambda m: (
+        m.address, m.attention, m.city, m.state, m.zip_code, m.country_id))
+
 class M2MMixin:
     save_to = None
     extra = 0
@@ -102,7 +117,7 @@ class CenterAdmin(admin.ModelAdmin):
     list_display = ['name', 'code', 'fte_eligible', 'active', 'approved']
     list_filter = ['fte_eligible', 'active', 'approved']
 
-    actions = ['compare_centers']
+    actions = ['compare_centers', 'merge_centers']
 
     @admin.action(description='Compare selected centers')
     def compare_centers(self, request, queryset, is_merge=False):
@@ -111,6 +126,44 @@ class CenterAdmin(admin.ModelAdmin):
             self.message_user(request, msg)
         elif not is_merge:
             self.message_user(request, 'Center records are compatible.')
+    @admin.action(description='Merge selected centers')
+    def merge_centers(self, request, queryset):
+        ct = queryset.count()
+        if ct < 2:
+            return
+        self.compare_centers(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0]
+        old = ls[1:]
+        models.MOU.objects.filter(center__in=old).update(center=main)
+        models.Course.objects.filter(center__in=old).update(center=main)
+        models.StudentRecord.objects.filter(center__in=old).update(center=main)
+        models.StaffRecord.objects.filter(center__in=old).update(center=main)
+        models.CenterBudget.objects.filter(center__in=old).update(center=main)
+        models.Prospect.objects.filter(center__in=old).update(center=main)
+        m2m = ['emails', 'phones', 'mailings',
+               'sponsor_emails', 'sponsor_phones', 'sponsor_mailings']
+        vals = {k: [] for k in m2m}
+        for other in old:
+            for field in other._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    continue
+                if field.name in ['id']:
+                    continue
+                if getattr(main, field.name) is None:
+                    setattr(main, field.name, getattr(other, field.name))
+            for field in m2m:
+                vals[field] += list(getattr(other, field).all())
+            other.delete()
+        merge_emails(main.emails, vals['emails'])
+        merge_phones(main.phones, vals['phones'])
+        merge_mailings(main.mailings, vals['mailings'])
+        merge_emails(main.sponsor_emails, vals['sponsor_emails'])
+        merge_phones(main.sponsor_phones, vals['sponsor_phones'])
+        merge_mailings(main.sponsor_mailings, vals['sponsor_mailings'])
+        main.save()
+        self.message_user(request, f'Merged {ct} accounts.')
 
 class CourseGradeAdmin(admin.TabularInline):
     model = models.Grade
@@ -425,12 +478,6 @@ class UserAdmin(BaseUserAdmin):
         main = ls[0].person
         old = list(models.Person.objects.filter(user__in=queryset).exclude(
             pk=main.pk))
-        emails = set(a.email for a in main.emails.all())
-        phones = set(a.phone for a in main.phones.all())
-        def mailcomp(a):
-            return (a.address, a.attention, a.city, a.state,
-                    a.zip_code, a.country_id)
-        mailings = set(mailcomp(a) for a in main.mailings.all())
         for course in models.Course.objects.filter(instructors__in=old):
             course.instructors.remove(*old)
             course.instructors.add(main)
@@ -447,6 +494,9 @@ class UserAdmin(BaseUserAdmin):
             person=main)
         models.PopupMessage.objects.filter(sender__in=old).update(
             sender=main)
+        emails = []
+        phones = []
+        mailings = []
         for other in ls[1:]:
             person = other.person
             for field in person._meta.get_fields():
@@ -456,23 +506,13 @@ class UserAdmin(BaseUserAdmin):
                     continue
                 if getattr(main, field.name) is not None:
                     setattr(main, field.name, getattr(person, field.name))
-            for addr in person.emails.all():
-                if addr.email not in emails:
-                    emails.add(addr.email)
-                    main.emails.add(addr)
-            person.emails.clear()
-            for addr in person.phones.all():
-                if addr.phone not in phones:
-                    phones.add(addr.phone)
-                    main.phones.add(addr)
-            person.phones.clear()
-            for addr in person.mailings.all():
-                comp = mailcomp(addr)
-                if comp not in mailings:
-                    mailings.add(comp)
-                    main.mailings.add(addr)
-            person.mailings.clear()
+            emails += list(person.emails.all())
+            phones += list(person.phones.all())
+            mailings += list(person.mailings.all())
             other.delete()
+        merge_emails(main.emails, emails)
+        merge_phones(main.phones, phones)
+        merge_mailings(main.mailings, mailings)
         main.save()
         self.message_user(request, f'Merged {queryset.count()} accounts.')
     def save_model(self, request, obj, form, change):
