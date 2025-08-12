@@ -1186,6 +1186,8 @@ class ChurchEndorsementView(UpdateView):
         if not form.instance.endorsement:
             expl += ['Endorsement', form.cleaned_data['endorsement_expl']]
         form.instance.pastor_explanation = '\n\n'.join(expl)
+        if form.instance.status == 'W':
+            form.instance.status = 'A'
         form.save()
         return render(self.request, 'app/endorsement_submitted.html',
                       {'sr': self.object})
