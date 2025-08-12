@@ -52,7 +52,7 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
 class ContactUpdateForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['languages_spoken']
     make_required = ['ed_level', 'date_of_birth', 'preferred_name',
-                     'marital_status', 'ethnicity']
+                     'marital_status']
     class Meta:
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',
