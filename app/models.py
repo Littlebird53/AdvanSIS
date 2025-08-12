@@ -269,14 +269,14 @@ class Person(models.Model):
                                        ('I', 'I'), ('II', 'II'),
                                        ('III', 'III'), ('IV', 'IV'),
                                        ('V', 'V')])
-    preferred_name = models.CharField(max_length=100, null=True)
+    preferred_name = models.CharField(max_length=100, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     sex = models.CharField(choices=[('M', 'Male'), ('F', 'Female')],
                            max_length=1, null=True)
     marital_status = models.CharField(
         choices=[('S', 'Single'), ('M', 'Married'),
                  ('D', 'Divorced or Separated'), ('W', 'Widowed')],
-        max_length=1, null=True)
+        max_length=1, blank=True, null=True)
     denomination = models.CharField(
         choices=[('A', 'Anglican'),
                  ('B', 'Baptist (Non-SBC)'),
@@ -302,7 +302,7 @@ class Person(models.Model):
                  ('2', 'Native American'),
                  ('3', 'Asian or Pacific Islander'), ('4', 'Hispanic'),
                  ('5', 'Caucasian'), ('6', 'Other')],
-        max_length=1, null=True)
+        max_length=1, blank=True, null=True)
     languages_spoken = models.ManyToManyField(Language, blank=True)
     ed_level = models.CharField(max_length=3, choices=[
         ('N', 'No formal education'), ('J', 'Middle/Junior High School'),

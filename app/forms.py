@@ -31,7 +31,7 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
     make_filtered = ['languages_spoken']
-    make_required = ['ed_level']
+    make_required = ['ed_level', 'preferred_name', 'marital_status']
 
     def clean_confirm_password(self):
         p1 = self.cleaned_data.get('password')
@@ -51,7 +51,8 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
 
 class ContactUpdateForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['languages_spoken']
-    make_required = ['ed_level', 'date_of_birth']
+    make_required = ['ed_level', 'date_of_birth', 'preferred_name',
+                     'marital_status', 'ethnicity']
     class Meta:
         model = models.Person
         fields = ['given_name', 'middle_name', 'family_name',

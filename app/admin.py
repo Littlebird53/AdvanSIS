@@ -448,8 +448,6 @@ class UserAdmin(BaseUserAdmin):
         models.PopupMessage.objects.filter(sender__in=old).update(
             sender=main)
         for other in ls[1:]:
-            other.active = False
-            other.save()
             person = other.person
             for field in person._meta.get_fields():
                 if 'Many' in field.__class__.__name__:
@@ -474,6 +472,7 @@ class UserAdmin(BaseUserAdmin):
                     mailings.add(comp)
                     main.mailings.add(addr)
             person.mailings.clear()
+            other.delete()
         main.save()
         self.message_user(request, f'Merged {queryset.count()} accounts.')
     def save_model(self, request, obj, form, change):
