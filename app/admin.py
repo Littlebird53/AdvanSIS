@@ -102,6 +102,16 @@ class CenterAdmin(admin.ModelAdmin):
     list_display = ['name', 'code', 'fte_eligible', 'active', 'approved']
     list_filter = ['fte_eligible', 'active', 'approved']
 
+    actions = ['compare_centers']
+
+    @admin.action(description='Compare selected centers')
+    def compare_centers(self, request, queryset, is_merge=False):
+        msg = compare_objects(queryset)
+        if msg is not None:
+            self.message_user(request, msg)
+        elif not is_merge:
+            self.message_user(request, 'Center records are compatible.')
+
 class CourseGradeAdmin(admin.TabularInline):
     model = models.Grade
     autocomplete_fields = ['person']
@@ -422,7 +432,7 @@ class UserAdmin(BaseUserAdmin):
                     a.zip_code, a.country_id)
         mailings = set(mailcomp(a) for a in main.mailings.all())
         for course in models.Course.objects.filter(instructors__in=old):
-            course.instructors.remove(old)
+            course.instructors.remove(*old)
             course.instructors.add(main)
         models.Grade.objects.filter(person__in=old).update(person=main)
         models.StudentRecord.objects.filter(person__in=old).update(
