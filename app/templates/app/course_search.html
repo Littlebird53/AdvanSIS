@@ -20,17 +20,20 @@
 {% if other.count %}
 <h2>Courses at Other Centers</h2>
 <p>The following courses are being offered remotely and you are welcome to apply to the center and join the course.</p>
-{% for course in other %}
-<div>
-  <h2>{{course}}</h2>
-  <p><b>Center:</b> <a href="{% url 'app:center_info' course.center.id %}">{{course.center.name}}</a></p>
-  <details>
-    <summary>Description</summary>
-    <p>{{course.template.description|linebreaksbr}}</p>
-  </details>
-  <p><a href="{% url 'app:course' course.id %}">Details</a></p>
-  <p><a href="{% url 'app:student_apply' course.center_id %}">Apply to this center</a></p>
-</div>
-{% endfor %}
+<details>
+  <summary>View Courses</summary>
+  {% for course in other %}
+  <div>
+    <h2>{{course}}</h2>
+    <p><b>Center:</b> <a href="{% url 'app:center_info' course.center.id %}">{{course.center.name}}</a></p>
+    <details>
+      <summary>Description</summary>
+      <p>{{course.template.description|linebreaksbr}}</p>
+    </details>
+    <p><a href="{% url 'app:course' course.id %}">Details</a></p>
+    <p><a href="{% url 'app:student_apply' course.center_id %}">Apply to this center</a></p>
+  </div>
+  {% endfor %}
+</details>
 {% endif %}
 {% endblock %}

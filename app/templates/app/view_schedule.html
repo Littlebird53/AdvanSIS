@@ -12,6 +12,10 @@
     <th>Advertising to Other Centers</th>
     <td>{{course.multi_center|yesno}}</td>
   </tr>
+  <tr>
+    <th>Status</th>
+    <td>{{course.get_status_display}}</td>
+  </tr>
 </table>
 <button hx-get="{% url 'app:edit_schedule' course.id %}"
 	hx-target="#schedule">Edit Schedule</button>
