@@ -438,7 +438,8 @@ class UserAdmin(BaseUserAdmin):
                UserPhoneAddressInline, UserMailingAddressInline,
                StudentRecordInline, StaffRecordInline,
                PersonGradeInline, AchievementAwardInline]
-    list_display = ['username', 'person__given_name', 'person__family_name']
+    list_display = ['id', 'username',
+                    'person__given_name', 'person__family_name']
     list_select_related = ['person']
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
