@@ -566,13 +566,14 @@ class Course(models.Model):
     semester = models.CharField(choices=SEMESTERS, max_length=2, null=True)
     instructors = models.ManyToManyField(
         Person, related_name='instructors', blank=True)
-    schedule = models.JSONField(null=True, encoder=DjangoJSONEncoder)
+    schedule = models.JSONField(blank=True, null=True,
+                                encoder=DjangoJSONEncoder)
     delivery_format = models.CharField(
         choices=[('I', 'In-Person'), ('H', 'Hybrid'), ('O', 'Online')],
         max_length=1, null=True)
-    languages = models.ManyToManyField(Language,
+    languages = models.ManyToManyField(Language, blank=True,
                                        default=Language.get_english)
-    country = models.ForeignKey(Country, null=True,
+    country = models.ForeignKey(Country, blank=True, null=True,
                                 on_delete=models.SET_NULL)
     accepting_enrollments = models.BooleanField(default=True)
     multi_center = models.BooleanField(

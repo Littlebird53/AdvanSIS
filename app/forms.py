@@ -111,7 +111,7 @@ class NewMailingForm(forms.ModelForm):
 
 class NewCourseForm(RequiredMixin, forms.ModelForm):
     make_filtered = ['template', 'languages', 'country', 'instructors']
-    make_required = ['instructors']
+    make_required = ['instructors', 'languages', 'country']
 
     def __init__(self, center, *args, **kwargs):
         super().__init__(*args, **kwargs)
