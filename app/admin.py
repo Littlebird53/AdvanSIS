@@ -433,6 +433,24 @@ class AchievementAwardInline(NonrelatedTabularInline):
             return 'Yes, with in-progress'
         else:
             return 'No'
+class UserRecordStatusFilter(admin.SimpleListFilter):
+    title = 'Role'
+    parameter_name = 'role'
+    def lookups(self, request, model_admin):
+        return [
+            ('student', 'Student'),
+            ('staff', 'Staff'),
+            ('null', 'No record'),
+        ]
+    def queryset(self, request, queryset):
+        if self.value() == 'student':
+            return queryset.filter(person__studentrecord__isnull=False)
+        elif self.value() == 'staff':
+            return queryset.filter(person__staffrecord__isnull=False)
+        elif self.value() == 'null':
+            return queryset.exclude(
+                person__studentrecord__isnull=False).exclude(
+                    person__staffrecord__isnull=False)
 class UserAdmin(BaseUserAdmin):
     inlines = [PersonInline, UserEmailAddressInline,
                UserPhoneAddressInline, UserMailingAddressInline,
@@ -441,6 +459,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['id', 'username',
                     'person__given_name', 'person__family_name']
     list_select_related = ['person']
+    list_filter = BaseUserAdmin.list_filter + (UserRecordStatusFilter,)
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
     readonly_fields = ['credits_earned', 'credits_in_progress']
