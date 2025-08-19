@@ -172,6 +172,16 @@ class CourseFileAdmin(admin.TabularInline):
     model = models.CourseFile
     extra = 0
     autocomplete_fields = ['course', 'shared_file']
+class CourseCenterFilter(admin.SimpleListFilter):
+    title = 'Has Center'
+    parameter_name = 'has_center'
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        ]
+    def queryset(self, request, queryset):
+        return queryset.filter(center__isnull=(self.value() == 'no'))
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
@@ -181,7 +191,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ['template__title', 'center',
                     'semester', 'year', 'status']
     list_filter = ['semester', 'template__division', 'delivery_format',
-                   'status']
+                   'status', CourseCenterFilter]
     list_select_related = ['template']
 
     actions = ['compare_courses', 'merge_courses']
