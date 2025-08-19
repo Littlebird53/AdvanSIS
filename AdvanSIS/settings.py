@@ -139,6 +139,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 ADMINS = [('Daniel', 'errors@dangswan.com')]
 APPEND_SLASH = True
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000
 DEFAULT_FROM_EMAIL = 'noreply@joseph.dangswan.com'
 EMAIL_SUBJECT_PREFIX = '[JOSEPH] '
 from django.utils.translation import gettext_lazy as _
