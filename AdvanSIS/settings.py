@@ -25,8 +25,9 @@ SECRET_KEY = secret.SECRET_KEY
 
 DEBUG = secret.DEBUG
 
-ALLOWED_HOSTS = ['localhost', 'joseph.dangswan.com']
-CSRF_TRUSTED_ORIGINS = ['https://joseph.dangswan.com']
+ALLOWED_HOSTS = ['localhost', 'joseph.dangswan.com', 'joseph.gs.edu']
+CSRF_TRUSTED_ORIGINS = ['https://joseph.dangswan.com',
+                        'https://joseph.gs.edu']
 
 # Application definition
 
