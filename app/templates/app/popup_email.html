@@ -1,0 +1,11 @@
+{% extends 'app/email_base.html' %}
+
+{% block content %}
+<p><b>From:</b> {{pm.sender}}</p>
+<br/>
+<p><b>Date:</b> {{pm.sent}}</p>
+<br/>
+<p>{{pm.text|urlize|linebreaksbr}}</p>
+{% endblock %}
+
+{% block signature %}The JOSPEPH System{% endblock %}

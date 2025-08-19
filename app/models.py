@@ -892,6 +892,7 @@ class PopupMessage(models.Model):
     sender = models.ForeignKey(Person, null=True, on_delete=models.SET_NULL,
                                related_name='+')
     dismissed = models.BooleanField(default=False)
+    emailed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'From: {self.sender}, To: {self.person}, {self.text[:40]}'

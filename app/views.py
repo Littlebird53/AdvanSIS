@@ -598,7 +598,6 @@ def all_popups(request):
 
 def send_message(sender, recipients, text):
     from django.utils.timezone import now
-    # TODO: send email
     found = False
     tm = now()
     for recipient in recipients:
