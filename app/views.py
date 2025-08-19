@@ -59,7 +59,7 @@ class CreateAccountView(FormView):
         person = form.save(commit=False)
         person.user = user
         person.save()
-        user.username = str(person.id)
+        user.username = str(user.id)
         user.save()
         if form.cleaned_data.get('email'):
             email = models.EmailAddress()
