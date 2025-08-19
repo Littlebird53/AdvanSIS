@@ -467,7 +467,7 @@ class UserAdmin(BaseUserAdmin):
                StudentRecordInline, StaffRecordInline,
                PersonGradeInline, AchievementAwardInline]
     list_display = ['id', 'username',
-                    'person__given_name', 'person__family_name']
+                    'person__given_name', 'person__family_name', 'email']
     list_select_related = ['person']
     list_filter = BaseUserAdmin.list_filter + (UserRecordStatusFilter,)
     search_fields = ['username', 'person__given_name',
