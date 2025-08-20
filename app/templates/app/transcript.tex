@@ -61,7 +61,7 @@
     \multicolumn{6}{l}{\bf \normalsize {{semester.header}}} \\
     {% for grade in semester.grades %}
       {{grade.course.template.code}} &
-      {{grade.course.template.display_title}} &
+      {{grade.course.template.display_title|latex_escape}} &
       {{grade.course.template.credits}} &
       {{grade.value}} &
       {% if grade.course.center %}{{grade.course.center.code}}{% endif %} &
