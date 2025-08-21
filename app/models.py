@@ -33,7 +33,7 @@ def calc_gpa(grades, unique_only=False):
     for g in grades:
         if g.value in GPA_VALUES:
             if unique_only:
-                if g.course.template in seen:
+                if g.course and g.course.template in seen:
                     continue
                 seen.add(g.course.template)
             cr = g.course.template.credits
