@@ -607,10 +607,8 @@ class Course(models.Model):
         return self.grade_set.all().count()
 
 class Grade(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL,
-                               null=True)
-    person = models.ForeignKey(Person, on_delete=models.SET_NULL,
-                               null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     value = models.CharField(
         choices=[('A+', 'A+'), ('A', 'A'), ('A-', 'A-'),
                  ('B+', 'B+'), ('B', 'B'), ('B-', 'B-'),
