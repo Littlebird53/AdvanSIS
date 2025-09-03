@@ -1096,7 +1096,10 @@ class InstructorAtLargeProfileView(AccessMixin, FormView):
 
     def form_valid(self, form):
         dct = form.cleaned_data
-        self.sr.resume = dct['resume']
+        if dct['resume'] is False:
+            self.sr.resume.delete()
+        else:
+            self.sr.resume = dct['resume']
         del dct['resume']
         self.sr.profile = dct
         self.sr.save()
