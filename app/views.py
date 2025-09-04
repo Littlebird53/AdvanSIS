@@ -345,8 +345,9 @@ def manage_course(request, courseid):
         mode = request.POST.get('mode')
 
     file_query = models.SharedFile.objects.filter(
-        course=course.template).filter(
-            Q(owner__isnull=True) | Q(owner=request.user.person))
+        Q(courses=course) | Q(templates=course.template) |
+        Q(objectives__in=course.template.learning_objectives.all()),
+        Q(owner__isnull=True) | Q(owner=request.user.person))
     file_kwargs = {
         'prefix': 'files',
         'queryset': models.CourseFile.objects.filter(
@@ -366,9 +367,12 @@ def manage_course(request, courseid):
         add = forms.AddFileForm(request.POST, request.FILES)
         if add.is_valid():
             obj = add.save(commit=False)
-            obj.course = course.template
             obj.owner = request.user.person
             obj.save()
+            if add.cleaned_data.get('instance_only'):
+                obj.courses.add(course)
+            else:
+                obj.templates.add(course.template)
     else:
         add = forms.AddFileForm()
 

@@ -308,9 +308,9 @@ class AchievementAdmin(admin.ModelAdmin):
 
 @admin.register(models.SharedFile)
 class FileAdmin(admin.ModelAdmin):
-    list_display = ['title', 'course__title']
-    search_fields = ['title', 'course__title']
-    autocomplete_fields = ['owner', 'course']
+    list_display = ['title']
+    search_fields = ['title']
+    autocomplete_fields = ['owner', 'objectives', 'templates', 'courses']
     inlines = [CourseFileAdmin]
 
 class CourseTemplateInline(admin.TabularInline):

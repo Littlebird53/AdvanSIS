@@ -219,9 +219,20 @@ CourseFileFormset = forms.modelformset_factory(
     models.CourseFile, form=CourseFileForm, extra=0, can_delete=True)
 
 class AddFileForm(forms.ModelForm):
+    instance_only = forms.BooleanField(
+        label='Only add file to this semester', required=False)
+
+    def clean_content(self):
+        val = self.cleaned_data.get('content')
+        if val is None and not self.data.get('url'):
+            raise forms.ValidationError(_('Please upload a file or add a URL.'), code='one-required')
+        if val is not None and self.data.get('url'):
+            raise forms.ValidationError(_('Please choose either a file or a URL, not both.'), code='one-required')
+        return val
+
     class Meta:
         model = models.SharedFile
-        fields = ['title', 'content']
+        fields = ['title', 'content', 'url']
 
 class NewInstructorPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)

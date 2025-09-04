@@ -691,11 +691,24 @@ class SharedFile(models.Model):
     owner = models.ForeignKey(Person, on_delete=models.SET_NULL,
                               null=True, blank=True)
     title = models.CharField(max_length=100)
-    course = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
-    content = models.FileField()
+    url = models.URLField(max_length=300, blank=True, null=True)
+    content = models.FileField(blank=True, null=True)
+    objectives = models.ManyToManyField(LearningObjective, blank=True,
+                                        related_name='files')
+    templates = models.ManyToManyField(CourseTemplate, blank=True,
+                                       related_name='files')
+    courses = models.ManyToManyField(Course, blank=True,
+                                     related_name='files')
 
     def __str__(self):
         return self.title
+
+    @property
+    def display_url(self):
+        if self.content:
+            return self.content.url
+        else:
+            return self.url
 
 class CourseFile(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
