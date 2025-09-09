@@ -628,7 +628,8 @@ class ProspectAdmin(admin.ModelAdmin):
 
 @admin.register(models.StaffRecord)
 class StaffAdmin(admin.ModelAdmin):
-    readonly_fields = ['center', 'person', 'acceptance_date']
+    # TODO: these are needed on the add page but not the edit page
+    #readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status', 'role', 'center_approved', 'advance_approved']
     list_display = ['person', 'center', 'role', 'status']
     search_fields = ['person__given_name', 'person__family_name',
@@ -636,7 +637,8 @@ class StaffAdmin(admin.ModelAdmin):
 
 @admin.register(models.StudentRecord)
 class StudentAdmin(admin.ModelAdmin):
-    readonly_fields = ['center', 'person', 'acceptance_date']
+    # TODO: these are needed on the add page but not the edit page
+    #readonly_fields = ['center', 'person', 'acceptance_date']
     list_filter = ['status']
     list_display = ['person', 'center', 'status']
     search_fields = ['person__given_name', 'person__family_name',
