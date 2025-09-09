@@ -630,6 +630,8 @@ class ProspectAdmin(admin.ModelAdmin):
 class StaffAdmin(admin.ModelAdmin):
     # TODO: these are needed on the add page but not the edit page
     #readonly_fields = ['center', 'person', 'acceptance_date']
+    autocomplete_fields = ['center', 'person']
+
     list_filter = ['status', 'role', 'center_approved', 'advance_approved']
     list_display = ['person', 'center', 'role', 'status']
     search_fields = ['person__given_name', 'person__family_name',
@@ -639,6 +641,8 @@ class StaffAdmin(admin.ModelAdmin):
 class StudentAdmin(admin.ModelAdmin):
     # TODO: these are needed on the add page but not the edit page
     #readonly_fields = ['center', 'person', 'acceptance_date']
+    autocomplete_fields = ['center', 'person']
+
     list_filter = ['status']
     list_display = ['person', 'center', 'status']
     search_fields = ['person__given_name', 'person__family_name',
