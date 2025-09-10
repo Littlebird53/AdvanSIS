@@ -484,7 +484,7 @@ class UserAdmin(BaseUserAdmin):
             'classes': ['collapse']}),
         ('Grade Summary', {'fields': ('credits_earned', 'credits_in_progress')}),
     )
-    actions = ['compare_users', 'merge_users', 'renumber_users']
+    actions = ['compare_users', 'merge_users']
 
     def credits_earned(self, instance):
         return instance.person.credits_earned
@@ -545,27 +545,6 @@ class UserAdmin(BaseUserAdmin):
         merge_mailings(main.mailings, mailings)
         main.save()
         self.message_user(request, f'Merged {queryset.count()} accounts.')
-    @admin.action(description='Renumber selected accounts')
-    def renumber_users(self, request, queryset):
-        import copy
-        ids = set(models.User.objects.filter(id__gte=100000).values_list(
-            'id', flat=True))
-        ls = list(queryset)
-        new = []
-        for i in range(100000, max(ids) + queryset.count()):
-            if i in ids:
-                continue
-            obj = ls.pop()
-            newobj = copy.deepcopy(obj)
-            newobj.id = i
-            newobj.username = str(i)
-            newobj.save()
-            person = obj.person
-            person.user_id = i
-            person.save()
-            obj.delete()
-            if not ls:
-                break
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if not change:
