@@ -508,8 +508,8 @@ def course_resources(request, courseid):
     else:
         form = forms.AddFileForm()
     qs = models.SharedFile.objects.filter(
-        Q(courses=course) | Q(templates=course.template) |
-        Q(objectives__in=course.template.learning_objectives.all())
+        Q(templates=course) |
+        Q(objectives__in=course.learning_objectives.all())
     ).order_by('title')
     if not request.user.is_staff:
         qs = qs.filter(Q(owner__isnull=True) | Q(owner=request.user.person))
