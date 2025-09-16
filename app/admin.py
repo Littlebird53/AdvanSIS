@@ -386,16 +386,14 @@ class MOUAdmin(admin.ModelAdmin):
     list_filter = ['status']
     search_fields = ['center__name']
 
-class PersonResource(resources.ModelResource):
-    class Meta:
-        model = models.Person
 @admin.register(models.Person)
 class PersonAdmin(IEAdmin):
     search_fields = ['given_name', 'family_name', 'user__username']
     readonly_fields = ['user']
     exclude = ['emails', 'phones', 'mailings']
     verbose_name_plural = 'People (use Users table instead)'
-    resource_classes = [PersonResource]
+
+    resource_classes = [resources.PersonResource]
 
     def has_add_permission(self, request):
         return False

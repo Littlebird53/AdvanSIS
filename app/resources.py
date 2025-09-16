@@ -44,11 +44,25 @@ class PersonResource(ChoicesResource):
     languages_spoken = Field(attribute='languages_spoken',
                              widget=ManyToManyWidget(models.Language,
                                                      field='name'))
+
+    def init_instance(self, row=None):
+        import uuid
+        ret = self._meta.model()
+        ret.user = models.User(username=uuid.uuid1())
+        return ret
+
+    def before_save_instance(self, instance, row, **kwargs):
+        instance.user.save()
+
+    def after_save_instance(self, instance, row, **kwargs):
+        instanve.user.set_password(instance.user.username)
+        instance.user.username = str(instance.id)
+        instance.user.save()
+
     class Meta:
         model = models.Person
         fields = [
-            'id',
-            'user__username', # TODO
+            'id', 'user', 'user__username',
             'given_name', 'middle_name', 'family_name', 'title',
             'joint_title', 'suffix', 'preferred_name', 'date_of_birth',
             'sex', 'marital_status', 'denomination', 'ethnicity',
