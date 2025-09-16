@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = ['https://joseph.dangswan.com',
 INSTALLED_APPS = [
     'app',
     'django_tex',
+    'import_export',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

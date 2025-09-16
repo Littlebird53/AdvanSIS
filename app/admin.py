@@ -3,9 +3,13 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.template import Context, Template
 from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
+from import_export import resources
+from import_export.admin import ImportExportMixin, ExportActionMixin
 from app import models
 import collections
 import datetime
+
+from app import resources
 
 def compare_objects(objects):
     values = collections.defaultdict(set)
@@ -56,6 +60,9 @@ def merge_mailings(field, mailings):
     merge_m2m(field, mailings, lambda m: (
         m.address, m.attention, m.city, m.state, m.zip_code, m.country_id))
 
+class IEAdmin(ImportExportMixin, ExportActionMixin, admin.ModelAdmin):
+    pass
+
 class M2MMixin:
     save_to = None
     extra = 0
@@ -103,7 +110,7 @@ class CenterMOUInline(admin.TabularInline):
     extra = 0
     readonly_fields = ['start_date', 'expiration']
 @admin.register(models.Center)
-class CenterAdmin(admin.ModelAdmin):
+class CenterAdmin(IEAdmin):
     exclude = ['emails', 'phones', 'mailings',
                'sponsor_emails', 'sponsor_phones', 'sponsor_mailings']
     inlines = [CenterEmailAddressInline,
@@ -116,6 +123,8 @@ class CenterAdmin(admin.ModelAdmin):
     search_fields = ['name', 'code']
     list_display = ['name', 'code', 'fte_eligible', 'active', 'approved']
     list_filter = ['fte_eligible', 'active', 'approved']
+
+    resource_classes = [resources.CenterResource]
 
     actions = ['compare_centers', 'merge_centers']
 
@@ -183,7 +192,7 @@ class CourseCenterFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         return queryset.filter(center__isnull=(self.value() == 'no'))
 @admin.register(models.Course)
-class CourseAdmin(admin.ModelAdmin):
+class CourseAdmin(IEAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
     autocomplete_fields = ['template', 'center', 'instructors']
     search_fields = ['template__title', 'instructors__given_name',
@@ -193,6 +202,8 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ['semester', 'template__division', 'delivery_format',
                    'status', CourseCenterFilter]
     list_select_related = ['template']
+
+    resource_classes = [resources.CourseResource]
 
     actions = ['compare_courses', 'merge_courses']
 
@@ -260,12 +271,14 @@ class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
     autocomplete_fields = ['courses']
     save_to = 'requirements'
 @admin.register(models.Achievement)
-class AchievementAdmin(admin.ModelAdmin):
+class AchievementAdmin(IEAdmin):
     exclude = ['requirements']
     inlines = [AchievementRequirementInline]
     list_display = ['name', 'abbreviation', 'credits', 'category']
     list_filter = ['credits', 'category', 'active']
     search_fields = ['name']
+
+    resource_classes = [resources.AchievementResource]
 
     actions = ['compare_achievements', 'merge_achievements']
 
@@ -357,12 +370,14 @@ class LearningObjectiveInline(M2MMixin, NonrelatedTabularInline):
     model = models.LearningObjective
     save_to = 'learning_objectives'
 @admin.register(models.CourseTemplate)
-class CourseTemplateAdmin(admin.ModelAdmin):
+class CourseTemplateAdmin(IEAdmin):
     exclude = ['learning_objectives']
     inlines = [LearningObjectiveInline]
     list_filter = ['division', 'credits', 'active']
     search_fields = ['title']
     list_display = ['title', 'code', 'credits']
+
+    resource_classes = [resources.TemplateResource]
 
 @admin.register(models.MOU)
 class MOUAdmin(admin.ModelAdmin):
@@ -371,12 +386,16 @@ class MOUAdmin(admin.ModelAdmin):
     list_filter = ['status']
     search_fields = ['center__name']
 
+class PersonResource(resources.ModelResource):
+    class Meta:
+        model = models.Person
 @admin.register(models.Person)
-class PersonAdmin(admin.ModelAdmin):
+class PersonAdmin(IEAdmin):
     search_fields = ['given_name', 'family_name', 'user__username']
     readonly_fields = ['user']
     exclude = ['emails', 'phones', 'mailings']
     verbose_name_plural = 'People (use Users table instead)'
+    resource_classes = [PersonResource]
 
     def has_add_permission(self, request):
         return False
@@ -556,10 +575,17 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
 @admin.register(models.PopupMessage)
-class PopupAdmin(admin.ModelAdmin):
+class PopupAdmin(IEAdmin):
     autocomplete_fields = ['person', 'sender']
     search_fields = ['person__given_name', 'person__family_name',
                      'sender__given_name', 'sender__family_name']
+
+    resource_classes = [resources.MessageResource]
+
+@admin.register(models.Grade)
+class GradeAdmin(IEAdmin):
+    autocomplete_fields = ['person', 'course']
+    resource_classes = [resources.GradeResource]
 
 class ProspectDateFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
@@ -595,7 +621,7 @@ class ProspectContactInline(admin.TabularInline):
     model = models.ProspectContact
     extra = 0
 @admin.register(models.Prospect)
-class ProspectAdmin(admin.ModelAdmin):
+class ProspectAdmin(IEAdmin):
     autocomplete_fields = ['center']
     search_fields = ['given_name', 'middle_name', 'family_name']
     list_display = ['given_name', 'middle_name', 'family_name', 'role',
@@ -605,8 +631,10 @@ class ProspectAdmin(admin.ModelAdmin):
     inlines = [CenterEmailAddressInline, CenterPhoneAddressInline,
                CenterMailingAddressInline, ProspectContactInline]
 
+    resource_classes = [resources.ProspectResource]
+
 @admin.register(models.StaffRecord)
-class StaffAdmin(admin.ModelAdmin):
+class StaffAdmin(IEAdmin):
     # TODO: these are needed on the add page but not the edit page
     #readonly_fields = ['center', 'person', 'acceptance_date']
     autocomplete_fields = ['center', 'person']
@@ -616,8 +644,10 @@ class StaffAdmin(admin.ModelAdmin):
     search_fields = ['person__given_name', 'person__family_name',
                      'center__name']
 
+    resource_classes = [resources.StaffResource]
+
 @admin.register(models.StudentRecord)
-class StudentAdmin(admin.ModelAdmin):
+class StudentAdmin(IEAdmin):
     # TODO: these are needed on the add page but not the edit page
     #readonly_fields = ['center', 'person', 'acceptance_date']
     autocomplete_fields = ['center', 'person']
@@ -626,6 +656,8 @@ class StudentAdmin(admin.ModelAdmin):
     list_display = ['person', 'center', 'status']
     search_fields = ['person__given_name', 'person__family_name',
                      'center__name']
+
+    resource_classes = [resources.StudentResource]
 
 class AwardYearFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
@@ -653,7 +685,7 @@ class AwardYearFilter(admin.SimpleListFilter):
         return queryset
 
 @admin.register(models.AchievementAward)
-class AchievementAwardAdmin(admin.ModelAdmin):
+class AchievementAwardAdmin(IEAdmin):
     list_filter = ['status', 'campus', 'walking',
                    AwardYearFilter, 'semester', 'achievement__active']
     list_display = ['person', 'achievement', 'status', 'campus',
@@ -661,3 +693,12 @@ class AchievementAwardAdmin(admin.ModelAdmin):
     readonly_fields = ['person']
     search_fields = ['person__given_name', 'person__family_name',
                      'achievement__name']
+
+    resource_classes = [resources.AwardResource]
+
+@admin.register(models.Country)
+class CountryAdmin(IEAdmin):
+    list_display = ['name', 'postal_code', 'credit_fee', 'student_fee']
+    search_fields = ['name', 'postal_code']
+
+    resource_classes = [resources.CountryResource]

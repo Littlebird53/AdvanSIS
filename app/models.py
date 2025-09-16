@@ -555,6 +555,14 @@ class CourseTemplate(models.Model):
     def learning_objectives_block(self):
         return self.LO_TEMPLATE.render(Context({'course': self}))
 
+    @property
+    def total_instances(self):
+        return self.course_set.all().count()
+
+    @property
+    def total_enrollment(self):
+        return Grade.objects.filter(course__template=self).count()
+
 SEMESTERS = [('Sp', 'Spring'), ('Su', 'Summer'), ('Fa', 'Fall'),
              ('Wi', 'Winter')]
 
@@ -860,6 +868,18 @@ class Achievement(models.Model):
     @property
     def short_name(self):
         return self.name.replace('Leadership Diploma', '').replace('Diploma', '').replace('Certificate', '').strip()
+
+    @property
+    def recipient_count(self):
+        return self.achievementaward_set.all().exclude(
+            status__in=['S', 'R']).count()
+
+    @property
+    def last_awarded(self):
+        obj = self.achievementaward_set.all().exclude(
+            status__in=['S', 'R']).order_by('awarded').last()
+        if obj:
+            return obj.awarded
 
 class AchievementAward(models.Model, AutosaveFormMixin):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
