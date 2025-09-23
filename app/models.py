@@ -813,7 +813,8 @@ class StaffRecord(models.Model):
     @cached_property
     def courses_taught(self):
         return Course.objects.filter(instructors=self.person,
-                                     center=self.center).count()
+                                     center=self.center,
+                                     status__in=['A', 'L']).count()
 
     @cached_property
     def students_taught(self):
