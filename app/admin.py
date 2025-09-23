@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.db.models import Count
 from django.template import Context, Template
 from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
 from import_export import resources
@@ -201,9 +202,11 @@ class CourseEnrollmentFilter(admin.SimpleListFilter):
         ]
     def queryset(self, request, queryset):
         if self.value() == 'no':
-            return queryset.exclude(grade__id__isnull=False)
+            return queryset.annotate(ct=Count('grade')).filter(ct=0)
+        elif self.value() == 'yes':
+            return queryset.annotate(ct=Count('grade')).filter(ct__gt=0)
         else:
-            return queryset.filter(grade__id__isnull=False)
+            return queryset
 @admin.register(models.Course)
 class CourseAdmin(IEAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
