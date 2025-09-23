@@ -191,6 +191,19 @@ class CourseCenterFilter(admin.SimpleListFilter):
         ]
     def queryset(self, request, queryset):
         return queryset.filter(center__isnull=(self.value() == 'no'))
+class CourseEnrollmentFilter(admin.SimpleListFilter):
+    title = 'Has Students'
+    parameter_name = 'has_students'
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        ]
+    def queryset(self, request, queryset):
+        if self.value() == 'no':
+            return queryset.exclude(grade__id__isnull=False)
+        else:
+            return queryset.filter(grade__id__isnull=False)
 @admin.register(models.Course)
 class CourseAdmin(IEAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
@@ -198,14 +211,16 @@ class CourseAdmin(IEAdmin):
     search_fields = ['template__title', 'instructors__given_name',
                      'instructors__family_name', 'center__name']
     list_display = ['template__title', 'center',
-                    'semester', 'year', 'status']
+                    'semester', 'year', 'status', 'enrollment']
     list_filter = ['semester', 'template__division', 'delivery_format',
-                   'status', CourseCenterFilter]
-    list_select_related = ['template']
+                   'status', CourseCenterFilter, CourseEnrollmentFilter]
 
     resource_classes = [resources.CourseResource]
 
     actions = ['compare_courses', 'merge_courses']
+
+    def enrollment(self, obj):
+        return obj.grade_set.all().count()
 
     @admin.action(description='Compare selected courses')
     def compare_courses(self, request, queryset, is_merge=False):
