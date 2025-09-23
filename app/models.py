@@ -467,7 +467,7 @@ class Center(models.Model):
         if addr:
             return addr.country
 
-    @property
+    @cached_property
     def current_mou(self):
         ret = self.mou_set.all().filter(status='P').first()
         if ret is None:
@@ -475,6 +475,43 @@ class Center(models.Model):
         if ret is None:
             ret = self.mou_set.all().order_by('expiration').last()
         return ret
+
+    @cached_property
+    def best_mailing(self):
+        ret = None
+        rank = -1
+        scale = {'W': 4, 'H': 3, 'S': 2, 'O': 1}
+        for m in self.mailings.all().filter(active=True).order_by('-id'):
+            r = scale.get(m.category, 0)
+            if r > rank:
+                ret = m
+                rank = r
+        return ret
+
+    @property
+    def all_students(self):
+        return self.studentrecord_set.all().exclude(status='R').count()
+
+    @property
+    def current_students(self):
+        return self.studentrecord_set.all().filter(status='C').count()
+
+    @property
+    def all_staff(self):
+        return self.staffrecord_set.all().exclude(status='R').count()
+
+    @property
+    def current_staff(self):
+        return self.staffrecord_set.all().filter(status='C').count()
+
+    @property
+    def total_hours(self):
+        return Grade.objects.filter(course__center=self).aggregate(
+            h=models.Sum('course__template__credits'))['h'] or 0
+
+    @property
+    def total_courses(self):
+        return self.course_set.all().count()
 
     def director_stats(self):
         courses = Course.objects.filter(

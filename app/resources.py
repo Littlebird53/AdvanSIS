@@ -122,15 +122,28 @@ class AchievementResource(ChoicesResource):
 # TODO: AchievementRequirement
 
 class CenterResource(ChoicesResource):
+    mou_expiration = Field(attribute='current_mou__expiration',
+                           readonly=True)
+    city = Field(attribute='best_mailing__city', readonly=True)
+    zip_code = Field(attribute='best_mailing__zip_code', readonly=True)
+    country = Field(attribute='best_mailing__country__name',
+                    readonly=True)
+    all_students = Field(attribute='all_students', readonly=True)
+    current_students = Field(attribute='current_students', readonly=True)
+    all_staff = Field(attribute='all_staff', readonly=True)
+    current_staff = Field(attribute='current_staff', readonly=True)
+    total_hours = Field(attribute='total_hours', readonly=True)
+    total_courses = Field(attribute='total_courses', readonly=True)
     class Meta:
         model = models.Center
         fields = ['id', 'name', 'code', 'sponsor', 'sponsor_rep',
                   'sponsor_rep_title',
-                  # address
+                  'city', 'zip_code', 'country',
                   'approved', 'active', 'fte_eligible',
-                  # TODO: total & current students & staff
-                  # TODO: total hours & courses
-                  # TODO: MOU expiration
+                  'all_students', 'current_students',
+                  'all_staff', 'current_staff',
+                  'total_hours', 'total_courses',
+                  'mou_expiration',
                   ]
 
 class CountryResource(ChoicesResource):
