@@ -952,6 +952,8 @@ class AchievementAward(models.Model, AutosaveFormMixin):
                  ('XL', 'X-Large'), ('XXL', 'XX-Large'),
                  ('XXXL', 'XXX-Large')],
         max_length=4, blank=True, null=True)
+    home_state = models.CharField(max_length=50, blank=True, null=True,
+                                  verbose_name='Home State/Country')
 
     forms = {'default': {'fields': ['display_name'],
                          'template': 'app/student_info_achievement.html'}}
@@ -1124,12 +1126,16 @@ class Prospect(models.Model):
     mailings = models.ManyToManyField(MailingAddress)
     role = models.CharField(max_length=1, default='S', choices=[
         ('S', 'Student'), ('I', 'Instructor'), ('D', 'Director')])
+    status = models.SmallIntegerField(blank=True, null=True)
+
+    @cached_property
+    def last_contact_record(self):
+        return self.prospectcontact_set.all().order_by('date').last()
 
     @property
     def last_contact(self):
-        ret = self.prospectcontact_set.all().order_by('date').last()
-        if ret:
-            return ret.date
+        if self.last_contact_record:
+            return self.last_contact_record.date
 
 class ProspectContact(models.Model):
     prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE)

@@ -104,8 +104,7 @@ class AwardResource(ChoicesResource):
                   'person__family_name', 'primary_center',
                   'achievement', 'achievement__name',
                   'achievement__abbreviation', 'status', 'year',
-                  'walking', 'campus',
-                  # TODO: home state
+                  'walking', 'campus', 'home_state',
                   'display_name', 'applied', 'awarded', 'gpa',
                   'shirt_size', 'languages',
                   # TODO: contact info
@@ -216,12 +215,16 @@ class MessageResource(ChoicesResource):
 class ProspectResource(ChoicesResource):
     center_code = Field(attribute='center',
                         widget=ForeignKeyWidget(models.Center, 'code'))
+    contact_date = Field(attribute='last_contact_record__date',
+                         readonly=True)
+    method = Field(attribute='last_contact_record__get_method_display',
+                   readonly=True)
+    notes = Field(attribute='last_contact_record__notes', readonly=True)
     class Meta:
         model = models.Prospect
         fields = ['id', 'given_name', 'middle_name', 'family_name',
-                  # status
-                  'center_code',
-                  # last contact
+                  'status', 'center_code',
+                  'contact_date', 'method', 'notes',
                   ]
 
 class FileResource(ChoicesResource):

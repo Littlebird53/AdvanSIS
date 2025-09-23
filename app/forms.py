@@ -190,6 +190,9 @@ class CertificateForm(forms.ModelForm):
         model = models.AchievementAward
         fields = ['display_name', 'year', 'semester']
 class DiplomaForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['home_state'].required = True
     def clean(self):
         super().clean()
         if self.cleaned_data.get('walking'):
@@ -199,7 +202,7 @@ class DiplomaForm(forms.ModelForm):
     class Meta:
         model = models.AchievementAward
         fields = ['display_name', 'year', 'semester', 'walking', 'campus',
-                  'shirt_size']
+                  'shirt_size', 'home_state']
 
 class CourseFileForm(forms.ModelForm):
     def __init__(self, *args, files, course, **kwargs):
