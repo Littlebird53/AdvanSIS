@@ -335,11 +335,13 @@ class AchievementAdmin(IEAdmin):
         self.message_user(request, f'Merged {ct} achievements.')
 
 @admin.register(models.SharedFile)
-class FileAdmin(admin.ModelAdmin):
-    list_display = ['title']
+class FileAdmin(IEAdmin):
+    list_display = ['title', 'owner']
     search_fields = ['title']
     autocomplete_fields = ['owner', 'objectives', 'templates', 'courses']
     inlines = [CourseFileAdmin]
+
+    resource_classes = [resources.FileResource]
 
 class CourseTemplateInline(admin.TabularInline):
     model = models.CourseTemplate.learning_objectives.through

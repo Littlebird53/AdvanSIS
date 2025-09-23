@@ -220,4 +220,9 @@ class ProspectResource(ChoicesResource):
                   # last contact
                   ]
 
-# TODO: shared files
+class FileResource(ChoicesResource):
+    owner_name = Field(attribute='owner__full_name', readonly=True)
+    class Meta:
+        model = models.SharedFile
+        fields = ['id', 'title', 'owner', 'owner_name',
+                  'objectives', 'templates', 'courses']
