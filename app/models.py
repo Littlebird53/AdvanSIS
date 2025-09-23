@@ -415,6 +415,18 @@ class Person(models.Model):
     def gpa(self):
         return calc_gpa(self.grade_set.all(), True)
 
+    @property
+    def primary_student_record(self):
+        return self.studentrecord_set.all().filter(
+            acceptance_date__isnull=False).order_by(
+                'acceptance_date').first()
+
+    @property
+    def primary_center(self):
+        sr = self.primary_student_record
+        if sr:
+            return sr.center
+
 class Center(models.Model):
     name = models.CharField(max_length=400)
     code = models.CharField(max_length=5, null=True)
@@ -678,6 +690,17 @@ class StudentRecord(models.Model):
     def status_line(self):
         return self.get_status_display()
 
+    @property
+    def total_courses(self):
+        return Grade.objects.filter(
+            person=self.person, course__center=self.center).count()
+
+    @property
+    def total_credits(self):
+        return Grade.objects.filter(
+            person=self.person, course__center=self.center).aggregate(
+                total=models.Sum('course__template__credits'))['total'] or 0
+
     def stats(self):
         credits = self.person.grade_set.all().aggregate(
             total=models.Sum('course__template__credits'))['total'] or 0
@@ -786,6 +809,29 @@ class StaffRecord(models.Model):
     @property
     def get_semester_display(self):
         return ', '.join((self.profile or {}).get('terms', []))
+
+    @cached_property
+    def courses_taught(self):
+        return Course.objects.filter(instructors=self.person,
+                                     center=self.center).count()
+
+    @cached_property
+    def students_taught(self):
+        return len(set(g.person for g in
+                       Grade.objects.filter(
+                           course__center=self.center,
+                           course__instructors=self.person)))
+
+    @cached_property
+    def registrations(self):
+        return Grade.objects.filter(course__center=self.center,
+                                    course__instructors=self.person).count()
+
+    @property
+    def average_enrollment(self):
+        if self.courses_taught == 0:
+            return 0
+        return self.registrations / self.courses_taught
 
     def stats(self):
         courses = Course.objects.filter(instructors=self.person,

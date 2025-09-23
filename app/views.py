@@ -772,9 +772,7 @@ def center_tally(request, center):
         if models.StudentRecord.objects.filter(
                 person=person, center=center,
                 status__in=['C', 'F']).exists():
-            sr = models.StudentRecord.objects.filter(
-                person=person,
-                acceptance_date__isnull=False).order_by('acceptance_date').first()
+            sr = person.primary_student_record
             if sr and sr.center == center and start_date <= sr.acceptance_date <= end_date:
                 new_student = True
                 charge += home.student_fee

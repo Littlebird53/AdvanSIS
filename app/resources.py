@@ -96,11 +96,12 @@ class AwardResource(ChoicesResource):
                       widget=ManyToManyWidget(models.Language,
                                               field='name'),
                       readonly=True)
+    primary_center = Field(attribute='person__primary_center',
+                           readonly=True)
     class Meta:
         model = models.AchievementAward
         fields = ['id', 'person', 'person__given_name',
-                  'person__family_name',
-                  # TODO: primary center
+                  'person__family_name', 'primary_center',
                   'achievement', 'achievement__name',
                   'achievement__abbreviation', 'status', 'year',
                   'walking', 'campus',
@@ -173,29 +174,32 @@ class TemplateResource(ChoicesResource):
 class StudentResource(ChoicesResource):
     center_code = Field(attribute='center',
                         widget=ForeignKeyWidget(models.Center, 'code'))
+    courses = Field(attribute='total_courses', readonly=True)
+    credits = Field(attribute='total_credits', readonly=True)
     class Meta:
         model = models.StudentRecord
         fields = ['id', 'person', 'person__given_name',
                   'person__family_name', 'center_code', 'center__name',
                   'status', 'church_sbc', 'church_membership',
                   'prev_gateway', 'gateway_id', 'pastor_date',
-                  'acceptance_date',
-                  # courses
-                  # credits
+                  'acceptance_date', 'courses', 'credits',
                   ]
 
 class StaffResource(ChoicesResource):
     center_code = Field(attribute='center',
                         widget=ForeignKeyWidget(models.Center, 'code'))
+    courses_taught = Field(attribute='courses_taught', readonly=True)
+    students_taught = Field(attribute='students_taught', readonly=True)
+    registrations = Field(attribute='registrations', readonly=True)
+    average_enrollment = Field(attribute='average_enrollment',
+                               readonly=True)
     class Meta:
         model = models.StaffRecord
         fields = ['id', 'person', 'person__given_name',
                   'person__family_name', 'center_code', 'center__name',
                   'status', 'role', 'acceptance_date',
-                  # courses_taught
-                  # students_taught
-                  # registrations
-                  # avg enrollment
+                  'courses_taught', 'students_taught',
+                  'registrations', 'average_enrollment',
                   ]
         widgets = {
             'center': {'field': 'code'},
