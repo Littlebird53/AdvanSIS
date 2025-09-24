@@ -45,19 +45,19 @@ class PersonResource(ChoicesResource):
                              widget=ManyToManyWidget(models.Language,
                                                      field='name'))
 
-    def init_instance(self, row=None):
-        import uuid
-        ret = self._meta.model()
-        ret.user = models.User(username=uuid.uuid1())
-        return ret
+    def after_init_instance(self, instance, new, row, **kwargs):
+        if new:
+            import uuid
+            instance.user = models.User(username=str(uuid.uuid1()))
 
     def before_save_instance(self, instance, row, **kwargs):
         instance.user.save()
 
     def after_save_instance(self, instance, row, **kwargs):
-        instanve.user.set_password(instance.user.username)
-        instance.user.username = str(instance.id)
-        instance.user.save()
+        if not kwargs['dry_run']:
+            instance.user.set_password(instance.user.username)
+            instance.user.username = str(instance.user.id)
+            instance.user.save()
 
     class Meta:
         model = models.Person
