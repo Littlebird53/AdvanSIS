@@ -212,7 +212,8 @@ class CourseAdmin(IEAdmin):
     inlines = [CourseGradeAdmin, CourseFileAdmin]
     autocomplete_fields = ['template', 'center', 'instructors']
     search_fields = ['template__title', 'instructors__given_name',
-                     'instructors__family_name', 'center__name']
+                     'instructors__family_name', 'center__name', 'year',
+                     'template__number']
     list_display = ['template__title', 'center',
                     'semester', 'year', 'status', 'enrollment']
     list_filter = ['semester', 'template__division', 'delivery_format',
