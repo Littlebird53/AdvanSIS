@@ -460,11 +460,20 @@ class PersonAdmin(IEAdmin):
     readonly_fields = ['user']
     exclude = ['emails', 'phones', 'mailings']
     verbose_name_plural = 'People (use Users table instead)'
+    list_display = ['user_id', 'given_name', 'family_name',
+                    'student_centers', 'staff_centers']
 
     resource_classes = [resources.PersonResource]
 
     def has_add_permission(self, request):
         return False
+
+    def student_centers(self, instance):
+        return ', '.join(instance.studentrecord_set.all().exclude(
+            status='R').values_list('center__code', flat=True))
+    def staff_centers(self, instance):
+        return ', '.join(instance.staffrecord_set.all().exclude(
+            status='R').values_list('center__code', flat=True))
 
 class PersonInline(admin.StackedInline):
     model = models.Person
