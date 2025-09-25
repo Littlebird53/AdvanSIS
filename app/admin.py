@@ -403,7 +403,49 @@ class CourseTemplateAdmin(IEAdmin):
     search_fields = ['title']
     list_display = ['title', 'code', 'credits']
 
+    actions = ['compare_templates', 'merge_templates']
+
     resource_classes = [resources.TemplateResource]
+
+    @admin.action(description='Compare selected templates')
+    def compare_templates(self, request, queryset, is_merge=False):
+        msg = compare_objects(queryset)
+        if msg is not None:
+            self.message_user(request, msg)
+        elif not is_merge:
+            self.message_user(request, 'Course templates are compatible.')
+    @admin.action(description='Merge selected templates')
+    def merge_templates(self, request, queryset):
+        ct = queryset.count()
+        if ct < 2:
+            return
+        self.compare_templates(request, queryset, True)
+        ls = list(queryset)
+        ls.sort(key=lambda u: u.id)
+        main = ls[0]
+        old = ls[1:]
+        models.Course.objects.filter(template__in=old).update(template=main)
+        models.ExpectedCourse.objects.filter(course__in=old).update(
+            course=main)
+        for sf in models.SharedFile.objects.filter(templates__in=old):
+            sf.templates.remove(*old)
+            sf.templates.add(main)
+        for ar in models.AchievementRequirement.objects.filter(
+                courses__in=old):
+            ar.courses.remove(*old)
+            ar.courses.add(main)
+        for other in old:
+            main.learning_objectives.add(*other.learning_objectives.all())
+            for field in other._meta.get_fields():
+                if 'Many' in field.__class__.__name__:
+                    continue
+                if field.name in ['id']:
+                    continue
+                if getattr(main, field.name) is None:
+                    setattr(main, field.name, getattr(other, field.name))
+            other.delete()
+        main.save()
+        self.message_user(request, f'Merged {ct} templates.')
 
 @admin.register(models.MOU)
 class MOUAdmin(admin.ModelAdmin):
