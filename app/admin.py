@@ -213,7 +213,7 @@ class CourseAdmin(IEAdmin):
     autocomplete_fields = ['template', 'center', 'instructors']
     search_fields = ['template__title', 'instructors__given_name',
                      'instructors__family_name', 'center__name', 'year',
-                     'template__number']
+                     'template__number', 'center__code']
     list_display = ['template__title', 'center',
                     'semester', 'year', 'status', 'enrollment']
     list_filter = ['semester', 'template__division', 'delivery_format',
@@ -457,7 +457,8 @@ class MOUAdmin(admin.ModelAdmin):
 
 @admin.register(models.Person)
 class PersonAdmin(IEAdmin):
-    search_fields = ['given_name', 'family_name', 'user__username']
+    search_fields = ['given_name', 'family_name', 'user__username',
+                     'studentrecord__center__code']
     readonly_fields = ['user']
     exclude = ['emails', 'phones', 'mailings']
     verbose_name_plural = 'People (use Users table instead)'
@@ -473,8 +474,8 @@ class PersonAdmin(IEAdmin):
         return ', '.join(instance.studentrecord_set.all().exclude(
             status='R').values_list('center__code', flat=True))
     def staff_centers(self, instance):
-        return ', '.join(instance.staffrecord_set.all().exclude(
-            status='R').values_list('center__code', flat=True))
+        return ', '.join([c for c in instance.staffrecord_set.all().exclude(
+            status='R').values_list('center__code', flat=True) if c])
 
 class PersonInline(admin.StackedInline):
     model = models.Person
