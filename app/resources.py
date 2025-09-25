@@ -77,7 +77,7 @@ class PersonResource(ChoicesResource):
         instance.user.save()
 
     def after_save_instance(self, instance, row, **kwargs):
-        if not kwargs['dry_run']:
+        if not kwargs['dry_run'] and not instance.user.username.isdigit():
             instance.user.set_password(instance.user.username)
             instance.user.username = str(instance.user.id)
             instance.user.save()
