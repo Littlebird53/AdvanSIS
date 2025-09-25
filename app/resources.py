@@ -25,6 +25,7 @@ class ChoicesWidget(Widget):
         """Returns the display value given the db value"""
         return self.choices.get(value, value)
 
+BOOL_CHOICES = [(True, 'Y'), (False, 'N')]
 class ChoicesResource(ModelResource):
     @classmethod
     def widget_from_django_field(cls, f, default=Widget):
@@ -32,7 +33,7 @@ class ChoicesResource(ModelResource):
             return partial(ChoicesWidget, f.choices)
         if callable(getattr(f, "get_internal_type", None)):
             if f.get_internal_type() == 'BooleanField':
-                return partial(ChoicesWidget, [(True, 'Y'), (False, 'N')])
+                return partial(ChoicesWidget, BOOL_CHOICES)
         return super(ChoicesResource, cls).widget_from_django_field(
             f, default)
 
@@ -44,6 +45,28 @@ class PersonResource(ChoicesResource):
     languages_spoken = Field(attribute='languages_spoken',
                              widget=ManyToManyWidget(models.Language,
                                                      field='name'))
+    account_email = Field(attribute='user__email')
+    personal_email = Field(attribute='personal_email')
+    work_email = Field(attribute='work_email')
+    other_email = Field(attribute='other_email')
+    home_phone = Field(attribute='home_phone')
+    mobile_phone = Field(attribute='mobile_phone')
+    work_phone = Field(attribute='work_phone')
+    other_phone = Field(attribute='other_phone')
+    category = Field(attribute='best_mailing_category',
+                     widget=ChoicesWidget(
+                         models.MailingAddress.category.field.choices))
+    address = Field(attribute='best_mailing_address')
+    attention = Field(attribute='best_mailing_attention')
+    city = Field(attribute='best_mailing_city')
+    state = Field(attribute='best_mailing_state')
+    country = Field(attribute='best_mailing_country',
+                    widget=ForeignKeyWidget(models.Country, 'name'))
+    zip_code = Field(attribute='best_mailing_zip_code')
+    is_staff = Field(attribute='is_staff', readonly=True,
+                     widget=ChoicesWidget(BOOL_CHOICES))
+    is_student = Field(attribute='is_student', readonly=True,
+                       widget=ChoicesWidget(BOOL_CHOICES))
 
     def after_init_instance(self, instance, new, row, **kwargs):
         if new:
@@ -67,10 +90,12 @@ class PersonResource(ChoicesResource):
             'joint_title', 'suffix', 'preferred_name', 'date_of_birth',
             'sex', 'marital_status', 'denomination', 'ethnicity',
             'languages_spoken', 'ed_level', 'deceased',
-            # account/personal/work/other email
-            # phones
-            # mailings
-            # has staff/student record
+            'account_email', 'personal_email', 'work_email',
+            'other_email',
+            'home_phone', 'mobile_phone', 'work_phone', 'other_phone',
+            'category', 'address', 'attention', 'city', 'state',
+            'country', 'zip_code',
+            'is_staff', 'is_student',
             'credits_earned', 'credits_in_progress', 'gpa',
             'user__date_joined', 'user__last_login',
             'user__is_staff', 'user__is_superuser',

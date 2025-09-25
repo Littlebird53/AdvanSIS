@@ -317,6 +317,10 @@ class Person(models.Model):
     phones = models.ManyToManyField(PhoneAddress)
     mailings = models.ManyToManyField(MailingAddress)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._best_mailing = {}
+
     def __str__(self):
         return f'{self.given_name} {self.family_name} ({self.user.username})'
 
@@ -388,6 +392,157 @@ class Person(models.Model):
                 ret = m
                 rank = r
         return ret
+
+    @property
+    def best_mailing_address(self):
+        if 'address' in self._best_mailing:
+            return self._best_mailing['address']
+        if self.best_mailing: return self.best_mailing.address
+    @best_mailing_address.setter
+    def best_mailing_address(self, value):
+        self._best_mailing['address'] = value
+    @property
+    def best_mailing_attention(self):
+        if 'attention' in self._best_mailing:
+            return self._best_mailing['attention']
+        if self.best_mailing: return self.best_mailing.attention
+    @best_mailing_attention.setter
+    def best_mailing_attention(self, value):
+        self._best_mailing['attention'] = value
+    @property
+    def best_mailing_city(self):
+        if 'city' in self._best_mailing:
+            return self._best_mailing['city']
+        if self.best_mailing: return self.best_mailing.city
+    @best_mailing_city.setter
+    def best_mailing_city(self, value):
+        self._best_mailing['city'] = value
+    @property
+    def best_mailing_state(self):
+        if 'state' in self._best_mailing:
+            return self._best_mailing['state']
+        if self.best_mailing: return self.best_mailing.state
+    @best_mailing_state.setter
+    def best_mailing_state(self, value):
+        self._best_mailing['state'] = value
+    @property
+    def best_mailing_zip_code(self):
+        if 'zip_code' in self._best_mailing:
+            return self._best_mailing['zip_code']
+        if self.best_mailing: return self.best_mailing.zip_code
+    @best_mailing_zip_code.setter
+    def best_mailing_zip_code(self, value):
+        self._best_mailing['zip_code'] = value
+    @property
+    def best_mailing_country(self):
+        if 'country' in self._best_mailing:
+            return self._best_mailing['country']
+        if self.best_mailing: return self.best_mailing.country
+    @best_mailing_country.setter
+    def best_mailing_country(self, value):
+        self._best_mailing['country'] = value
+    @property
+    def best_mailing_category(self):
+        if 'category' in self._best_mailing:
+            return self._best_mailing['category']
+        if self.best_mailing: return self.best_mailing.category
+    @best_mailing_category.setter
+    def best_mailing_category(self, value):
+        self._best_mailing['category'] = value
+
+    def save(self, **kwargs):
+        super().save(**kwargs)
+        if kwargs.get('commit', True) and self._best_mailing:
+            if self.best_mailing is None or any(
+                    getattr(self.best_mailing, k) != v
+                    for k, v in self._best_mailing.items()):
+                ma = MailingAddress(**self._best_mailing)
+                if ma.category:
+                    self.mailings.all().filter(category=ma.category).update(
+                        active=False)
+                ma.save()
+                self.mailings.add(ma)
+            self._best_mailing = {}
+
+    @property
+    def personal_email(self):
+        ret = self.emails.all().filter(active=True, category='P').last()
+        if ret:
+            return ret.email
+    @personal_email.setter
+    def personal_email(self, value):
+        if value != self.personal_email:
+            self.emails.all().filter(category='P').update(active=False)
+            if value:
+                self.emails.create(email=value, category='P')
+    @property
+    def work_email(self):
+        ret = self.emails.all().filter(active=True, category='W').last()
+        if ret:
+            return ret.email
+    @work_email.setter
+    def work_email(self, value):
+        if value != self.work_email:
+            self.emails.all().filter(category='W').update(active=False)
+            if value:
+                self.emails.create(email=value, category='W')
+    @property
+    def other_email(self):
+        ret = self.emails.all().filter(active=True, category='O').last()
+        if ret:
+            return ret.email
+    @other_email.setter
+    def other_email(self, value):
+        if value != self.other_email:
+            self.emails.all().filter(category='O').update(active=False)
+            if value:
+                self.emails.create(email=value, category='O')
+
+
+    @property
+    def home_phone(self):
+        ret = self.phones.all().filter(active=True, category='H').last()
+        if ret:
+            return ret.phone
+    @home_phone.setter
+    def home_phone(self, value):
+        if value != self.home_phone:
+            self.phones.all().filter(category='H').update(active=False)
+            if value:
+                self.phones.create(phone=value, category='H')
+    @property
+    def mobile_phone(self):
+        ret = self.phones.all().filter(active=True, category='M').last()
+        if ret:
+            return ret.phone
+    @mobile_phone.setter
+    def mobile_phone(self, value):
+        if value != self.mobile_phone:
+            self.phones.all().filter(category='M').update(active=False)
+            if value:
+                self.phones.create(phone=value, category='M')
+    @property
+    def work_phone(self):
+        ret = self.phones.all().filter(active=True, category='W').last()
+        if ret:
+            return ret.phone
+    @work_phone.setter
+    def work_phone(self, value):
+        if value != self.work_phone:
+            self.phones.all().filter(category='W').update(active=False)
+            if value:
+                self.phones.create(phone=value, category='W')
+    @property
+    def other_phone(self):
+        ret = self.phones.all().filter(active=True, category='O').last()
+        if ret:
+            return ret.phone
+    @other_phone.setter
+    def other_phone(self, value):
+        if value != self.other_phone:
+            self.phones.all().filter(category='O').update(active=False)
+            if value:
+                self.phones.create(phone=value, category='O')
 
     @cached_property
     def best_email(self):
@@ -462,6 +617,14 @@ class Person(models.Model):
         sr = self.primary_student_record
         if sr:
             return sr.center
+
+    @property
+    def is_staff(self):
+        return self.staffrecord_set.all().exclude(status='R').exists()
+
+    @property
+    def is_student(self):
+        return self.studentrecord_set.all().exclude(status='R').exists()
 
 class Center(models.Model):
     name = models.CharField(max_length=400)
