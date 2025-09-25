@@ -284,6 +284,10 @@ class CourseAdmin(IEAdmin):
         main.save()
         self.message_user(request, f'Merged {ct} courses.')
 
+@admin.register(models.AchievementRequirement)
+class RequirementAdmin(IEAdmin):
+    resource_classes = [resources.RequirementResource]
+
 class AchievementRequirementInline(M2MMixin, NonrelatedTabularInline):
     model = models.AchievementRequirement
     autocomplete_fields = ['courses']
@@ -350,11 +354,13 @@ class CourseTemplateInline(admin.TabularInline):
     model = models.CourseTemplate.learning_objectives.through
     verbose_name_plural = 'Courses with this objective'
 @admin.register(models.LearningObjective)
-class LearningObjectiveAdmin(admin.ModelAdmin):
+class LearningObjectiveAdmin(IEAdmin):
     inlines = [CourseTemplateInline]
     search_fields = ['name']
 
     actions = ['compare_objectives', 'merge_objectives']
+
+    resource_classes = [resources.ObjectiveResource]
 
     @admin.action(description='Compare selected objectives')
     def compare_objectives(self, request, queryset, is_merge=False):
@@ -720,3 +726,19 @@ class CountryAdmin(IEAdmin):
     search_fields = ['name', 'postal_code']
 
     resource_classes = [resources.CountryResource]
+
+class FeeInline(admin.TabularInline):
+    model = models.CenterFees
+    extra = 0
+@admin.register(models.CenterBudget)
+class BudgetAdmin(IEAdmin):
+    list_display = ['center', 'year']
+    inlines = [FeeInline]
+
+    resource_classes = [resources.BudgetResource]
+
+@admin.register(models.CenterFees)
+class FeeAdmin(IEAdmin):
+    list_display = ['country', 'budget__center', 'credit_fee']
+
+    resource_classes = [resources.FeeResource]

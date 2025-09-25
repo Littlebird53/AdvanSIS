@@ -98,6 +98,17 @@ class AwardResource(ChoicesResource):
                       readonly=True)
     primary_center = Field(attribute='person__primary_center',
                            readonly=True)
+    phone = Field(attribute='person__best_phone__phone', readonly=True)
+    email = Field(attribute='person__best_email__email', readonly=True)
+    attn = Field(attribute='person__best_mailing__attention', readonly=True)
+    address = Field(attribute='person__best_mailing__address',
+                    readonly=True)
+    city = Field(attribute='person__best_mailing__city', readonly=True)
+    state = Field(attribute='person__best_mailing__state', readonly=True)
+    zip_code = Field(attribute='person__best_mailing__zip_code',
+                     readonly=True)
+    country = Field(attribute='person__best_mailing__country__name',
+                    readonly=True)
     class Meta:
         model = models.AchievementAward
         fields = ['id', 'person', 'person__given_name',
@@ -107,7 +118,8 @@ class AwardResource(ChoicesResource):
                   'walking', 'campus', 'home_state',
                   'display_name', 'applied', 'awarded', 'gpa',
                   'shirt_size', 'languages',
-                  # TODO: contact info
+                  'phone', 'email',
+                  'attn', 'address', 'city', 'state', 'zip_code', 'country',
                 ]
 
 class AchievementResource(ChoicesResource):
@@ -119,7 +131,16 @@ class AchievementResource(ChoicesResource):
                   'active', 'recipient_count', 'last_awarded',
                   'description']
 
-# TODO: AchievementRequirement
+class RequirementResource(ChoicesResource):
+    course_codes = Field(attribute='courses', readonly=True,
+                         widget=ManyToManyWidget(models.CourseTemplate,
+                                                 field='code'))
+    achievements = Field(attribute='achievement_set', readonly=True,
+                         widget=ManyToManyWidget(models.Achievement,
+                                                field='name'))
+    class Meta:
+        model = models.AchievementRequirement
+        fields = ['id', 'courses', 'course_codes', 'count', 'achievements']
 
 class CenterResource(ChoicesResource):
     mou_expiration = Field(attribute='current_mou__expiration',
@@ -151,7 +172,23 @@ class CountryResource(ChoicesResource):
         model = models.Country
         fields = ['id', 'name', 'postal_code', 'credit_fee', 'student_fee']
 
-# TODO: fees
+class BudgetResource(ChoicesResource):
+    center_code = Field(attribute='center',
+                        widget=ForeignKeyWidget(models.Center, 'code'))
+    class Meta:
+        model = models.CenterBudget
+        fields = ['id', 'center_code', 'year', 'other_income',
+                  'marketing', 'office', 'books', 'other_expenses']
+
+class FeeResource(ChoicesResource):
+    center_code = Field(attribute='budget__center__code', readonly=True)
+    year = Field(attribute='budget__display_year', readonly=True)
+    country = Field(attribute='country',
+                    widget=ForeignKeyWidget(models.Country, 'name'))
+    class Meta:
+        model = models.CenterFees
+        fields = ['id', 'budget', 'center_code', 'year', 'country',
+                  'credit_fee']
 
 class CourseResource(ChoicesResource):
     center_code = Field(attribute='center',
@@ -181,7 +218,14 @@ class TemplateResource(ChoicesResource):
                   'division', 'number', 'active', 'total_instances',
                   'total_enrollment', 'thinkific_id', 'description']
 
-# TODO: learning objectives
+class ObjectiveResource(ChoicesResource):
+    course_codes = Field(attribute='coursetemplate_set', readonly=True,
+                         widget=ManyToManyWidget(models.CourseTemplate,
+                                                 field='code'))
+    class Meta:
+        model = models.LearningObjective
+        fields = ['id', 'name', 'description', 'course_codes']
+
 
 class StudentResource(ChoicesResource):
     center_code = Field(attribute='center',

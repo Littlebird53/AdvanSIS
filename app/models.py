@@ -377,6 +377,42 @@ class Person(models.Model):
             p = self.phones.all().filter(active=True).first()
         return p
 
+    @cached_property
+    def best_mailing(self):
+        ret = None
+        rank = -1
+        scale = {'H': 4, 'W': 3, 'S': 2, 'O': 1}
+        for m in self.mailings.all().filter(active=True).order_by('-id'):
+            r = scale.get(m.category, 0)
+            if r > rank:
+                ret = m
+                rank = r
+        return ret
+
+    @cached_property
+    def best_email(self):
+        ret = None
+        rank = -1
+        scale = {'P': 3, 'W': 2, 'O': 1}
+        for m in self.emails.all().filter(active=True).order_by('-id'):
+            r = scale.get(m.category, 0)
+            if r > rank:
+                ret = m
+                rank = r
+        return ret
+
+    @cached_property
+    def best_phone(self):
+        ret = None
+        rank = -1
+        scale = {'H': 4, 'M': 3, 'W': 2, 'O': 1}
+        for m in self.phones.all().filter(active=True).order_by('-id'):
+            r = scale.get(m.category, 0)
+            if r > rank:
+                ret = m
+                rank = r
+        return ret
+
     @property
     def has_profile(self):
         return self.date_of_birth is not None
