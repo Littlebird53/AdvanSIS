@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+if DEBUG:
+    MIDDLEWARE.append('app.middleware.SqlPrintingMiddleware')
 
 ROOT_URLCONF = 'AdvanSIS.urls'
 
@@ -127,6 +129,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = '/var/www/joseph-static/'
+if DEBUG:
+    STATIC_ROOT = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -135,6 +139,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = '/var/www/joseph-media/'
 MEDIA_URL = 'media/'
+if DEBUG:
+    MEDIA_ROOT = 'media/'
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
