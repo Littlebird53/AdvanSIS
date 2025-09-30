@@ -20,8 +20,8 @@ class Command(BaseCommand):
                 self.send_email(sr, 'student')
                 sr.acceptance_date = datetime.date.today()
                 sr.save()
-            except:
-                pass
+            except Exception as e:
+                print(e)
         for sr in StaffRecord.objects.filter(status='C', center_approved=True, advance_approved=True, acceptance_date__isnull=True):
             try:
                 if sr.center is None:
@@ -30,5 +30,5 @@ class Command(BaseCommand):
                     self.send_email(sr, 'instructor')
                 sr.acceptance_date = datetime.date.today()
                 sr.save()
-            except:
-                pass
+            except Exception as e:
+                print(e)
