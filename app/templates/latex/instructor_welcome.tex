@@ -12,8 +12,8 @@
 
 \newcommand{\apprdate}{ {{- sr.acceptance_date -}} }
 \newcommand{\instructorname}{ {{- sr.person.full_name -}} }
-\newcommand{\instructoraddrone}{ {{- sr.person.latex_addr1|latex_escape -}} }
-\newcommand{\instructoraddrtwo}{ {{- sr.person.latex_addr2 -}} }
+\newcommand{\instructoraddrone}{ {{- sr.person.latex_addr1|latex_escape|default('~') -}} }
+\newcommand{\instructoraddrtwo}{ {{- sr.person.latex_addr2|latex_escape|default('~') -}} }
 \newcommand{\id}{ {{- sr.person.user.username -}} }
 \newcommand{\centername}{ {{- sr.center.name -}} }
 

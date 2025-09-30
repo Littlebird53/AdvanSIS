@@ -581,14 +581,14 @@ class Person(models.Model):
         if self.home_address:
             return self.home_address.address
         else:
-            return '~'
+            return ''
 
     @property
     def latex_addr2(self):
         if self.home_address:
             return self.home_address.last_line
         else:
-            return '~'
+            return ''
 
     @property
     def age(self):
