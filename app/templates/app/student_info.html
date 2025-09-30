@@ -218,6 +218,12 @@
     <td>{{app.gateway_id}}</td>
   </tr>
   {% endif %}
+  {% if app.status == 'C' %}
+  <tr>
+    <th>Welcome Letter</th>
+    <td><a href="{% url 'app:student_welcome_letter' app.id %}">Download</a></td>
+  </tr>
+  {% endif %}
 </table>
 {% endfor %}
 
@@ -266,6 +272,12 @@
     <th>Agrees to Baptist Faith &amp; Message</th>
     <td>{{app.accept_bfm|yesno}}</td>
   </tr>
+  {% if app.status == 'C' %}
+  <tr>
+    <th>Welcome Letter</th>
+    <td><a href="{% url 'app:staff_welcome_letter' app.id %}">Download</a></td>
+  </tr>
+  {% endif %}
 </table>
 {% endfor %}
 

@@ -3,6 +3,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.template import Context, Template
+from django.urls import reverse
+from django.utils.html import format_html
 from nonrelated_inlines.admin import NonrelatedStackedInline, NonrelatedTabularInline
 from import_export import resources
 from import_export.admin import ImportExportMixin, ExportActionMixin
@@ -493,24 +495,40 @@ class UserMailingAddressInline(M2MMixin, NonrelatedStackedInline):
     model = models.MailingAddress
     def get_set(self, obj):
         return obj.person.mailings
-class StudentRecordInline(NonrelatedTabularInline):
+class StudentRecordInline(NonrelatedStackedInline):
     model = models.StudentRecord
     extra = 0
     exclude = ['person']
+    readonly_fields = ['welcome_letter']
     def get_form_queryset(self, obj):
         return obj.person.studentrecord_set.all()
     def save_new_instance(self, parent, instance):
         instance.person = parent.person
         instance.save()
-class StaffRecordInline(NonrelatedTabularInline):
+    def welcome_letter(self, obj):
+        if obj.id:
+            return format_html(
+                '<a href="{}">Download</a>',
+                reverse('app:student_welcome_letter', args=[obj.id]))
+        else:
+            return '(no welcome letter)'
+class StaffRecordInline(NonrelatedStackedInline):
     model = models.StaffRecord
     extra = 0
     exclude = ['person']
+    readonly_fields = ['welcome_letter']
     def get_form_queryset(self, obj):
         return obj.person.staffrecord_set.all()
     def save_new_instance(self, parent, instance):
         instance.person = parent.person
         instance.save()
+    def welcome_letter(self, obj):
+        if obj.id:
+            return format_html(
+                '<a href="{}">Download</a>',
+                reverse('app:staff_welcome_letter', args=[obj.id]))
+        else:
+            return '(no welcome letter)'
 class PersonGradeInline(NonrelatedTabularInline):
     model = models.Grade
     extra = 0
@@ -568,7 +586,8 @@ class UserAdmin(BaseUserAdmin):
     list_filter = BaseUserAdmin.list_filter + (UserRecordStatusFilter,)
     search_fields = ['username', 'person__given_name',
                      'person__family_name']
-    readonly_fields = ['credits_earned', 'credits_in_progress']
+    readonly_fields = ['credits_earned', 'credits_in_progress',
+                       'transcript']
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Permissions', {
@@ -578,7 +597,9 @@ class UserAdmin(BaseUserAdmin):
         ('Important dates', {
             'fields': ('last_login', 'date_joined'),
             'classes': ['collapse']}),
-        ('Grade Summary', {'fields': ('credits_earned', 'credits_in_progress')}),
+        ('Grade Summary', {'fields': ('credits_earned',
+                                      'credits_in_progress',
+                                      'transcript')}),
     )
     actions = ['compare_users', 'merge_users']
 
@@ -586,6 +607,10 @@ class UserAdmin(BaseUserAdmin):
         return instance.person.credits_earned
     def credits_in_progress(self, instance):
         return instance.person.credits_in_progress
+    def transcript(self, instance):
+        return format_html(
+            '<a href={}>Download</a>',
+            reverse('app:student_transcript', args=[instance.person.id]))
 
     @admin.action(description='Compare selected accounts')
     def compare_users(self, request, queryset, is_merge=False):

@@ -33,7 +33,6 @@ def make_email(subject, to, template_name, context):
     return message
 
 def add_pdf(message, filename, template_name, context):
-    from django_tex.core import compile_template_to_pdf
     pdf = compile_template_to_pdf(template_name, context)
     message.attach(filename, pdf)
 
@@ -1367,6 +1366,29 @@ def transcript(request, personid=None):
     PDF = compile_template_to_pdf('app/transcript.tex', context)
     buf = io.BytesIO(PDF)
     return FileResponse(buf, as_attachment=True, filename="transcript.pdf")
+
+@login_required
+def staff_welcome_letter(request, srid):
+    sr = get_object_or_404(models.StaffRecord, pk=srid)
+    if not can_edit_info(request.user, sr.person):
+        raise PermissionDenied()
+    tmpl = 'latex/instructor_welcome.tex'
+    if sr.center is None:
+        tmpl = 'latex/instructor_at_large_welcome.tex'
+    PDF = compile_template_to_pdf(tmpl, {'sr': sr})
+    buf = io.BytesIO(PDF)
+    return FileResponse(buf, as_attachment=True,
+                        filename="acceptance_letter.pdf")
+
+@login_required
+def student_welcome_letter(request, srid):
+    sr = get_object_or_404(models.StudentRecord, pk=srid)
+    if not can_edit_info(request.user, sr.person):
+        raise PermissionDenied()
+    PDF = compile_template_to_pdf('latex/student_welcome.tex', {'sr': sr})
+    buf = io.BytesIO(PDF)
+    return FileResponse(buf, as_attachment=True,
+                        filename="acceptance_letter.pdf")
 
 ####################
 ### Staff

@@ -914,7 +914,8 @@ class StudentRecord(models.Model):
     endorsement = models.BooleanField(null=True)
     pastor_explanation = models.TextField(blank=True, null=True)
     pastor_date = models.DateField(blank=True, null=True)
-    acceptance_date = models.DateField(blank=True, null=True)
+    acceptance_date = models.DateField(blank=True, null=True,
+                                       help_text='Set automatically when welcome letter is sent.')
 
     def __str__(self):
         return f'{self.person} {self.center}'
@@ -1011,7 +1012,7 @@ class StaffRecord(models.Model):
     upload_transcript = models.FileField(blank=True, null=True)
     accept_bfm = models.BooleanField(null=True)
     acceptance_date = models.DateField(blank=True, null=True,
-                                       help_text='Date welcome letter was sent')
+                                       help_text='Date welcome letter was sent (set automatically)')
     center_approved = models.BooleanField(default=False)
     advance_approved = models.BooleanField(default=False)
     profile = models.JSONField(blank=True, null=True,
