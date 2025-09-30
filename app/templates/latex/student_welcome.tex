@@ -12,7 +12,7 @@
 
 \newcommand{\apprdate}{ {{- sr.acceptance_date -}} }
 \newcommand{\studentname}{ {{- sr.person.full_name -}} }
-\newcommand{\studentaddrone}{ {{- sr.person.latex_addr1 -}} }
+\newcommand{\studentaddrone}{ {{- sr.person.latex_addr1|latex_escape -}} }
 \newcommand{\studentaddrtwo}{ {{- sr.person.latex_addr2 -}} }
 \newcommand{\studentid}{ {{- sr.person.user.username -}} }
 
