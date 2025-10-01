@@ -1324,7 +1324,8 @@ def transcript(request, personid=None):
     for grade in sorted(grades, key=lambda g: str(g.value)+','):
         if grade.course.template in seen:
             grade.value = 'R'
-        seen.add(grade.course.template)
+        if not grade.course.template.repeatable:
+            seen.add(grade.course.template)
         semesters[grade.course.sort_key()[:2]].append(grade)
     blocks = []
     total_att = 0

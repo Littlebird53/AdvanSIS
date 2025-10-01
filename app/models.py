@@ -35,7 +35,8 @@ def calc_gpa(grades, unique_only=False):
             if unique_only:
                 if g.course and g.course.template in seen:
                     continue
-                seen.add(g.course.template)
+                if not g.course.template.repeatable:
+                    seen.add(g.course.template)
             cr = g.course.template.credits
             att += cr
             get += cr * GPA_VALUES[g.value]
@@ -774,6 +775,7 @@ class CourseTemplate(models.Model):
     description = models.TextField()
     learning_objectives = models.ManyToManyField(LearningObjective)
     active = models.BooleanField(default=True)
+    repeatable = models.BooleanField(default=False)
 
     @property
     def code(self):
