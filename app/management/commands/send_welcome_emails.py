@@ -24,7 +24,9 @@ class Command(BaseCommand):
                 print(e)
         for sr in StaffRecord.objects.filter(status='C', center_approved=True, advance_approved=True, acceptance_date__isnull=True):
             try:
-                if sr.center is None:
+                if sr.role == 'R':
+                    pass
+                elif sr.center is None:
                     self.send_email(sr, 'instructor_at_large')
                 else:
                     self.send_email(sr, 'instructor')
