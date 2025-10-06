@@ -1276,6 +1276,9 @@ class CenterFees(models.Model, AutosaveFormMixin):
         return (budget and request.user.is_authenticated and
                 budget.center.is_admin(request.user.person))
 
+    class Meta:
+        verbose_name_plural = 'Center fees'
+
 class ExpectedCourse(models.Model, AutosaveFormMixin):
     budget = models.ForeignKey(CenterBudget, on_delete=models.CASCADE)
     course = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
