@@ -864,6 +864,10 @@ class Course(models.Model):
     def enrollment(self):
         return self.grade_set.all().count()
 
+    @property
+    def deletable(self):
+        return self.status == 'P' and self.enrollment == 0
+
 class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)

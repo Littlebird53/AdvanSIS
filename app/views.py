@@ -907,6 +907,14 @@ def add_instructor(request, center, staffid):
                   {'sr': newsr, 'created': created})
 
 @center_admin
+def delete_course(request, center, courseid):
+    course = get_object_or_404(models.Course, pk=courseid)
+    if course.deletable:
+        course.delete()
+        return render(request, 'app/empty_response.html')
+    else:
+        raise PermissionDenied()
+@center_admin
 def manage_courses(request, center):
     if len(request.GET) == 0:
         form = forms.SemesterRangeForm()

@@ -26,14 +26,14 @@
     <th>Status</th>
   </tr>
   {% for course in courses %}
-  <tr>
+  <tr id="c{{course.id}}">
     <td>
       <a href="{% url 'app:manage_course' course.id %}">
 	      {{course.template}}
       </a>
     </td>
     <td>{{course.get_semester_display}} {{course.year}}</td>
-    <td>{{course.grade_set.count}}</td>
+    <td>{{course.enrollment}}</td>
     <td>{{course.get_delivery_format_display}}</td>
     <td>
       <ul>
@@ -42,7 +42,16 @@
         {% endfor %}
       </ul>
     </td>
-    <td>{{course.get_status_display}}</td>
+    <td>
+      {{course.get_status_display}}
+      {% if course.deletable %}
+      <br/>
+      <button hx-post="{% url 'app:delete_course' center.id course.id %}"
+              hx-target="#c{{course.id}}" hx-swap="outerHTML">
+        Delete
+      </button>
+      {% endif %}
+    </td>
   </tr>
   {% endfor %}
 </table>

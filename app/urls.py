@@ -52,6 +52,8 @@ urlpatterns = [
          views.add_instructor, name='add_instructor'),
     path('center/<int:centerid>/courses/', views.manage_courses,
          name='center_courses'),
+    path('center/<int:centerid>/courses/<int:courseid>/delete/',
+         views.delete_course, name='delete_course'),
 
     # Applications
     path('center/<int:centerid>/instructor_apply/',
