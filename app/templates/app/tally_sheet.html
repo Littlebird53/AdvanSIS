@@ -3,7 +3,7 @@
 {% block title %}{{center}} Tally Sheet{% endblock %}
 
 {% block content %}
-<h1>{{center}} Tally Sheet for {{semester}}{{year}}</h1>
+<h1>{{center.name}} ({{center.code}}) Tally Sheet for {{semester}}{{year}}</h1>
 <form>
   <table>{{form.as_table}}</table>
   <button type="submit">View</button>

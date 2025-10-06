@@ -792,7 +792,8 @@ def center_tally(request, center):
         'year': year, 'semester': semester, 'form': form,
         'rows': rows, 'total_fee': sum(r[6] for r in rows),
         'total_achievement': sum(r[5] for r in rows),
-        'total_credits': sum(r[3] for r in rows)})
+        'total_credits': sum(r[3] for r in rows),
+        'center': center})
 
 class NewCenterApplyView(AccessMixin, FormView):
     form_class = forms.NewCenterApplicationForm
