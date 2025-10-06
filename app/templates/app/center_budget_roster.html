@@ -1,6 +1,6 @@
 {% load autosave %}
 <tr {{id_fields}} class="roster"
-    data-country-fee="{{instance.country.student_fee}}">
+    data-country-fee="{{instance.student_fee}}">
   <td>{{instance.country}}</td>
   <td class="new-students">{{instance|form_field:"new_students"}}</td>
   <td class="certificates">{{instance|form_field:"certificates"}}</td>

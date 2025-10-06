@@ -167,8 +167,46 @@ class Country(models.Model):
     def __str__(self):
         return f'{self.name} ({self.postal_code})'
 
+    def fees_by_year(self, year):
+        fh = FeeHistory.objects.filter(country=self).filter(
+            (models.Q(start_year__isnull=True) |
+             models.Q(start_year__lte=year))).filter(
+                 (models.Q(end_year__isnull=True) |
+                  models.Q(end_year__gte=year))).first()
+        if fh is None:
+            return (self.credit_fee, self.student_fee)
+        else:
+            return (fh.credit_fee, fh.student_fee)
+
+    def fees_by_date(self, date):
+        if date.month >= 8:
+            return self.fees_by_year(date.year)
+        else:
+            return self.fees_by_year(date.year-1)
+
+    def fees_by_term(self, year, semester):
+        if semester == 'Fa':
+            return self.fees_by_year(year)
+        else:
+            return self.fees_by_year(year-1)
+
     class Meta:
         ordering = ['name']
+
+class FeeHistory(models.Model):
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    credit_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    student_fee = models.DecimalField(max_digits=5, decimal_places=2)
+    start_year = models.IntegerField(blank=True, null=True,
+                                     help_text='beginning of first AY in which this fee applies, e.g. "2020" for AY20-21 onwards')
+    end_year = models.IntegerField(blank=True, null=True,
+                                   help_text='beginning of last AY in which this fee applies, e.g. "2012" for superseded in AY13-14')
+
+    def __str__(self):
+        return f'{self.country.name} {self.start_year}-{self.end_year}'
+
+    class Meta:
+        verbose_name_plural = 'Fee history'
 
 class MailingAddress(models.Model):
     active = models.BooleanField(default=True)
@@ -1280,6 +1318,10 @@ class CenterFees(models.Model, AutosaveFormMixin):
         return (budget and request.user.is_authenticated and
                 budget.center.is_admin(request.user.person))
 
+    @property
+    def global_fee(self):
+        return self.country.fees_by_year(self.budget.year)[0]
+
     class Meta:
         verbose_name_plural = 'Center fees'
 
@@ -1358,6 +1400,10 @@ class ExpectedRoster(models.Model, AutosaveFormMixin):
                 'widgets': {'country': {'class': 'filter-select'}},
                 'template': 'app/center_budget_roster.html'},
     }
+
+    @property
+    def student_fee(self):
+        return self.country.fees_by_year(self.budget.year)[1]
 
 class Prospect(models.Model):
     given_name = models.CharField(max_length=100, null=True,

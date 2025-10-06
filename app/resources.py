@@ -215,6 +215,14 @@ class FeeResource(ChoicesResource):
         fields = ['id', 'budget', 'center_code', 'year', 'country',
                   'credit_fee']
 
+class GlobalFeeResource(ChoicesResource):
+    country = Field(attribute='country',
+                    widget=ForeignKeyWidget(models.Country, 'name'))
+    class Meta:
+        model = models.FeeHistory
+        fields = ['id', 'country', 'start_year', 'end_year',
+                  'student_fee', 'credit_fee']
+
 class CourseResource(ChoicesResource):
     center_code = Field(attribute='center',
                         widget=ForeignKeyWidget(models.Center, 'code'))

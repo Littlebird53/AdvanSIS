@@ -764,7 +764,8 @@ def center_tally(request, center):
     semester_seq = [None, 'Sp', 'Su', 'Fa', 'Wi']
     for person in ct:
         home, known = person.home_country
-        charge = ct[person]*home.credit_fee
+        fees = home.fees_by_term(year, semester)
+        charge = ct[person]*fees[0]
         new_student = False
         graduating = False
         deg_charge = 0
@@ -774,7 +775,7 @@ def center_tally(request, center):
             sr = person.primary_student_record
             if sr and sr.center == center and start_date <= sr.acceptance_date <= end_date:
                 new_student = True
-                charge += home.student_fee
+                charge += fees[1]
             achievements = models.AchievementAward.objects.filter(
                 person=person, year=year, semester=semester,
                 status__in=['A', 'P', 'D'])
@@ -782,10 +783,10 @@ def center_tally(request, center):
                 if achievement.walking:
                     deg_charge += 90
                 else:
-                    deg_charge += min(home.student_fee, 10)
+                    deg_charge += min(fees[1], 10)
             charge += deg_charge
         rows.append((person, home, known, ct[person], new_student,
-                     deg_charge, charge))
+                     deg_charge, charge) + fees)
     rows.sort(key=lambda r: str(r[0]))
     return render(request, 'app/tally_sheet.html', {
         'year': year, 'semester': semester, 'form': form,
@@ -855,9 +856,9 @@ def center_budget(request, center, year=None):
         'courses': budget.expectedcourse_set.all().order_by('course__title'),
         'stipends': budget.centerstipend_set.all().order_by('-stipend'),
         'roster': budget.expectedroster_set.all().order_by('country__name'),
-        'countries': json.dumps(dict([
-            (i, float(v)) for i, v in
-            models.Country.objects.all().values_list('id', 'credit_fee')])),
+        'countries': json.dumps({
+            c.id: float(c.fees_by_year(year)[0])
+            for c in models.Country.objects.all()}),
     })
 
 @center_admin
@@ -1660,13 +1661,14 @@ def staff_tally_sheet(request):
         credits[g.person][g.course.center] += g.course.template.credits
     for student, dct in credits.items():
         home, _ = student.home_country
+        fees = home.fees_by_term(year, semester)
         for center, count in dct.items():
-            totals[center] += count * home.credit_fee
+            totals[center] += count * fees[0]
         sr = student.studentrecord_set.all().filter(
             acceptance_date__isnull=False,
             acceptance_date__lt=end_date).order_by('acceptance_date').first()
         if sr is not None and start_date <= sr.acceptance_date:
-            totals[sr.center] += home.student_fee
+            totals[sr.center] += fees[1]
         records = student.studentrecord_set.all().filter(
             acceptance_date__isnull=False, acceptance_date__lt=end_date)
         centers = [r.center for r in records if r.center]
@@ -1678,7 +1680,7 @@ def staff_tally_sheet(request):
                 if ach.walking:
                     totals[c] += 90
                 else:
-                    totals[c] += min(home.student_fee, 10)
+                    totals[c] += min(fees[1], 10)
     rows = []
     for c, n in sorted(totals.items(), key=lambda p: p[0].name):
         rows.append({

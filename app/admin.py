@@ -820,3 +820,10 @@ class FeeAdmin(IEAdmin):
     list_display = ['country', 'budget__center', 'credit_fee']
 
     resource_classes = [resources.FeeResource]
+
+@admin.register(models.FeeHistory)
+class GlobalFeeAdmin(IEAdmin):
+    list_display = ['country', 'start_year', 'end_year',
+                    'student_fee', 'credit_fee']
+
+    resource_classes = [resources.GlobalFeeResource]
