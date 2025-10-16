@@ -15,32 +15,29 @@
     <th>Tally Sheet</th>
     <th>Status</th>
   </tr>
-  {% for row in totals %}
+  {% for row in totals_locked %}
+  <tr>
+    <td>{{row.center}}</td>
+    <td style="text-align: right">${{row.total}}</td>
+    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View Tally Sheet</a></td>
+    <td>Locked</td>
+  </tr>
+  {% endfor %}
+  {% for row in totals_locked %}
   <tr>
     <td>{{row.center}}</td>
     <td style="text-align: right">${{row.total}}</td>
     <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View Tally Sheet</a></td>
     <td id="center_{{row.center.id}}">
-      {% if row.locked %}
-      Locked
-      {% else %}
       <form hx-target="#center_{{row.center.id}}"
 	    hx-post="{% url 'app:lock_courses' row.center.id year semester %}"
 	    style="width: 100%"
 	    data-form-id="skip">
-	{% csrf_token %}
-	<button type="submit">Lock Courses</button>
+	      {% csrf_token %}
+	      <button type="submit">Lock Courses</button>
       </form>
-      {% endif %}
     </td>
   </tr>
   {% endfor %}
 </table>
-{% if double_count %}
-<h2>Potentially Double-Counted Centers</h2>
-<p>Some graduation fees may have been double counted, affecing the following centers:</p>
-<ul>
-  {% for c in double_count %}{{c}}{% endfor %}
-</ul>
-{% endif %}
 {% endblock %}

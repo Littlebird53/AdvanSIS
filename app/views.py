@@ -760,8 +760,13 @@ def center_tally(request, center):
     ct = collections.Counter()
     for g in grades:
         ct[g.person] += g.course.template.credits
+    for ach in models.AchievementAward.objects.filter(
+            year=year, semester=semester, status__in=['A', 'P', 'D'],
+            person__studentrecord__center=center):
+        ct[ach.person] += 0
     rows = []
     semester_seq = [None, 'Sp', 'Su', 'Fa', 'Wi']
+    total_new_student = 0
     for person in ct:
         home, known = person.home_country
         fees = home.fees_by_term(year, semester)
@@ -773,9 +778,12 @@ def center_tally(request, center):
                 person=person, center=center,
                 status__in=['C', 'F']).exists():
             sr = person.primary_student_record
-            if sr and sr.center == center and start_date <= sr.acceptance_date <= end_date:
+            if sr is None or sr.center != center:
+                continue
+            if start_date <= sr.acceptance_date <= end_date:
                 new_student = True
                 charge += fees[1]
+                total_new_student += fees[1]
             achievements = models.AchievementAward.objects.filter(
                 person=person, year=year, semester=semester,
                 status__in=['A', 'P', 'D'])
@@ -793,6 +801,7 @@ def center_tally(request, center):
         'rows': rows, 'total_fee': sum(r[6] for r in rows),
         'total_achievement': sum(r[5] for r in rows),
         'total_credits': sum(r[3] for r in rows),
+        'total_new_student': total_new_student,
         'center': center})
 
 class NewCenterApplyView(AccessMixin, FormView):
@@ -1653,50 +1662,45 @@ def staff_tally_sheet(request):
         form = forms.TallySheetForm(initial=initial)
     start_date, end_date = get_date_range(year, semester)
     totals = collections.Counter()
-    double_count = set()
     credits = collections.defaultdict(collections.Counter)
     for g in models.Grade.objects.filter(
             course__year=year, course__semester=semester):
         if g.course.center is None:
             continue
         credits[g.person][g.course.center] += g.course.template.credits
+    for ach in models.AchievementAward.objects.filter(
+            year=year, semester=semester, status__in=['A', 'P', 'D']):
+        _ = credits[ach.person]
     for student, dct in credits.items():
         home, _ = student.home_country
         fees = home.fees_by_term(year, semester)
         for center, count in dct.items():
             totals[center] += count * fees[0]
-        sr = student.studentrecord_set.all().filter(
-            acceptance_date__isnull=False,
-            acceptance_date__lt=end_date).order_by('acceptance_date').first()
-        if sr is not None and start_date <= sr.acceptance_date:
+        sr = student.primary_student_record
+        if sr is None:
+            continue
+        if start_date <= sr.acceptance_date <= end_date:
             totals[sr.center] += fees[1]
-        records = student.studentrecord_set.all().filter(
-            acceptance_date__isnull=False, acceptance_date__lt=end_date)
-        centers = [r.center for r in records if r.center]
         for ach in student.achievementaward_set.all().filter(
                 year=year, semester=semester, status__in=['A', 'P', 'D']):
-            if len(centers) > 1:
-                double_count.update(centers)
-            for c in centers:
-                if ach.walking:
-                    totals[c] += 90
-                else:
-                    totals[c] += min(fees[1], 10)
-    rows = []
+            if ach.walking:
+                totals[sr.center] += 90
+            else:
+                totals[sr.center] += min(fees[1], 10)
+    rows_locked = []
+    rows_unlocked = []
     for c, n in sorted(totals.items(), key=lambda p: p[0].name):
-        rows.append({
-            'center': c,
-            'total': n,
-            'locked': not models.Course.objects.filter(
+        if models.Course.objects.filter(
                 center=c, year=year, semester=semester,
-                status='A').exists(),
-        })
+                status='A').exists():
+            rows_unlocked.append({'center': c, 'total': n})
+        else:
+            rows_locked.append({'center': c, 'total': n})
     return render(request, 'app/staff_tally_sheet.html',
                   {
                       'year': year,
                       'semester': semester,
                       'form': form,
-                      'totals': rows,
-                      'double_count': sorted(double_count,
-                                             key=lambda c: c.name),
+                      'totals_locked': rows_locked,
+                      'totals_unlocked': rows_unlocked,
                   })
