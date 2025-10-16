@@ -1661,7 +1661,7 @@ def staff_tally_sheet(request):
                    'semester': get_current_term}
         form = forms.TallySheetForm(initial=initial)
     start_date, end_date = get_date_range(year, semester)
-    totals = collections.Counter()
+    totals = collections.defaultdict(collections.Counter)
     credits = collections.defaultdict(collections.Counter)
     for g in models.Grade.objects.filter(
             course__year=year, course__semester=semester):
@@ -1675,27 +1675,28 @@ def staff_tally_sheet(request):
         home, _ = student.home_country
         fees = home.fees_by_term(year, semester)
         for center, count in dct.items():
-            totals[center] += count * fees[0]
+            totals[center]['tuition'] += count * fees[0]
         sr = student.primary_student_record
         if sr is None:
             continue
         if start_date <= sr.acceptance_date <= end_date:
-            totals[sr.center] += fees[1]
+            totals[sr.center]['new_student'] += fees[1]
         for ach in student.achievementaward_set.all().filter(
                 year=year, semester=semester, status__in=['A', 'P', 'D']):
             if ach.walking:
-                totals[sr.center] += 90
+                totals[sr.center]['graduation'] += 90
             else:
-                totals[sr.center] += min(fees[1], 10)
+                totals[sr.center]['graduation'] += min(fees[1], 10)
     rows_locked = []
     rows_unlocked = []
     for c, n in sorted(totals.items(), key=lambda p: p[0].name):
+        dct = {'center': c, 'total': n, 'sum': n.total()}
         if models.Course.objects.filter(
                 center=c, year=year, semester=semester,
                 status='A').exists():
-            rows_unlocked.append({'center': c, 'total': n})
+            rows_unlocked.append(dct)
         else:
-            rows_locked.append({'center': c, 'total': n})
+            rows_locked.append(dct)
     return render(request, 'app/staff_tally_sheet.html',
                   {
                       'year': year,

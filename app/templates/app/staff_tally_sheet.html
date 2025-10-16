@@ -11,27 +11,36 @@
 <table>
   <tr>
     <th>Center</th>
+    <th>Tuition</th>
+    <th>New Student</th>
+    <th>Graduation</th>
     <th>Total</th>
     <th>Tally Sheet</th>
     <th>Status</th>
   </tr>
   {% for row in totals_locked %}
   <tr>
-    <td>{{row.center}}</td>
-    <td style="text-align: right">${{row.total}}</td>
-    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View Tally Sheet</a></td>
-    <td>Locked</td>
+    <td>{{row.center}} ({{row.center.code}})</td>
+    <td style="text-align: right">${{row.total.tuition}}</td>
+    <td style="text-align: right">${{row.total.new_student}}</td>
+    <td style="text-align: right">${{row.total.graduation}}</td>
+    <td style="text-align: right">${{row.sum}}</td>
+    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View</a></td>
+    <td style="text-align: center">Locked</td>
   </tr>
   {% endfor %}
-  {% for row in totals_locked %}
+  {% for row in totals_unlocked %}
   <tr>
-    <td>{{row.center}}</td>
-    <td style="text-align: right">${{row.total}}</td>
-    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View Tally Sheet</a></td>
+    <td>{{row.center}} ({{row.center.code}})</td>
+    <td style="text-align: right">${{row.total.tuition}}</td>
+    <td style="text-align: right">${{row.total.new_student}}</td>
+    <td style="text-align: right">${{row.total.graduation}}</td>
+    <td style="text-align: right">${{row.sum}}</td>
+    <td><a href="{% url 'app:center_tally' row.center.id %}?year={{year}}&semester={{semester}}">View</a></td>
     <td id="center_{{row.center.id}}">
       <form hx-target="#center_{{row.center.id}}"
 	    hx-post="{% url 'app:lock_courses' row.center.id year semester %}"
-	    style="width: 100%"
+	    class="delete-form"
 	    data-form-id="skip">
 	      {% csrf_token %}
 	      <button type="submit">Lock Courses</button>
