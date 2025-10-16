@@ -23,37 +23,39 @@
     <td><a href="{% url 'app:student_info' row.0.id %}">{{row.0}}</a></td>
     {% if row.2 %}
     <td>{{row.1}}</td>
-    <td>${{row.7}}</td>
+    <td style="text-align: right">${{row.7}}</td>
     {% else %}
     <td><i>Unknown</i></td>
-    <td title="Using US rate">${{row.7}}</td>
+    <td style="text-align: right" title="Using US rate">${{row.7}}</td>
     {% endif %}
-    <td>{{row.3}}</td>
+    <td style="text-align: right">{{row.3}}</td>
     {% if row.4 %}
-    <td {% if not row.2 %}title="Using US rate"{% endif %}>
+    <td  style="text-align: right"
+         {% if not row.2 %}title="Using US rate"{% endif %}>
       ${{row.8}}
     </td>
     {% else %}
     <td></td>
     {% endif %}
     {% if row.5 %}
-    <td {% if not row.2 %}title="Using US rate"{% endif %}>
+    <td  style="text-align: right"
+         {% if not row.2 %}title="Using US rate"{% endif %}>
       ${{row.5}}
     </td>
     {% else %}
     <td></td>
     {% endif %}
-    <td>{{row.6}}</td>
+    <td style="text-align: right">${{row.6}}</td>
   </tr>
   {% endfor %}
   <tr>
     <th>Totals:</th>
     <td></td>
     <td></td>
-    <td>{{total_credits}}</td>
-    <td>${{total_new_student}}</td>
-    <td>${{total_achievement}}</td>
-    <td>${{total_fee}}</td>
+    <td style="text-align: right">{{total_credits}}</td>
+    <td style="text-align: right">${{total_new_student}}</td>
+    <td style="text-align: right">${{total_achievement}}</td>
+    <td style="text-align: right">${{total_fee}}</td>
   </tr>
 </table>
 
