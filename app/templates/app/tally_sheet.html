@@ -22,10 +22,10 @@
   <tr>
     <td><a href="{% url 'app:student_info' row.0.id %}">{{row.0}}</a></td>
     {% if row.2 %}
-    <td>{{row.1}}</td>
+    <td style="font-size: 10pt">{{row.1}}</td>
     <td style="text-align: right">${{row.7}}</td>
     {% else %}
-    <td><i>Unknown</i></td>
+    <td style="font-size: 10pt"><i>Unknown</i></td>
     <td style="text-align: right" title="Using US rate">${{row.7}}</td>
     {% endif %}
     <td style="text-align: right">{{row.3}}</td>
