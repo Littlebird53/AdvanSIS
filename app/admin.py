@@ -684,10 +684,39 @@ class PopupAdmin(IEAdmin):
 
     resource_classes = [resources.MessageResource]
 
+class GradeYearFilter(admin.SimpleListFilter):
+    # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+    template = 'admin/int_filter.html'
+    parameter_name = 'year'
+    title = 'Year'
+
+    def lookups(self, request, model_admin):
+        # Dummy, required to show the filter.
+        return ((),)
+
+    def choices(self, changelist):
+        # Grab only the "all" option.
+        all_choice = next(super().choices(changelist))
+        all_choice['query_parts'] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+    def queryset(self, request, queryset):
+        if isinstance(self.value(), str) and self.value().isdigit():
+            return queryset.filter(course__year=int(self.value()))
+        return queryset
 @admin.register(models.Grade)
 class GradeAdmin(IEAdmin):
     autocomplete_fields = ['person', 'course']
     resource_classes = [resources.GradeResource]
+    list_display = ['person', 'course', 'course__center__code',
+                    'course__year', 'course__semester']
+    list_filter = [GradeYearFilter, 'course__semester']
+    search_fields = ['person__given_name', 'person__family_name',
+                     'course__center__code', 'course__template__name']
 
 class ProspectDateFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
