@@ -764,6 +764,10 @@ def center_tally(request, center):
             year=year, semester=semester, status__in=['A', 'P', 'D'],
             person__studentrecord__center=center):
         ct[ach.person] += 0
+    for sr in models.StudentRecord.objects.filter(
+            center=center, acceptance_date__gte=start_date,
+            acceptance_date__lte=end_date):
+        ct[sr.person] += 0
     rows = []
     semester_seq = [None, 'Sp', 'Su', 'Fa', 'Wi']
     total_new_student = 0
@@ -1671,6 +1675,10 @@ def staff_tally_sheet(request):
     for ach in models.AchievementAward.objects.filter(
             year=year, semester=semester, status__in=['A', 'P', 'D']):
         _ = credits[ach.person]
+    for sr in models.StudentRecord.objects.filter(
+            acceptance_date__gte=start_date,
+            acceptance_date__lte=end_date):
+        _ = credits[sr.person]
     for student, dct in credits.items():
         home, _ = student.home_country
         fees = home.fees_by_term(year, semester)
