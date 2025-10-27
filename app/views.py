@@ -1271,7 +1271,7 @@ def achievement_search(request):
                                if d.check_requirements(person, False)]})
 
 def check_achievement(achievement, person):
-    cond = Q(achievement=achievement)
+    cond = Q(achievement=achievement, person=person)
     credits = person.credits_earned + person.credits_in_progress
     if achievement.category in ['D', 'L']:
         cond = cond | Q(achievement__category=achievement.category)
