@@ -761,7 +761,7 @@ def center_tally(request, center):
     for g in grades:
         ct[g.person] += g.course.template.credits
     for ach in models.AchievementAward.objects.filter(
-            year=year, semester=semester, status__in=['A', 'P', 'D'],
+            year=year, semester=semester, status__in=['S', 'A', 'P', 'D'],
             person__studentrecord__center=center):
         ct[ach.person] += 0
     for sr in models.StudentRecord.objects.filter(
@@ -789,7 +789,7 @@ def center_tally(request, center):
                     total_new_student += fees[1]
                 achievements = models.AchievementAward.objects.filter(
                     person=person, year=year, semester=semester,
-                    status__in=['A', 'P', 'D'])
+                    status__in=['S', 'A', 'P', 'D'])
                 for achievement in achievements:
                     if achievement.walking:
                         deg_charge += 90
@@ -1672,7 +1672,7 @@ def staff_tally_sheet(request):
             continue
         credits[g.person][g.course.center] += g.course.template.credits
     for ach in models.AchievementAward.objects.filter(
-            year=year, semester=semester, status__in=['A', 'P', 'D']):
+            year=year, semester=semester, status__in=['S', 'A', 'P', 'D']):
         _ = credits[ach.person]
     for sr in models.StudentRecord.objects.filter(
             acceptance_date__gte=start_date,
@@ -1689,7 +1689,7 @@ def staff_tally_sheet(request):
         if start_date <= sr.acceptance_date <= end_date:
             totals[sr.center]['new_student'] += fees[1]
         for ach in student.achievementaward_set.all().filter(
-                year=year, semester=semester, status__in=['A', 'P', 'D']):
+                year=year, semester=semester, status__in=['S', 'A', 'P', 'D']):
             if ach.walking:
                 totals[sr.center]['graduation'] += 90
             else:
