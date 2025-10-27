@@ -782,21 +782,20 @@ def center_tally(request, center):
                 person=person, center=center,
                 status__in=['C', 'F']).exists():
             sr = person.primary_student_record
-            if sr is None or sr.center != center:
-                continue
-            if start_date <= sr.acceptance_date <= end_date:
-                new_student = True
-                charge += fees[1]
-                total_new_student += fees[1]
-            achievements = models.AchievementAward.objects.filter(
-                person=person, year=year, semester=semester,
-                status__in=['A', 'P', 'D'])
-            for achievement in achievements:
-                if achievement.walking:
-                    deg_charge += 90
-                else:
-                    deg_charge += min(fees[1], 10)
-            charge += deg_charge
+            if sr is not None and sr.center == center:
+                if start_date <= sr.acceptance_date <= end_date:
+                    new_student = True
+                    charge += fees[1]
+                    total_new_student += fees[1]
+                achievements = models.AchievementAward.objects.filter(
+                    person=person, year=year, semester=semester,
+                    status__in=['A', 'P', 'D'])
+                for achievement in achievements:
+                    if achievement.walking:
+                        deg_charge += 90
+                    else:
+                        deg_charge += min(fees[1], 10)
+                charge += deg_charge
         rows.append((person, home, known, ct[person], new_student,
                      deg_charge, charge) + fees)
     rows.sort(key=lambda r: str(r[0]))
