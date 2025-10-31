@@ -143,6 +143,13 @@ class Language(models.Model):
     def get_english(cls):
         return cls.objects.filter(code='eng')
 
+    @classmethod
+    def get_english_single(cls):
+        return cls.objects.filter(code='eng').first().id
+
+    class Meta:
+        ordering = ['name']
+
 class EmailAddress(models.Model):
     active = models.BooleanField(default=True)
     email = models.EmailField()
@@ -1011,6 +1018,9 @@ class SharedFile(models.Model):
                                        related_name='files')
     courses = models.ManyToManyField(Course, blank=True,
                                      related_name='files')
+    language = models.ForeignKey(Language,
+                                 default=Language.get_english_single,
+                                 null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.title

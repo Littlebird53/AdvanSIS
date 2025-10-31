@@ -11,18 +11,32 @@
   {{course.learning_objectives_block}}
 </details>
 <h2>Available Files</h2>
-<ul>
-  {% for fl in files %}
-  <li>
-    <a href="{{fl.display_url}}">{{fl}}</a>
-    {% if fl.owner is None %}
-    (<i>ADVANCE</i>)
-    {% else %}
-    ({{fl.owner}})
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Language</th>
+      <th>Owner</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fl in files %}
+    <tr>
+      <td>
+        <a href="{{fl.display_url}}">{{fl}}</a>
+      </td>
+      <td>{{fl.language}}</td>
+      <td>
+        {% if fl.owner is None %}
+        <i>ADVANCE</i>
+        {% else %}
+        {{fl.owner}}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 <h2>Add File</h2>
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}

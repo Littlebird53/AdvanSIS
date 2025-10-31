@@ -346,7 +346,7 @@ class AchievementAdmin(IEAdmin):
 
 @admin.register(models.SharedFile)
 class FileAdmin(IEAdmin):
-    list_display = ['title', 'owner']
+    list_display = ['title', 'owner', 'language']
     search_fields = ['title']
     autocomplete_fields = ['owner', 'objectives', 'templates', 'courses']
     inlines = [CourseFileAdmin]

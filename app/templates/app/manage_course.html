@@ -91,6 +91,7 @@
     {% for file in all_files %}
     <li>
       <a href="{{file.display_url}}">{{file.title}}</a>
+      ({{file.language}})
     </li>
     {% endfor %}
   </ul>

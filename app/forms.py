@@ -221,9 +221,11 @@ class CourseFileForm(forms.ModelForm):
 CourseFileFormset = forms.modelformset_factory(
     models.CourseFile, form=CourseFileForm, extra=0, can_delete=True)
 
-class AddFileForm(forms.ModelForm):
+class AddFileForm(RequiredMixin, forms.ModelForm):
     instance_only = forms.BooleanField(
         label='Only add file to this semester', required=False)
+
+    make_filtered = ['language']
 
     def clean_content(self):
         val = self.cleaned_data.get('content')
@@ -235,7 +237,7 @@ class AddFileForm(forms.ModelForm):
 
     class Meta:
         model = models.SharedFile
-        fields = ['title', 'content', 'url']
+        fields = ['title', 'language', 'content', 'url']
 
 class NewInstructorPopupForm(forms.Form):
     text = forms.CharField(label='Message Body', widget=forms.Textarea)

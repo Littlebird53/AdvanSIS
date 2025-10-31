@@ -22,7 +22,10 @@
 <h2>Files</h2>
 <ul>
   {% for fl in files %}
-  <li><a href="{{fl.shared_file.display_url}}">{{fl.shared_file.title}}</a></li>
+  <li>
+    <a href="{{fl.shared_file.display_url}}">{{fl.shared_file.title}}</a>
+    ({{fl.shared_file.language}})
+  </li>
   {% endfor %}
 </ul>
 {% endif %}
