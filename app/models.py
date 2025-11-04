@@ -23,20 +23,25 @@ GPA_VALUES = {
     'F': 0.0,
 }
 
+def iter_grades(grades, unique_only=False):
+    if unique_only:
+        seen = set()
+        # comma sorts after +, so this makes A+ < A < A-
+        grades = sorted(grades, key=lambda g: str(g.value)+',')
+        for g in grades:
+            if g.course.template in seen:
+                continue
+            if not g.course.template.repeatable:
+                seen.add(g.course.template)
+            yield g
+    else:
+        yield from grades
+
 def calc_gpa(grades, unique_only=False):
     att = 0
     get = 0
-    seen = set()
-    if unique_only:
-        # comma sorts after +, so this makes A+ < A < A-
-        grades = sorted(grades, key=lambda g: str(g.value)+',')
-    for g in grades:
+    for g in iter_grades(grades, unique_only):
         if g.value in GPA_VALUES:
-            if unique_only:
-                if g.course and g.course.template in seen:
-                    continue
-                if not g.course.template.repeatable:
-                    seen.add(g.course.template)
             cr = g.course.template.credits
             att += cr
             get += cr * GPA_VALUES[g.value]
@@ -372,9 +377,10 @@ class Person(models.Model):
 
     @property
     def credits_earned(self):
-        return sum([t.credits for t in set(
-            g.course.template for g in self.grade_set.exclude(
-                value__in=['F', 'Au', 'IP', 'W']))])
+        return sum([g.course.template.credits for g in
+                    iter_grades(self.grade_set.exclude(
+                        value__in=['F', 'Au', 'IP', 'W']),
+                                unique_only=True)])
 
     @property
     def credits_in_progress(self):
@@ -389,9 +395,10 @@ class Person(models.Model):
 
     @property
     def potential_achievement_credits(self):
-        has = sum([t.credits for t in set(
-            g.course.template for g in self.grade_set.exclude(
-                value__in=['F', 'Au', 'W']))])
+        has = sum([g.course.template.credits for g in
+                   iter_grades(self.grade_set.exclude(
+                       value__in=['F', 'Au', 'W']),
+                               unique_only=True)])
         return has - self.certificate_credits
 
     @property
