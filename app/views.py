@@ -694,9 +694,11 @@ def view_students(request, center, status):
     qs = models.StudentRecord.objects.filter(
         center=center).prefetch_related('person__grade_set')
     if status is not None:
-        qs = qs.filter(status=status)
+        qs = qs.filter(status=status).order_by(
+            'person__family_name', 'person__given_name')
     else:
-        qs = qs.order_by('status')
+        qs = qs.order_by('status',
+                         'person__family_name', 'person__given_name')
     if request.method == 'POST':
         form = forms.StudentRecordFormset(request.POST, queryset=qs)
         if form.is_valid():
