@@ -1,0 +1,35 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{center.name}} MOUs{% endblock %}
+
+{% block content %}
+<h1>{{center.name}} MOUs</h1>
+
+<ul>
+  {% for m in mous %}
+  <li>
+    {% if m.status == 'P' %}
+    Pending MOU awaiting some signatures
+    {% if m.director_sig %}
+    Director has signed.
+    {% else %}
+    <form action="{% url 'app:mou_director_sig' center.id %}">
+      <button type="submit">Add director signature.</button>
+    </form>
+    {% endif %}
+    {% if m.sponsor_sig %}
+    Sponsor has signed.
+    {% else %}
+    <form action="{% url 'app:mou_sponsor_sig' center.id %}">
+      <button type="submit">Add sponsor signature.</button>
+    </form>
+    {% endif %}
+    {% else %}
+    <a href="{% url 'app:download_past_mou' center.id m.id %}">
+      {{m.start_date}} &mdash; {{m.expiration}}
+    </a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

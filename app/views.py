@@ -5,7 +5,7 @@ from django.contrib.staticfiles import finders
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, Max, Q, Sum
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
@@ -891,9 +891,26 @@ def sign_mou(request, center, role):
 @center_admin
 def download_mou(request, center):
     mou = center.current_mou
+    if mou is None:
+        raise Http404(f'{center.name} does not have an MOU')
     pdf = compile_template_to_pdf(mou.template_name, {'mou': mou})
     buf = io.BytesIO(pdf)
     return FileResponse(buf, as_attachment=True, filename='mou.pdf')
+
+@center_admin
+def download_past_mou(request, center, mouid):
+    mou = get_object_or_404(models.MOU, center=center, pk=mouid)
+    pdf = compile_template_to_pdf(mou.template_name, {'mou': mou})
+    buf = io.BytesIO(pdf)
+    return FileResponse(buf, as_attachment=True, filename='mou.pdf')
+
+@center_admin
+def mou_index(request, center):
+    return render(request, 'app/mou_index.html', {
+        'center': center,
+        'mous': models.MOU.objects.filter(center=center).order_by(
+            'start_date'),
+    })
 
 @center_admin
 def find_instructors(request, center):

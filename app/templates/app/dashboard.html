@@ -98,6 +98,7 @@
   {% endif %}
   {% if mou is not None %}
   <p><a href="{% url 'app:download_mou' center.id %}">Download most recent MOU</a></p>
+  <p><a href="{% url 'app:mou_index' center.id %}">View past MOUs</a></p>
   {% endif %}
   {% endwith %}
   {% endif %}
