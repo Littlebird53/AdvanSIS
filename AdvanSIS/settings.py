@@ -158,6 +158,15 @@ SITE_ID = 1
 SERVER_EMAIL = 'errors@joseph.dangswan.com'
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = secret.EMAIL_HOST
+    EMAIL_HOST_PASSWORD = secret.EMAIL_PASSWORD
+    EMAIL_HOST_USER = secret.EMAIL_USER
+    EMAIL_PORT = secret.EMAIL_PORT
+    EMAIL_USE_TLS = secret.EMAIL_TLS
+    DEFAULT_FROM_EMAIL = secret.EMAIL_USER
+    SERVER_EMAIL = secret.EMAIL_USER
 
 LATEX_INTERPRETER = 'lualatex'
 import os.path
