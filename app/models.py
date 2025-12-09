@@ -375,31 +375,34 @@ class Person(models.Model):
     def __str__(self):
         return f'{self.given_name} {self.family_name} ({self.user.username})'
 
-    @property
+    @cached_property
     def credits_earned(self):
         return sum([g.course.template.credits for g in
                     iter_grades(self.grade_set.exclude(
                         value__in=['F', 'Au', 'IP', 'W']),
                                 unique_only=True)])
 
-    @property
+    @cached_property
     def credits_in_progress(self):
         return self.grade_set.filter(value='IP').aggregate(
             v=models.Sum('course__template__credits'))['v'] or 0
 
-    @property
+    @cached_property
     def certificate_credits(self):
         return self.achievementaward_set.filter(
             status__in=['S', 'A', 'P', 'D'], achievement__category='C',
         ).aggregate(v=models.Sum('achievement__credits'))['v'] or 0
 
-    @property
+    @cached_property
+    def potential_diploma_credits(self):
+        return sum([g.course.template.credits for g in
+                    iter_grades(self.grade_set.exclude(
+                        value__in=['F', 'Au', 'W']),
+                                unique_only=True)])
+
+    @cached_property
     def potential_achievement_credits(self):
-        has = sum([g.course.template.credits for g in
-                   iter_grades(self.grade_set.exclude(
-                       value__in=['F', 'Au', 'W']),
-                               unique_only=True)])
-        return has - self.certificate_credits
+        return self.potential_diploma_credits - self.certificate_credits
 
     @property
     def full_name(self):

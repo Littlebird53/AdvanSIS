@@ -1017,7 +1017,11 @@ def course_reports(request, center):
     for sr in models.StudentRecord.objects.filter(
             center=center, status='C').order_by(
                 'person__family_name', 'person__given_name'):
-        pac = sr.person.potential_achievement_credits
+        pac = {
+            'C': sr.person.potential_achievement_credits,
+            'D': sr.person.potential_diploma_credits,
+            'L': sr.person.potential_diploma_credits,
+        }
         courses = set([g.course.template_id
                        for g in sr.person.grade_set.all().exclude(
                                value__in=['F', 'Au', 'W']).select_related(
@@ -1034,12 +1038,15 @@ def course_reports(request, center):
                     for aa in models.AchievementAward.objects.filter(
                             person=sr.person,
                             status__in=['S', 'A', 'P', 'D'])])
+        for ach in have:
+            if ach.category != 'C':
+                pac[ach.category] = 0
         plain = []
         need_course = []
         for ach in achievements:
             if ach in have:
                 continue
-            if ach.credits > pac + 3:
+            if ach.credits > pac[ach.category] + 3:
                 continue
             if not all(pr in have for pr in ach.prerequisites.all()):
                 continue
