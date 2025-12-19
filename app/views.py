@@ -1298,9 +1298,10 @@ def achievement_search(request):
 
 def check_achievement(achievement, person):
     cond = Q(achievement=achievement, person=person)
-    credits = person.credits_earned + person.credits_in_progress
+    credits = person.potential_diploma_credits
     if achievement.category in ['D', 'L']:
-        cond = cond | Q(achievement__category=achievement.category)
+        cond = cond | Q(achievement__category=achievement.category,
+                        person=person)
     else:
         credits -= person.certificate_credits
     if credits < achievement.credits:
