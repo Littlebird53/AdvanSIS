@@ -790,6 +790,20 @@ class StudentAdmin(IEAdmin):
 
     resource_classes = [resources.StudentResource]
 
+    actions = ['resend_emails']
+
+    @admin.action(description='Resend Church Recommendation Email')
+    def resend_emails(self, request, queryset):
+        from app.views import make_email
+        for sr in queryset:
+            message = make_email('Gateway ADVANCE Church Recommendation',
+                                 sr.church_rec_email,
+                                 'app/church_recommendation_email.html',
+                                 {'sr': sr})
+            message.send()
+        self.message_user(request,
+                          f'Sent {queryset.count()} request emails.')
+
 class AwardYearFilter(admin.SimpleListFilter):
     # https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
     template = 'admin/int_filter.html'
