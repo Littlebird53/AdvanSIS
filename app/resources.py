@@ -282,10 +282,12 @@ class StaffResource(ChoicesResource):
     registrations = Field(attribute='registrations', readonly=True)
     average_enrollment = Field(attribute='average_enrollment',
                                readonly=True)
+    email = Field(attribute='person__best_email__email', readonly=True)
     class Meta:
         model = models.StaffRecord
         fields = ['id', 'person', 'person__given_name',
-                  'person__family_name', 'center_code', 'center__name',
+                  'person__family_name', 'email',
+                  'center_code', 'center__name',
                   'status', 'role', 'acceptance_date',
                   'courses_taught', 'students_taught',
                   'registrations', 'average_enrollment',
