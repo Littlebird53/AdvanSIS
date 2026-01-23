@@ -16,6 +16,9 @@ class Command(BaseCommand):
             else:
                 e = pm.person.user.email
                 if not e:
+                    # Remove from queue so we don't clog it
+                    pm.emailed = True
+                    pm.save()
                     continue
             msg = make_email('Gateway ADVANCE New Message', e,
                              'app/popup_email.html', {'pm': pm})
