@@ -655,7 +655,7 @@ class UserAdmin(BaseUserAdmin):
                     continue
                 if field.name in ['id', 'user']:
                     continue
-                if getattr(main, field.name) is not None:
+                if getattr(main, field.name) in [None, '']:
                     setattr(main, field.name, getattr(person, field.name))
             emails += list(person.emails.all())
             phones += list(person.phones.all())
