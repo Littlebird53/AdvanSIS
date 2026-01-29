@@ -18,7 +18,7 @@
       <ul>
         {% if user.is_authenticated %}
         <li>
-          <span><b>Hello, {{user.person.preferred_name}} ({{user.username}})!</b></span>
+          <span><b>Hello, {{user.person.preferred_name|default_if_none:user.person.given_name}} ({{user.username}})!</b></span>
         </li>
         <li class="menu-item">
           <a href="{% url 'app:dashboard' %}">Home</a>
