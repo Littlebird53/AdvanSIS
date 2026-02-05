@@ -44,7 +44,7 @@
 \begin{center}
   \begin{tabular}{p{0.05\textwidth}p{0.2\textwidth}p{0.2\textwidth}p{0.45\textwidth}}
     \midrule
-    ID: {{person.user.id}} & Name: {{person.full_name|latex_escape}} & {% if email %}Email: {{email.email|latex_escape}}{% endif %} & {% if address %}Address: {{address.single_line|latex_escape}}{% endif %} \\
+    ID: {{person.user.username}} & Name: {{person.full_name|latex_escape}} & {% if email %}Email: {{email.email|latex_escape}}{% endif %} & {% if address %}Address: {{address.single_line|latex_escape}}{% endif %} \\
     \midrule
   \end{tabular}
 \end{center}
