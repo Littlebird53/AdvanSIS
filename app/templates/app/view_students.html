@@ -60,7 +60,7 @@
     {% for form in students %}
     <tr>
       <td>
-        <a href="{% url 'app:student_info' form.instance.person.id %}">{{form.instance.person}}</a>
+        <a href="{% if form.instance.person.id %}{% url 'app:student_info' form.instance.person.id %}{% endif %}">{{form.instance.person}}</a>
       </td>
       {% for item in form.instance.stats %}
       <td style="text-align: right">{{item}}</td>
