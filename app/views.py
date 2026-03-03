@@ -1063,7 +1063,9 @@ def course_reports(request, center):
                     need = set()
                     met = False
                     break
-            if met:
+            if met and ach.credits > pac[ach.category]:
+                need_course.append((ach, []))
+            elif met:
                 plain.append(ach)
             elif need:
                 need_course.append((ach, [tmpl_map[i] for i in need]))

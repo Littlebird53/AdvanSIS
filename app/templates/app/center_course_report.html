@@ -82,7 +82,11 @@
     <td>{{ach}}</td>
     <td>
       <ul>
-	{% for c in cs %}<li>{{c}}</li>{% endfor %}
+	      {% for c in cs %}
+        <li>{{c}}</li>
+        {% empty %}
+        <li>(any course)</li>
+        {% endfor %}
       </ul>
     </td>
   </tr>
