@@ -612,9 +612,6 @@ class UserAdmin(BaseUserAdmin):
             '<a href={}>Download</a>',
             reverse('app:student_transcript', args=[instance.person.id]))
 
-    def has_add_permission(self, request):
-        return False
-
     @admin.action(description='Compare selected accounts')
     def compare_users(self, request, queryset, is_merge=False):
         msg = compare_objects([u.person for u in queryset])
@@ -671,6 +668,12 @@ class UserAdmin(BaseUserAdmin):
         self.message_user(request, f'Merged {queryset.count()} accounts.')
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
+        try:
+            x = obj.person
+        except:
+            p = models.Person()
+            p.user = obj
+            p.save()
         if not change:
             obj.username = str(obj.id)
             import uuid
