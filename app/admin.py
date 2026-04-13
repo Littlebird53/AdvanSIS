@@ -612,6 +612,9 @@ class UserAdmin(BaseUserAdmin):
             '<a href={}>Download</a>',
             reverse('app:student_transcript', args=[instance.person.id]))
 
+    def has_add_permission(self, request):
+        return False
+
     @admin.action(description='Compare selected accounts')
     def compare_users(self, request, queryset, is_merge=False):
         msg = compare_objects([u.person for u in queryset])
