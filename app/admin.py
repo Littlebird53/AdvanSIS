@@ -575,7 +575,7 @@ class UserRecordStatusFilter(admin.SimpleListFilter):
             return queryset.exclude(
                 person__studentrecord__isnull=False).exclude(
                     person__staffrecord__isnull=False)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(ImportExportMixin, ExportActionMixin, BaseUserAdmin):
     inlines = [PersonInline, UserEmailAddressInline,
                UserPhoneAddressInline, UserMailingAddressInline,
                StudentRecordInline, StaffRecordInline,
@@ -602,6 +602,7 @@ class UserAdmin(BaseUserAdmin):
                                       'transcript')}),
     )
     actions = ['compare_users', 'merge_users']
+    resource_classes = [resources.UserResource]
 
     def credits_earned(self, instance):
         return instance.person.credits_earned

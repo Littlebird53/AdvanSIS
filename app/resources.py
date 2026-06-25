@@ -325,3 +325,8 @@ class FileResource(ChoicesResource):
         model = models.SharedFile
         fields = ['id', 'title', 'owner', 'owner_name',
                   'objectives', 'templates', 'courses']
+
+class UserResource(ChoicesResource):
+    class Meta:
+        model = models.User
+        fields = ['id', 'username']
