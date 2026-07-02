@@ -473,8 +473,8 @@ class PersonAdmin(IEAdmin):
         return False
 
     def student_centers(self, instance):
-        return ', '.join(instance.studentrecord_set.all().exclude(
-            status='R').values_list('center__code', flat=True))
+        return ', '.join([c for c in instance.studentrecord_set.all().exclude(
+            status='R').values_list('center__code', flat=True) if c])
     def staff_centers(self, instance):
         return ', '.join([c for c in instance.staffrecord_set.all().exclude(
             status='R').values_list('center__code', flat=True) if c])
