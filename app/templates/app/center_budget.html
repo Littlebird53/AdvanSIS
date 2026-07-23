@@ -240,10 +240,10 @@
     let other_income = parseFloat($('#id_other_income').val() || '0');
     let expenses = 0;
     let roster = update_roster();
-    $('.stipend input#id_stipend').each(function(i, el) {
+    $('.stipend input[type=number]').each(function(i, el) {
       expenses += parseFloat($(el).val() || '0');
     });
-    $('#other-expenses input').each(function(i, el) {
+    $('#other-expenses input[type=number]').each(function(i, el) {
       expenses += parseFloat($(el).val() || '0');
     });
     $('#total-income').html(toDollar(courses.center + courses.gateway +
