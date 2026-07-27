@@ -597,9 +597,7 @@ class UserAdmin(ImportExportMixin, ExportActionMixin, BaseUserAdmin):
         ('Important dates', {
             'fields': ('last_login', 'date_joined'),
             'classes': ['collapse']}),
-        ('Grade Summary', {'fields': ('credits_earned',
-                                      'credits_in_progress',
-                                      'transcript')}),
+        ('Grade Summary', {'fields': ('credits_earned', 'credits_in_progress', 'transcript')}),
     )
     actions = ['compare_users', 'merge_users']
     resource_classes = [resources.UserResource]
