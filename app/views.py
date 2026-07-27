@@ -75,8 +75,7 @@ def get_current_term():
     term_map = [0, # skip
                 0, 0, 0, 0, 0, # Jan-May
                 1, 1, # Jun-Jul
-                2, 2, 2, 2, # Aug-Nov
-                3, # Dec
+                2, 2, 2, 2, 2, # Aug-Dec
                 ]
     month = datetime.date.today().month
     return seq[term_map[month]]
