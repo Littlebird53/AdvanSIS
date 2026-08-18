@@ -139,7 +139,7 @@ class AwardResource(ChoicesResource):
         fields = ['id', 'person', 'person__given_name',
                   'person__family_name', 'primary_center',
                   'achievement', 'achievement__name',
-                  'achievement__abbreviation', 'status', 'year',
+                  'achievement__abbreviation', 'status', 'year', 'semester',
                   'walking', 'campus', 'home_state',
                   'display_name', 'applied', 'awarded', 'gpa',
                   'shirt_size', 'languages',
