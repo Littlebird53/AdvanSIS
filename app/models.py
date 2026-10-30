@@ -266,17 +266,12 @@ class Person(models.Model):
     family_name = models.CharField(max_length=100,
                                    verbose_name='Family (Last) Name')
     title = models.CharField(
-        choices=[('1LT', '1st Lt.'), ('ATT', 'Attorney'), ('BR', 'Brother'),
-                 ('CAP', 'Captain'), ('CHP', 'Chaplain'), ('COL', 'Col.'),
-                 ('DR', 'Dr.'), ('ENS', 'Ensign'), ('HON', 'Hon.'),
-                 ('JU', 'Judge'), ('LC', 'Lt. Com.'), ('LT', 'Lt.'),
-                 ('LTC', 'Lt. Col.'), ('MAJ', 'Major'), ('MIN', 'Minister'),
+        choices=[('BR', 'Brother'),
+                 ('DR', 'Dr.'), ('MIN', 'Minister'),
                  ('MIS', 'Miss'), ('MR', 'Mr.'), ('MRS', 'Mrs.'),
-                 ('MS', 'Ms.'), ('MSG', 'MSgt.'), ('PAS', 'Pastor'),
+                 ('MS', 'Ms.'), ('PAS', 'Pastor'),
                  ('PRF', 'Prof.'), ('RAB', 'Rabbi'),
-                 ('RDR', 'Rev. Dr.'), ('REV', 'Rev.'), ('SGT', 'Sgt.'),
-                 ('SIS', 'Sister'), ('SM', 'Sgt. Major'), ('SSG', 'SSgt,'),
-                 ('TSG', 'TSGT')],
+                 ('RDR', 'Rev. Dr.'), ('REV', 'Rev.')],
         max_length=3, blank=True, null=True)
     joint_title = models.CharField(
         choices=[('1LM', '1st Lt. and Mrs.'), ('1LT', '1st Lt.'),
@@ -359,7 +354,7 @@ class Person(models.Model):
         ('H', 'High School'), ('C', 'Some College'), ('A', 'Associates'),
         ('B', 'Bachelors'), ('m', 'Current Masters Student'),
         ('M', 'Masters'), ('d', 'Current Doctoral Student'),
-        ('D', 'Doctoral/Professional Degree')],
+        ('D', 'Doctorate')],
                                 blank=True, null=True,
                                 verbose_name='Education Level')
     deceased = models.BooleanField(default=False)
@@ -926,7 +921,7 @@ class Grade(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     value = models.CharField(
-        choices=[('A+', 'A+'), ('A', 'A'), ('A-', 'A-'),
+        choices=[('A', 'A'), ('A-', 'A-'),
                  ('B+', 'B+'), ('B', 'B'), ('B-', 'B-'),
                  ('C+', 'C+'), ('C', 'C'), ('C-', 'C-'),
                  ('D+', 'D+'), ('D', 'D'), ('D-', 'D-'),
@@ -946,9 +941,9 @@ class StudentRecord(models.Model):
     center = models.ForeignKey(Center, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     status = models.CharField(
-        choices=[('C', 'Current Student'), ('F', 'Former Student'),
-                 ('A', 'Applied Student'), ('R', 'Rejected Student'),
-                 ('W', 'Student Waiting for Church Recommendation')],
+        choices=[('C', 'Current'), ('F', 'Former'),
+                 ('A', 'Applied'), ('R', 'Rejected'),
+                 ('W', 'No Recc. Yet')],
         max_length=1, default='W')
     church = models.CharField(max_length=100, blank=True, null=True)
     church_membership = models.CharField(max_length=100, blank=True,
@@ -1068,10 +1063,10 @@ class StaffRecord(models.Model):
     church = models.CharField(max_length=100, blank=True, null=True)
     denomination = models.CharField(max_length=100, blank=True, null=True)
     transcript_mode = models.CharField(max_length=1, choices=[
-        ('E', 'I will request official or unofficial transcripts from all relevant theological/ministerial education and email them to advance@gs.edu'),
-        ('A', 'As a Gateway student/alum, I authorize the use of my transcripts for this purpose.'),
-        ('U', 'I will upload my transcript now.'),
-        ('N', 'I am an assistant instructor/registrar and do not have relevant transcripts.')], default='N')
+        ('E', 'I will email to advance@gs.edu.'),
+        ('A', 'Please use my existing Gateway transcripts.'),
+        ('U', 'I will upload now.'),
+        ('N', 'I do not have relevant transcripts.')], default='N')
     upload_transcript = models.FileField(blank=True, null=True)
     accept_bfm = models.BooleanField(null=True)
     acceptance_date = models.DateField(blank=True, null=True,
