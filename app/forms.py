@@ -31,7 +31,7 @@ class NewUserForm(RequiredMixin, forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
     make_filtered = ['languages_spoken']
-    make_required = ['ed_level', 'preferred_name', 'marital_status']
+    make_required = ['ed_level']
 
     def clean_confirm_password(self):
         p1 = self.cleaned_data.get('password')
