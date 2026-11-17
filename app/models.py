@@ -660,7 +660,7 @@ class Person(models.Model):
     def primary_student_record(self):
         return self.studentrecord_set.all().filter(
             acceptance_date__isnull=False).order_by(
-                'acceptance_date').first()
+                'acceptance_date').exclude(status='R').first()
 
     @property
     def primary_center(self):
